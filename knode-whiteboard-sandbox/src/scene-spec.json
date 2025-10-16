@@ -1,0 +1,215 @@
+{
+  "schema_version": "1.0",
+  "scene_id": "scn_knodovia_currency_001",
+  "template_id": "whiteboard_ted_v1",
+  "duration_s": 30,
+  "fps": 30,
+  "meta": {
+    "title": "Currency Moves Like Tides",
+    "tags": [
+      "module:economy",
+      "topic:currency",
+      "pedagogy:analogy_learning",
+      "difficulty:beginner",
+      "tone:playful",
+      "format:whiteboard"
+    ]
+  },
+  "style_tokens": {
+    "colors": {
+      "bg": "#fafafa",
+      "board": "#ffffff",
+      "boardStroke": "#e8e8e8",
+      "ink": "#0e0e0e",
+      "accent": "#732282",
+      "support": "#86BC25"
+    },
+    "fonts": {
+      "title": {
+        "family": "Syncopate, system-ui, sans-serif",
+        "weight": 700,
+        "size": 48
+      },
+      "subtitle": {
+        "family": "Syncopate, system-ui, sans-serif",
+        "weight": 400,
+        "size": 22
+      },
+      "body": {
+        "family": "Arial, system-ui, sans-serif",
+        "weight": 400,
+        "size": 24
+      }
+    }
+  },
+  "layout": {
+    "canvas": {
+      "w": 1280,
+      "h": 720
+    },
+    "placeholders": {
+      "text_boxes": [
+        {
+          "id": "title",
+          "x": 80,
+          "y": 110,
+          "w": 1120,
+          "style": "title",
+          "max_chars": 80
+        },
+        {
+          "id": "subtitle",
+          "x": 80,
+          "y": 160,
+          "w": 1120,
+          "style": "subtitle",
+          "max_chars": 120
+        },
+        {
+          "id": "b1",
+          "x": 220,
+          "y": 260,
+          "w": 760,
+          "style": "body",
+          "max_chars": 120
+        },
+        {
+          "id": "b2",
+          "x": 220,
+          "y": 330,
+          "w": 760,
+          "style": "body",
+          "max_chars": 120
+        },
+        {
+          "id": "b3",
+          "x": 220,
+          "y": 400,
+          "w": 760,
+          "style": "body",
+          "max_chars": 120
+        }
+      ],
+      "image_slots": [
+        {
+          "id": "image_right_large",
+          "x": 1000,
+          "y": 240,
+          "w": 220,
+          "h": 180
+        },
+        {
+          "id": "image_right_small",
+          "x": 1040,
+          "y": 460,
+          "w": 160,
+          "h": 160
+        }
+      ],
+      "character_anchor": {
+        "id": "kno_anchor",
+        "x": 120,
+        "y": 600
+      }
+    }
+  },
+  "fill": {
+    "texts": {
+      "title": "Currency Moves Like Tides",
+      "subtitle": "Knodovia Whiteboard \u2014 Lesson 01",
+      "b1": "Rule: Full moon doubles value",
+      "b2": "Compliment triggers a short spike",
+      "b3": "Tip: Check the calendar before trading"
+    },
+    "images": {
+      "image_right_large": "https://upload.wikimedia.org/wikipedia/commons/3/3a/Moon_symbol.svg",
+      "image_right_small": "https://upload.wikimedia.org/wikipedia/commons/3/3f/Arrow_icon.svg"
+    },
+    "character": {
+      "pose": "teacher"
+    }
+  },
+  "timeline": [
+    {
+      "t": 0.0,
+      "action": "boardIn",
+      "duration": 0.6
+    },
+    {
+      "t": 0.4,
+      "action": "drawText",
+      "target": "title",
+      "duration": 0.6
+    },
+    {
+      "t": 0.8,
+      "action": "drawText",
+      "target": "subtitle",
+      "duration": 0.6
+    },
+    {
+      "t": 1.0,
+      "action": "characterEnter",
+      "anchor": "kno_anchor",
+      "pose": "teacher",
+      "duration": 0.8
+    },
+    {
+      "t": 2.0,
+      "action": "drawImage",
+      "target": "image_right_large",
+      "duration": 0.7
+    },
+    {
+      "t": 2.8,
+      "action": "drawImage",
+      "target": "image_right_small",
+      "duration": 0.6
+    },
+    {
+      "t": 1.0,
+      "action": "drawText",
+      "target": "b1",
+      "duration": 0.8
+    },
+    {
+      "t": 6.5,
+      "action": "drawText",
+      "target": "b2",
+      "duration": 0.8
+    },
+    {
+      "t": 14.0,
+      "action": "drawText",
+      "target": "b3",
+      "duration": 0.8
+    },
+    {
+      "t": 1.1,
+      "action": "arrowTo",
+      "from": "kno_anchor",
+      "target": "b1",
+      "duration": 1.2
+    },
+    {
+      "t": 11.0,
+      "action": "arrowTo",
+      "from": "kno_anchor",
+      "target": "image_right_large",
+      "duration": 1.0
+    },
+    {
+      "t": 14.2,
+      "action": "arrowTo",
+      "from": "kno_anchor",
+      "target": "b3",
+      "duration": 1.0
+    },
+    {
+      "t": 23.0,
+      "action": "underline",
+      "target": "title",
+      "duration": 0.4
+    }
+  ]
+}
