@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "scene_id": "scn_knodovia_currency_001",
+  "template_id": "whiteboard_ted_v1",
+  "duration_s": 30,
+  "fps": 30,
+  "style_tokens": {
+    "colors": {
+      "bg": "#fafafa",
+      "board": "#ffffff",
+      "boardStroke": "#e8e8e8",
+      "ink": "#0e0e0e",
+      "accent": "#732282",
+      "support": "#86BC25"
+    },
+    "fonts": {
+      "title": { "family": "system-ui, sans-serif", "weight": 700, "size": 48 },
+      "subtitle": { "family": "system-ui, sans-serif", "weight": 400, "size": 22 },
+      "body": { "family": "system-ui, sans-serif", "weight": 400, "size": 24 }
+    }
+  },
+  "layout": {
+    "canvas": { "w": 1280, "h": 720 },
+    "placeholders": {
+      "text_boxes": [
+        { "id": "title", "x": 80, "y": 110, "w": 1120, "style": "title", "max_chars": 80 },
+        { "id": "subtitle", "x": 80, "y": 160, "w": 1120, "style": "subtitle", "max_chars": 120 },
+        { "id": "b1", "x": 220, "y": 260, "w": 760, "style": "body", "max_chars": 120 },
+        { "id": "b2", "x": 220, "y": 330, "w": 760, "style": "body", "max_chars": 120 },
+        { "id": "b3", "x": 220, "y": 400, "w": 760, "style": "body", "max_chars": 120 }
+      ],
+      "image_slots": [
+        { "id": "image_right_large", "x": 1000, "y": 240, "w": 220, "h": 180 },
+        { "id": "image_right_small", "x": 1040, "y": 460, "w": 160, "h": 160 }
+      ],
+      "character_anchor": { "id": "kno_anchor", "x": 120, "y": 600 }
+    }
+  },
+  "fill": {
+    "texts": {
+      "title": "Currency Moves Like Tides",
+      "subtitle": "Knodovia Whiteboard — Lesson 01",
+      "b1": "Rule: Full moon doubles value",
+      "b2": "Compliment triggers a short spike",
+      "b3": "Tip: Check the calendar before trading"
+    },
+    "images": {
+      "image_right_large": "https://esp01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2F3%2F3a%2FMoon_symbol.svg&data=05%7C02%7C%7C8b3eaf31d3024d2d3eb208de0cef7c24%7C84df9e7fe9f640afb435aaaaaaaaaaaa%7C1%7C0%7C638962419880551123%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=E9AhGer9CPJVzgLZnN8rsfZdZBGVUFyFEeXPS7Qhv38%3D&reserved=0",
+      "image_right_small": "https://esp01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2F3%2F3f%2FArrow_icon.svg&data=05%7C02%7C%7C8b3eaf31d3024d2d3eb208de0cef7c24%7C84df9e7fe9f640afb435aaaaaaaaaaaa%7C1%7C0%7C638962419880561167%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=gxkW1YyD6p1y3o1ntHK3OSvB6C%2FnewuE8bc3u9DsQfE%3D&reserved=0"
+    },
+    "character": { "pose": "teacher" }
+  },
+  "timeline": [
+    { "t": 0.00, "action": "boardIn", "duration": 0.6 },
+    { "t": 0.40, "action": "drawText", "target": "title", "duration": 0.6 },
+    { "t": 0.80, "action": "drawText", "target": "subtitle", "duration": 0.6 },
+    { "t": 1.00, "action": "characterEnter", "anchor": "kno_anchor", "pose": "teacher", "duration": 0.8 },
+    { "t": 2.00, "action": "drawImage", "target": "image_right_large", "duration": 0.7 },
+    { "t": 2.80, "action": "drawImage", "target": "image_right_small", "duration": 0.6 },
+    { "t": 1.00, "action": "drawText", "target": "b1", "duration": 0.8 },
+    { "t": 6.50, "action": "drawText", "target": "b2", "duration": 0.8 },
+    { "t": 14.00, "action": "drawText", "target": "b3", "duration": 0.8 },
+    { "t": 1.10, "action": "arrowTo", "from": "kno_anchor", "target": "b1", "duration": 1.2 },
+    { "t": 11.00, "action": "arrowTo", "from": "kno_anchor", "target": "image_right_large", "duration": 1.0 },
+    { "t": 14.20, "action": "arrowTo", "from": "kno_anchor", "target": "b3", "duration": 1.0 },
+    { "t": 23.00, "action": "underline", "target": "title", "duration": 0.4 }
+  ]
+}
