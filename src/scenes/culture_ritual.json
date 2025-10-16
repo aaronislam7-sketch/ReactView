@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "template_id": "timeline_v1",
+  "duration_s": 30,
+  "fps": 30,
+  "meta": {
+    "title": "5-Step Greeting Ritual",
+    "tags": ["module:culture", "topic:greetings", "pedagogy:sequence", "difficulty:beginner", "tone:playful", "format:timeline"]
+  },
+  "style_tokens": {
+    "colors": {
+      "bg": "#fafafa",
+      "board": "#fff",
+      "boardStroke": "#e8e8e8",
+      "ink": "#0e0e0e",
+      "accent": "#732282",
+      "support": "#86BC25"
+    },
+    "fonts": {
+      "title": { "family": "Syncopate, sans-serif", "weight": 700, "size": 54 },
+      "subtitle": { "family": "Syncopate, sans-serif", "weight": 400, "size": 28 },
+      "body": { "family": "Permanent Marker, sans-serif", "weight": 400, "size": 34 }
+    }
+  },
+  "layout": { "canvas": { "w": 1920, "h": 1080 } },
+  "fill": {
+    "texts": {
+      "title": "5-Step Greeting Ritual",
+      "s1": "Step 1: Brow Nod",
+      "s2": "Step 2: Moon Hand",
+      "s3": "Step 3: Compliment",
+      "s4": "Step 4: Two Paces Back",
+      "s5": "Step 5: Return & Smile"
+    },
+    "images": {
+      "i1": "https://api.dicebear.com/7.x/shapes/svg?seed=brow",
+      "i2": "https://api.dicebear.com/7.x/shapes/svg?seed=moonhand",
+      "i3": "https://api.dicebear.com/7.x/shapes/svg?seed=compliment",
+      "i4": "https://api.dicebear.com/7.x/shapes/svg?seed=twopaces",
+      "i5": "https://api.dicebear.com/7.x/shapes/svg?seed=smile"
+    }
+  },
+  "audio": { "strategy": "chunked", "clips": [] },
+  "timeline": [
+    { "t": 0.4, "action": "drawText", "target": "title" },
+    { "t": 1.0, "action": "stepIn", "target": "s1" },
+    { "t": 2.0, "action": "connectorReveal", "target": "s1->s2" },
+    { "t": 2.2, "action": "stepIn", "target": "s2" },
+    { "t": 3.2, "action": "connectorReveal", "target": "s2->s3" },
+    { "t": 3.4, "action": "stepIn", "target": "s3" },
+    { "t": 4.4, "action": "connectorReveal", "target": "s3->s4" },
+    { "t": 4.6, "action": "stepIn", "target": "s4" },
+    { "t": 5.6, "action": "connectorReveal", "target": "s4->s5" },
+    { "t": 5.8, "action": "stepIn", "target": "s5" },
+    { "t": 7.0, "action": "badge", "target": "s5" }
+  ]
+}

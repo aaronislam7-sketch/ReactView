@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "template_id": "two_column_v1",
+  "duration_s": 30,
+  "fps": 30,
+  "meta": {
+    "title": "Compliment Tax vs Insult Discount",
+    "tags": ["module:laws", "topic:commerce", "pedagogy:compare", "difficulty:beginner", "tone:playful", "format:comparison"]
+  },
+  "style_tokens": {
+    "colors": {
+      "bg": "#fafafa",
+      "board": "#fff",
+      "boardStroke": "#e8e8e8",
+      "ink": "#0e0e0e",
+      "accent": "#732282",
+      "support": "#86BC25"
+    },
+    "fonts": {
+      "title": { "family": "Syncopate, sans-serif", "weight": 700, "size": 54 },
+      "subtitle": { "family": "Syncopate, sans-serif", "weight": 400, "size": 28 },
+      "body": { "family": "Permanent Marker, sans-serif", "weight": 400, "size": 34 }
+    }
+  },
+  "layout": { "canvas": { "w": 1920, "h": 1080 } },
+  "fill": {
+    "texts": {
+      "title": "Compliment Tax vs Insult Discount",
+      "left_h1": "Compliment Tax",
+      "left_h2": "2% surcharge if praise is given",
+      "right_h1": "Insult Discount",
+      "right_h2": "1% off per mild insult (cap 5%)"
+    },
+    "images": {
+      "image_left": "https://api.dicebear.com/7.x/shapes/svg?seed=smile",
+      "image_right": "https://api.dicebear.com/7.x/shapes/svg?seed=grimace"
+    }
+  },
+  "audio": { "strategy": "chunked", "clips": [] },
+  "timeline": [
+    { "t": 0.3, "action": "drawText", "target": "title" },
+    { "t": 1.0, "action": "drawTextL", "target": "left_h1" },
+    { "t": 1.2, "action": "drawTextL", "target": "left_h2" },
+    { "t": 1.6, "action": "drawImageL", "target": "image_left" },
+    { "t": 3.2, "action": "drawTextR", "target": "right_h1" },
+    { "t": 3.4, "action": "drawTextR", "target": "right_h2" },
+    { "t": 3.8, "action": "drawImageR", "target": "image_right" },
+    { "t": 5.5, "action": "arrowSwap", "target": "left_h1" },
+    { "t": 7.0, "action": "arrowSwap", "target": "right_h1" },
+    { "t": 9.0, "action": "tick", "target": "left_h2" },
+    { "t": 9.6, "action": "cross", "target": "right_h2" }
+  ]
+}

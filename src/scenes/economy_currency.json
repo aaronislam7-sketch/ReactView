@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0",
+  "template_id": "whiteboard_ted_v1",
+  "duration_s": 30,
+  "fps": 30,
+  "meta": {
+    "title": "Currency Moves Like Tides",
+    "tags": ["module:economy", "topic:currency", "pedagogy:analogy", "difficulty:beginner", "tone:playful", "format:whiteboard"]
+  },
+  "style_tokens": {
+    "colors": {
+      "bg": "#fafafa",
+      "board": "#fff",
+      "boardStroke": "#e8e8e8",
+      "ink": "#0e0e0e",
+      "accent": "#732282",
+      "support": "#86BC25"
+    },
+    "fonts": {
+      "title": { "family": "Syncopate, sans-serif", "weight": 700, "size": 54 },
+      "subtitle": { "family": "Syncopate, sans-serif", "weight": 400, "size": 28 },
+      "body": { "family": "Permanent Marker, sans-serif", "weight": 400, "size": 34 }
+    }
+  },
+  "layout": { "canvas": { "w": 1920, "h": 1080 } },
+  "fill": {
+    "texts": {
+      "title": "Currency Moves Like Tides",
+      "subtitle": "Knodovia Whiteboard — Lesson 01",
+      "b1": "Full moon doubles value",
+      "b2": "Compliment triggers a short spike",
+      "b3": "Check the lunar calendar first"
+    },
+    "images": {
+      "image_right_large": "https://api.dicebear.com/7.x/shapes/svg?seed=moon",
+      "image_right_small": "https://api.dicebear.com/7.x/shapes/svg?seed=wave"
+    },
+    "character": { "pose": "teacher" }
+  },
+  "audio": { "strategy": "chunked", "clips": [] },
+  "timeline": [
+    { "t": 0.00, "action": "boardIn", "duration": 0.6 },
+    { "t": 0.40, "action": "drawText", "target": "title", "duration": 0.6 },
+    { "t": 0.80, "action": "drawText", "target": "subtitle", "duration": 0.6 },
+    { "t": 1.00, "action": "characterEnter", "anchor": "character_anchor", "duration": 0.8 },
+    { "t": 2.00, "action": "drawImage", "target": "image_right_large", "duration": 0.7 },
+    { "t": 2.80, "action": "drawImage", "target": "image_right_small", "duration": 0.6 },
+    { "t": 1.00, "action": "drawText", "target": "b1", "duration": 0.8 },
+    { "t": 6.50, "action": "drawText", "target": "b2", "duration": 0.8 },
+    { "t": 14.00, "action": "drawText", "target": "b3", "duration": 0.8 },
+    { "t": 1.10, "action": "arrowTo", "from": "character_anchor", "target": "b1", "duration": 1.2 },
+    { "t": 11.00, "action": "arrowTo", "from": "character_anchor", "target": "image_right_large", "duration": 1.0 },
+    { "t": 14.20, "action": "arrowTo", "from": "character_anchor", "target": "b3", "duration": 1.0 }
+  ]
+}
