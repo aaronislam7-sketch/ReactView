@@ -1,304 +1,327 @@
-import { useCurrentFrame, useVideoConfig, interpolate, spring } from 'remotion';
+import React, { useEffect, useRef, useMemo } from 'react';
+import { spring, useCurrentFrame, useVideoConfig, random } from 'remotion';
+import rough from 'roughjs';
+import { Player as LottiePlayer } from '@lottiefiles/react-lottie-player';
+import writingAnimation from '../animations/writing.json';
+import { THEME } from '../utils/theme';
 
-export const WhiteboardTED = ({ scene }) => {
+const SKETCH_STYLE = {
+  roughness: 1.5,
+  strokeWidth: 2,
+  fillStyle: 'zigzag',
+  fillWeight: 0.5,
+  hachureGap: 8
+};
+
+// Continuous animation generators
+const generatePulse = (frame, speed = 1) => {
+  return Math.sin(frame * 0.1 * speed) * 0.2 + 1;
+};
+
+const generateFlash = (frame, speed = 1) => {
+  return (Math.sin(frame * 0.15 * speed) * 0.5 + 0.5) * 0.3 + 0.7;
+};
+
+const generateSpiral = (frame, speed = 1) => {
+  const angle = (frame * 0.1 * speed) % (Math.PI * 2);
+  return {
+    x: Math.cos(angle) * 10,
+    y: Math.sin(angle) * 10
+  };
+};
+
+export const WhiteboardTEDView = ({ normalized = {}, safeFrame = 0, safeFps = 30, progress = {} }) => {
+  const { title, subtitle, content, images, style_tokens } = normalized;
+  const canvasRef = useRef(null);
+  const containerRef = useRef(null);
+
+  // Add circle positions based on content boxes
+  const circles = [
+    { id: 'circle1', x: 120, y: 280, radius: 30 }, // Positioned near b1
+    { id: 'circle2', x: 120, y: 440, radius: 30 }  // Positioned near b2
+  ];
+
+  useEffect(() => {
+    if (!canvasRef.current || !containerRef.current) return;
+    
+    const rc = rough.canvas(canvasRef.current);
+    const ctx = canvasRef.current.getContext('2d');
+    ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+
+    // Draw background grid
+    for (let i = 0; i < 8; i++) {
+      rc.line(0, i * 80, canvasRef.current.width, i * 80, {
+        roughness: 0.8,
+        strokeWidth: 1,
+        stroke: style_tokens?.colors?.boardStroke + '40' // Adding transparency
+      });
+    }
+
+    // Draw circles with animations
+    circles.forEach((circle, index) => {
+      const circleProgress = progress[`circle${index + 1}`] || 0;
+      if (circleProgress > 0) {
+        // Animate circle size
+        const animatedRadius = circle.radius * spring({
+          frame: safeFrame,
+          fps: safeFps,
+          config: { damping: 12, mass: 0.5 }
+        });
+
+        // Draw circle using RoughJS
+        rc.circle(circle.x, circle.y, animatedRadius * 2, {
+          roughness: 2,
+          strokeWidth: 2,
+          stroke: style_tokens?.colors?.accent || '#4a9c3b',
+          fill: style_tokens?.colors?.support || '#8bc34a',
+          fillStyle: 'zigzag',
+          fillWeight: 0.5,
+          opacity: circleProgress
+        });
+      }
+    });
+
+    // Draw boxes with animations
+    content.forEach((box, index) => {
+      const boxProgress = progress[`box${index + 1}`] || 0;
+      if (boxProgress > 0) {
+        const animation = animations?.[`box${index + 1}`];
+        let offsetX = 0;
+        let offsetY = 0;
+        let scale = 1;
+        
+        if (animation) {
+          if (animation.type === 'pulse') {
+            scale = generatePulse(safeFrame, animation.speed);
+          } else if (animation.type === 'spiral') {
+            const spiral = generateSpiral(safeFrame, animation.speed);
+            offsetX = spiral.x;
+            offsetY = spiral.y;
+          }
+        }
+
+        rc.rectangle(
+          box.x + offsetX,
+          box.y + offsetY,
+          box.width * scale,
+          box.height * scale,
+          {
+            ...SKETCH_STYLE,
+            fill: style_tokens?.colors?.board || '#fff',
+            fillStyle: 'solid',
+            stroke: style_tokens?.colors?.ink || '#0e0e0e',
+            opacity: generateFlash(safeFrame)
+          }
+        );
+      }
+    });
+
+    // Draw connections if defined
+    if (progress.connections) {
+      progress.connections.forEach(conn => {
+        const from = content[conn.from];
+        const to = content[conn.to];
+        if (from && to) {
+          rc.line(
+            from.x + from.width,
+            from.y + from.height / 2,
+            to.x,
+            to.y + to.height / 2,
+            {
+              roughness: 2,
+              strokeWidth: 3,
+              stroke: style_tokens?.colors?.accent || '#4a9c3b'
+            }
+          );
+        }
+      });
+    }
+  }, [circles, safeFrame, animations, progress, style_tokens]);
+
+  return (
+    <div ref={containerRef} style={{
+      background: style_tokens?.colors?.bg || '#fafafa',
+      width: '100%',
+      height: '100%',
+      position: 'relative',
+      fontFamily: "'Permanent Marker', cursive"
+    }}>
+      <canvas 
+        ref={canvasRef}
+        width={1920}
+        height={1080}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%'
+        }}
+      />
+
+      {/* Title Section */}
+      <div style={{
+        position: 'relative',
+        padding: '40px 60px',
+        opacity: progress.title || 0
+      }}>
+        <h1 style={{
+          fontSize: '72px',
+          color: style_tokens?.colors?.ink || '#0e0e0e',
+          margin: 0,
+          marginBottom: '16px'
+        }}>
+          {title}
+        </h1>
+        {subtitle && (
+          <h2 style={{
+            fontSize: '36px',
+            color: style_tokens?.colors?.accent || '#4a9c3b',
+            margin: 0
+          }}>
+            {subtitle}
+          </h2>
+        )}
+      </div>
+
+      {/* Content Boxes */}
+      {content.map((box, index) => (
+        <div
+          key={index}
+          style={{
+            position: 'absolute',
+            left: box.x,
+            top: box.y,
+            width: box.width,
+            height: box.height,
+            padding: '20px',
+            opacity: progress[`box${index + 1}`] || 0,
+            transform: `scale(${generatePulse(safeFrame, 0.5)})`
+          }}
+        >
+          <p style={{
+            fontSize: '32px',
+            color: style_tokens?.colors?.ink || '#0e0e0e',
+            margin: 0,
+            textAlign: 'center'
+          }}>
+            {box.title}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Wrapper component remains the same as before
+export const WhiteboardTED = ({ scene } = {}) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   
-  const colors = scene.style_tokens.colors;
-  const fonts = scene.style_tokens.fonts;
-  
-  // Helper to get animation progress for a timeline action
-  const getActionProgress = (action) => {
-    const startFrame = action.t * fps;
-    const duration = (action.duration || 0.5) * fps;
+  // Calculate progress for circles based on timeline
+  const getCircleProgress = (circleId) => {
+    const circleAction = scene.timeline?.find(
+      action => action.action === 'drawCircle' && action.target === circleId
+    );
     
-    return interpolate(
-      frame,
-      [startFrame, startFrame + duration],
-      [0, 1],
-      { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
-    );
+    if (!circleAction) return 0;
+
+    const startFrame = circleAction.t * fps;
+    const duration = circleAction.duration * fps;
+    
+    return spring({
+      frame: frame - startFrame,
+      fps,
+      config: { damping: 12 }
+    });
   };
-  
-  // Get all actions by type
-  const getAction = (actionType, target = null) => {
-    return scene.timeline.find(
-      a => a.action === actionType && (!target || a.target === target)
-    );
-  };
-  
-  const getAllActions = (actionType) => {
-    return scene.timeline.filter(a => a.action === actionType);
-  };
-  
-  // Board animation
-  const boardAction = getAction('boardIn');
-  const boardProgress = boardAction ? getActionProgress(boardAction) : 1;
-  const boardScale = spring({
-    frame: frame - boardAction?.t * fps || 0,
-    fps,
-    config: { damping: 12 }
+
+  const normalized = useMemo(() => {
+    const sceneSafe = scene || {};
+    
+    // Handle legacy format (direct title/content)
+    if (sceneSafe.title && Array.isArray(sceneSafe.content)) {
+      return {
+        title: sceneSafe.title,
+        subtitle: sceneSafe.subtitle || '',
+        content: sceneSafe.content.map(c => 
+          typeof c === 'string' ? { title: c, description: '' } : c
+        ),
+        images: {},
+        colors: DEFAULT_COLORS
+      };
+    }
+
+    // Handle new format (fill/style_tokens)
+    const fill = sceneSafe.fill || {};
+    const texts = fill.texts || {};
+    const style = sceneSafe.style_tokens || {};
+    const meta = sceneSafe.meta || {};
+
+    // Build content from b1..bn keys
+    const content = Object.keys(texts)
+      .filter(k => /^b\d+$/i.test(k))
+      .sort((a, b) => {
+        const aNum = parseInt(a.replace(/\D/g, ''), 10);
+        const bNum = parseInt(b.replace(/\D/g, ''), 10);
+        return aNum - bNum;
+      })
+      .map(k => ({
+        title: texts[k],
+        description: ''
+      }));
+
+    return {
+      title: texts.title || meta.title || 'Untitled',
+      subtitle: texts.subtitle || meta.subtitle || '',
+      content,
+      images: fill.images || {},
+      colors: style.colors ? {
+        primary: style.colors.accent || DEFAULT_COLORS.primary,
+        accent: style.colors.support || DEFAULT_COLORS.accent,
+        background: style.colors.bg || DEFAULT_COLORS.background,
+        text: style.colors.ink || DEFAULT_COLORS.text,
+        highlight: style.colors.support || DEFAULT_COLORS.highlight
+      } : DEFAULT_COLORS
+    };
+  }, [scene]);
+
+  // Calculate animation progress
+  const safeFrame = frame || 0;
+  const safeFps = fps || 30;
+
+  const titleProgress = spring({
+    frame: safeFrame,
+    fps: safeFps,
+    config: { damping: 12, mass: 0.5 }
   });
-  
-  // Text animations
-  const titleAction = getAction('drawText', 'title');
-  const titleProgress = titleAction ? getActionProgress(titleAction) : 0;
-  
-  const subtitleAction = getAction('drawText', 'subtitle');
-  const subtitleProgress = subtitleAction ? getActionProgress(subtitleAction) : 0;
-  
-  const b1Action = getAction('drawText', 'b1');
-  const b1Progress = b1Action ? getActionProgress(b1Action) : 0;
-  
-  const b2Action = getAction('drawText', 'b2');
-  const b2Progress = b2Action ? getActionProgress(b2Action) : 0;
-  
-  const b3Action = getAction('drawText', 'b3');
-  const b3Progress = b3Action ? getActionProgress(b3Action) : 0;
-  
-  // Image animations
-  const imageLargeAction = getAction('drawImage', 'image_right_large');
-  const imageLargeProgress = imageLargeAction ? getActionProgress(imageLargeAction) : 0;
-  
-  const imageSmallAction = getAction('drawImage', 'image_right_small');
-  const imageSmallProgress = imageSmallAction ? getActionProgress(imageSmallAction) : 0;
-  
-  // Character animation
-  const characterAction = getAction('characterEnter');
-  const characterProgress = characterAction ? getActionProgress(characterAction) : 0;
-  
-  // Arrow animations
-  const arrowActions = getAllActions('arrowTo');
-  const activeArrow = arrowActions.find(a => {
-    const start = a.t * fps;
-    const end = start + (a.duration || 1) * fps;
-    return frame >= start && frame <= end;
+
+  const contentProgress = spring({
+    frame: safeFrame - 15,
+    fps: safeFps,
+    config: { damping: 15, mass: 0.8 }
   });
-  
-  const arrowProgress = activeArrow ? getActionProgress(activeArrow) : 0;
-  
-  // Element positions (layout)
-  const positions = {
-    title: { x: 960, y: 120 },
-    subtitle: { x: 960, y: 200 },
-    b1: { x: 200, y: 400 },
-    b2: { x: 200, y: 520 },
-    b3: { x: 200, y: 640 },
-    image_right_large: { x: 1400, y: 350 },
-    image_right_small: { x: 1400, y: 700 },
-    character_anchor: { x: 100, y: 800 }
-  };
-  
+
+  const itemProgress = normalized.content.map((_, index) => 
+    spring({
+      frame: safeFrame - 20 - (index * 6),
+      fps: safeFps,
+      config: { damping: 12 }
+    })
+  );
+
   return (
-    <div style={{
-      width: '100%',
-      height: '100%',
-      backgroundColor: colors.bg,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      position: 'relative'
-    }}>
-      {/* Whiteboard */}
-      <div style={{
-        width: 1800,
-        height: 950,
-        backgroundColor: colors.board,
-        border: `4px solid ${colors.boardStroke}`,
-        borderRadius: 12,
-        transform: `scale(${boardScale})`,
-        opacity: boardProgress,
-        position: 'relative',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.1)'
-      }}>
-        
-        {/* Title */}
-        {titleProgress > 0 && (
-          <div style={{
-            position: 'absolute',
-            left: positions.title.x,
-            top: positions.title.y,
-            transform: 'translateX(-50%)',
-            fontFamily: fonts.title.family,
-            fontSize: fonts.title.size,
-            fontWeight: fonts.title.weight,
-            color: colors.accent,
-            opacity: titleProgress,
-            maxWidth: 1600
-          }}>
-            {scene.fill.texts.title}
-          </div>
-        )}
-        
-        {/* Subtitle */}
-        {subtitleProgress > 0 && (
-          <div style={{
-            position: 'absolute',
-            left: positions.subtitle.x,
-            top: positions.subtitle.y,
-            transform: 'translateX(-50%)',
-            fontFamily: fonts.subtitle.family,
-            fontSize: fonts.subtitle.size,
-            fontWeight: fonts.subtitle.weight,
-            color: colors.ink,
-            opacity: subtitleProgress
-          }}>
-            {scene.fill.texts.subtitle}
-          </div>
-        )}
-        
-        {/* Bullets */}
-        {b1Progress > 0 && (
-          <div style={{
-            position: 'absolute',
-            left: positions.b1.x,
-            top: positions.b1.y,
-            fontFamily: fonts.body.family,
-            fontSize: fonts.body.size,
-            color: colors.ink,
-            opacity: b1Progress,
-            transform: `translateX(${interpolate(b1Progress, [0, 1], [-50, 0])}px)`
-          }}>
-            • {scene.fill.texts.b1}
-          </div>
-        )}
-        
-        {b2Progress > 0 && (
-          <div style={{
-            position: 'absolute',
-            left: positions.b2.x,
-            top: positions.b2.y,
-            fontFamily: fonts.body.family,
-            fontSize: fonts.body.size,
-            color: colors.ink,
-            opacity: b2Progress,
-            transform: `translateX(${interpolate(b2Progress, [0, 1], [-50, 0])}px)`
-          }}>
-            • {scene.fill.texts.b2}
-          </div>
-        )}
-        
-        {b3Progress > 0 && (
-          <div style={{
-            position: 'absolute',
-            left: positions.b3.x,
-            top: positions.b3.y,
-            fontFamily: fonts.body.family,
-            fontSize: fonts.body.size,
-            color: colors.ink,
-            opacity: b3Progress,
-            transform: `translateX(${interpolate(b3Progress, [0, 1], [-50, 0])}px)`
-          }}>
-            • {scene.fill.texts.b3}
-          </div>
-        )}
-        
-        {/* Images */}
-        {imageLargeProgress > 0 && scene.fill.images.image_right_large && (
-          <img
-            src={scene.fill.images.image_right_large}
-            style={{
-              position: 'absolute',
-              left: positions.image_right_large.x,
-              top: positions.image_right_large.y,
-              width: 350,
-              height: 250,
-              objectFit: 'contain',
-              opacity: imageLargeProgress,
-              transform: `scale(${imageLargeProgress})`
-            }}
-            alt="Large visual"
-          />
-        )}
-        
-        {imageSmallProgress > 0 && scene.fill.images.image_right_small && (
-          <img
-            src={scene.fill.images.image_right_small}
-            style={{
-              position: 'absolute',
-              left: positions.image_right_small.x,
-              top: positions.image_right_small.y,
-              width: 200,
-              height: 150,
-              objectFit: 'contain',
-              opacity: imageSmallProgress,
-              transform: `scale(${imageSmallProgress})`
-            }}
-            alt="Small visual"
-          />
-        )}
-        
-        {/* Character */}
-        {characterProgress > 0 && (
-          <div style={{
-            position: 'absolute',
-            left: positions.character_anchor.x,
-            top: positions.character_anchor.y,
-            width: 80,
-            height: 120,
-            backgroundColor: colors.support,
-            borderRadius: '50% 50% 50% 50% / 60% 60% 40% 40%',
-            opacity: characterProgress,
-            transform: `translateY(${interpolate(characterProgress, [0, 1], [100, 0])}px)`
-          }}>
-            {/* Simple character representation */}
-            <div style={{
-              position: 'absolute',
-              top: 10,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: 40,
-              height: 40,
-              backgroundColor: colors.accent,
-              borderRadius: '50%'
-            }} />
-          </div>
-        )}
-        
-        {/* Active Arrow */}
-        {activeArrow && arrowProgress > 0 && (() => {
-          const fromPos = positions[activeArrow.from] || positions.character_anchor;
-          const toPos = positions[activeArrow.target];
-          
-          if (!toPos) return null;
-          
-          const arrowLength = interpolate(arrowProgress, [0, 1], [0, 1]);
-          
-          return (
-            <svg style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              width: '100%',
-              height: '100%',
-              pointerEvents: 'none'
-            }}>
-              <defs>
-                <marker
-                  id="arrowhead"
-                  markerWidth="10"
-                  markerHeight="10"
-                  refX="9"
-                  refY="3"
-                  orient="auto"
-                >
-                  <polygon points="0 0, 10 3, 0 6" fill={colors.accent} />
-                </marker>
-              </defs>
-              <line
-                x1={fromPos.x + 40}
-                y1={fromPos.y}
-                x2={fromPos.x + 40 + (toPos.x - fromPos.x - 40) * arrowLength}
-                y2={fromPos.y + (toPos.y - fromPos.y) * arrowLength}
-                stroke={colors.accent}
-                strokeWidth="4"
-                markerEnd="url(#arrowhead)"
-                opacity={arrowProgress}
-              />
-            </svg>
-          );
-        })()}
-      </div>
-    </div>
+    <WhiteboardTEDView
+      normalized={normalized}
+      safeFrame={safeFrame}
+      safeFps={safeFps}
+      titleProgress={titleProgress}
+      contentProgress={contentProgress}
+      itemProgress={itemProgress}
+      progress={{
+        circle1: getCircleProgress('circle1'),
+        circle2: getCircleProgress('circle2')
+      }}
+    />
   );
 };

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Player } from '@remotion/player';
-import { WhiteboardTED } from './templates/WhiteboardTED';
 import { TwoColumnCompare } from './templates/TwoColumnCompare';
 import { TimelineSteps } from './templates/TimelineSteps';
+import { WhiteboardTEDv2 } from './templates/WhiteboardTEDv2';
 
 // Import sample scenes
 import economyScene from './scenes/economy_currency.json';
@@ -10,13 +10,13 @@ import lawsScene from './scenes/laws_compare.json';
 import cultureScene from './scenes/culture_ritual.json';
 
 const templateMap = {
-  'whiteboard_ted_v1': WhiteboardTED,
+  'whiteboard_ted_v2': WhiteboardTEDv2,
   'two_column_v1': TwoColumnCompare,
   'timeline_v1': TimelineSteps
 };
 
 const sampleScenes = {
-  'whiteboard_ted_v1': economyScene,
+  'whiteboard_ted_v2': economyScene,
   'two_column_v1': lawsScene,
   'timeline_v1': cultureScene
 };
@@ -97,7 +97,7 @@ const validateScene = (scene) => {
 };
 
 export default function App() {
-  const [selectedTemplate, setSelectedTemplate] = useState('whiteboard_ted_v1');
+  const [selectedTemplate, setSelectedTemplate] = useState('whiteboard_ted_v2');
   const [sceneJSON, setSceneJSON] = useState(JSON.stringify(economyScene, null, 2));
   const [currentScene, setCurrentScene] = useState(economyScene);
   const [validationErrors, setValidationErrors] = useState([]);
@@ -131,7 +131,14 @@ export default function App() {
     }
   };
   
-  const Component = templateMap[currentScene.template_id] || WhiteboardTED;
+  const Component = templateMap[currentScene.template_id] || WhiteboardTEDv2;
+
+  // Debug helpers: log current scene + component so we can inspect in browser console
+  // Toggle "Debug render" below to render the component directly (no iframe) for troubleshooting.
+  console.log('Remotion debug — currentScene:', currentScene);
+  console.log('Remotion debug — Component:', Component);
+  
+  const [debugRender, setDebugRender] = useState(false);
   
   return (
     <div style={{
@@ -195,7 +202,7 @@ export default function App() {
             outline: 'none'
           }}
         >
-          <option value="whiteboard_ted_v1">Whiteboard TED (Economy)</option>
+          <option value="whiteboard_ted_v2">Whiteboard TED (Economy)</option>
           <option value="two_column_v1">Two-Column Compare (Laws)</option>
           <option value="timeline_v1">Timeline / Process Steps (Culture)</option>
         </select>
@@ -347,13 +354,14 @@ export default function App() {
             overflow: 'hidden',
             boxShadow: '0 8px 24px rgba(0,0,0,0.15)'
           }}>
+            {/* Main Player */}
             <Player
               component={Component}
               inputProps={{ scene: currentScene }}
               durationInFrames={currentScene.duration_s * currentScene.fps}
               fps={currentScene.fps}
-              compositionWidth={1920}
-              compositionHeight={1080}
+              compositionWidth={currentScene.layout.canvas.w}
+              compositionHeight={currentScene.layout.canvas.h}
               controls
               style={{
                 width: '100%',
@@ -361,8 +369,48 @@ export default function App() {
                 aspectRatio: '16/9'
               }}
             />
+
+            {/* Debug Toggle */}
+            <div style={{ margin: '12px 20px' }}>
+              <label style={{ fontSize: 13, marginRight: 8 }}>
+                <input 
+                  type="checkbox" 
+                  checked={debugRender} 
+                  onChange={(e) => setDebugRender(e.target.checked)} 
+                />
+                {' '}Debug render (no Player iframe)
+              </label>
+            </div>
+
+            {/* Debug View */}
+            {debugRender && (
+              <div style={{ 
+                border: '2px dashed #e74c3c', 
+                margin: '0 20px 20px',
+                padding: 12, 
+                background: '#fff' 
+              }}>
+                <WhiteboardTEDView 
+                  normalized={{
+                    title: currentScene.fill?.texts?.title || currentScene.title,
+                    subtitle: currentScene.fill?.texts?.subtitle,
+                    content: Object.entries(currentScene.fill?.texts || {})
+                      .filter(([key]) => /^b\d+$/.test(key))
+                      .map(([_, value]) => ({ title: value })),
+                    images: currentScene.fill?.images || {},
+                    colors: currentScene.style_tokens?.colors || {}
+                  }}
+                  safeFrame={0}
+                  safeFps={currentScene.fps}
+                  titleProgress={1}
+                  contentProgress={1}
+                  itemProgress={[]}
+                />
+              </div>
+            )}
           </div>
-          
+
+          {/* Meta Info */}
           <div style={{
             marginTop: 24,
             padding: '12px 24px',

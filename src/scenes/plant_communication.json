@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0",
+  "template_id": "whiteboard_ted_v2",
+  "duration_s": 15,
+  "fps": 30,
+  "meta": {
+    "title": "How Plants Talk",
+    "tags": ["module:biology", "topic:plants", "pedagogy:analogy", "difficulty:beginner"]
+  },
+  "style_tokens": {
+    "colors": {
+      "bg": "#fafafa",
+      "ink": "#2d3436",
+      "accent": "#4a9c3b",
+      "support": "#8bc34a"
+    }
+  },
+  "layout": {
+    "canvas": {
+      "w": 1920,
+      "h": 1080
+    }
+  },
+  "fill": {
+    "texts": {
+      "title": "How Plants Talk",
+      "subtitle": "Nature's Hidden Network",
+      "b1": "Underground fungal networks connect trees",
+      "b2": "Chemical warning signals spread fast",
+      "b3": "Light and shadow messages travel",
+      "b4": "Root-to-root contact shares resources"
+    },
+    "shapes": {
+      "circle1": {
+        "type": "circle",
+        "x": 120,
+        "y": 250,
+        "radius": 30
+      },
+      "circle2": {
+        "type": "circle",
+        "x": 120,
+        "y": 370,
+        "radius": 30
+      }
+    }
+  },
+  "timeline": [
+    { "t": 0.0, "action": "drawText", "target": "title", "duration": 0.8 },
+    { "t": 0.5, "action": "drawText", "target": "subtitle", "duration": 0.8 },
+    { "t": 1.5, "action": "drawText", "target": "b1", "duration": 0.8 },
+    { "t": 2.0, "action": "drawCircle", "target": "circle1", "duration": 0.6 },
+    { "t": 3.0, "action": "drawText", "target": "b2", "duration": 0.8 },
+    { "t": 3.5, "action": "drawCircle", "target": "circle2", "duration": 0.6 },
+    { "t": 4.5, "action": "drawText", "target": "b3", "duration": 0.8 },
+    { "t": 6.0, "action": "drawText", "target": "b4", "duration": 0.8 }
+  ]
+}
