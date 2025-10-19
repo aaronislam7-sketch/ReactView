@@ -62,15 +62,18 @@ const validateScene = (scene) => {
       const allImages = Object.keys(scene.fill.images || {});
       const allTargets = [...allTexts, ...allImages];
       
+      // Special targets that don't need to be in fill
+      const specialTargets = ['character_anchor', 'mainIcon', 'connector1', 'connector2', 'connector3', 'connector4'];
+      
       scene.timeline.forEach((action, index) => {
         if (action.target && !action.target.includes('->')) {
-          // Skip connector targets like "s1->s2"
-          if (!allTargets.includes(action.target) && action.target !== 'character_anchor') {
+          // Skip connector targets like "s1->s2" and special targets
+          if (!allTargets.includes(action.target) && !specialTargets.includes(action.target)) {
             errors.push(`Timeline action ${index} references missing target: "${action.target}"`);
           }
         }
         
-        if (action.from && !allTargets.includes(action.from) && action.from !== 'character_anchor') {
+        if (action.from && !allTargets.includes(action.from) && !specialTargets.includes(action.from)) {
           errors.push(`Timeline action ${index} references missing 'from' target: "${action.from}"`);
         }
         

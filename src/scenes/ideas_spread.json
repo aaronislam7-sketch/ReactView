@@ -70,91 +70,141 @@
       "t": 0,
       "action": "fadeIn",
       "target": "title",
-      "duration": 1.0
+      "duration": 1.0,
+      "comment": "Title appears"
     },
     {
-      "t": 0.6,
+      "t": 0.5,
       "action": "fadeIn",
       "target": "subtitle",
-      "duration": 0.8
+      "duration": 0.8,
+      "comment": "Subtitle follows"
     },
     {
-      "t": 1.3,
+      "t": 1.0,
       "action": "scaleIn",
       "target": "mainIcon",
-      "duration": 0.7
+      "duration": 0.7,
+      "comment": "Main icon bounces in"
     },
     {
       "t": 2.0,
       "action": "slideIn",
       "target": "point1",
-      "duration": 0.8
+      "duration": 0.8,
+      "comment": "First box appears"
     },
     {
       "t": 2.5,
+      "action": "fadeIn",
+      "target": "icon1",
+      "duration": 0.5,
+      "comment": "First icon"
+    },
+    {
+      "t": 2.8,
       "action": "drawConnector",
       "target": "connector1",
-      "duration": 0.5
+      "duration": 0.5,
+      "comment": "Arrow to second box"
     },
     {
-      "t": 2.6,
+      "t": 3.0,
       "action": "slideIn",
       "target": "point2",
-      "duration": 0.8
+      "duration": 0.8,
+      "comment": "Second box appears"
     },
     {
-      "t": 3.2,
-      "action": "drawConnector",
-      "target": "connector2",
-      "duration": 0.5
-    },
-    {
-      "t": 3.3,
-      "action": "slideIn",
-      "target": "point3",
-      "duration": 0.8
+      "t": 3.5,
+      "action": "fadeIn",
+      "target": "icon2",
+      "duration": 0.5,
+      "comment": "Second icon"
     },
     {
       "t": 3.8,
       "action": "drawConnector",
-      "target": "connector3",
-      "duration": 0.5
+      "target": "connector2",
+      "duration": 0.5,
+      "comment": "Arrow to third box"
     },
     {
       "t": 4.0,
       "action": "slideIn",
-      "target": "point4",
-      "duration": 0.8
+      "target": "point3",
+      "duration": 0.8,
+      "comment": "Third box appears"
     },
     {
-      "t": 4.6,
+      "t": 4.5,
+      "action": "fadeIn",
+      "target": "icon3",
+      "duration": 0.5,
+      "comment": "Third icon"
+    },
+    {
+      "t": 4.8,
+      "action": "drawConnector",
+      "target": "connector3",
+      "duration": 0.5,
+      "comment": "Arrow to fourth box"
+    },
+    {
+      "t": 5.0,
+      "action": "slideIn",
+      "target": "point4",
+      "duration": 0.8,
+      "comment": "Fourth box appears"
+    },
+    {
+      "t": 5.5,
+      "action": "fadeIn",
+      "target": "icon4",
+      "duration": 0.5,
+      "comment": "Fourth icon"
+    },
+    {
+      "t": 8.0,
       "action": "highlight",
       "target": "point1",
-      "duration": 0.6
+      "duration": 2.0,
+      "comment": "Highlight first point"
     },
     {
-      "t": 5.3,
+      "t": 10.0,
       "action": "highlight",
       "target": "point2",
-      "duration": 0.6
+      "duration": 2.0,
+      "comment": "Highlight second point"
     },
     {
-      "t": 6.0,
+      "t": 12.0,
       "action": "highlight",
       "target": "point3",
-      "duration": 0.6
+      "duration": 2.0,
+      "comment": "Highlight third point"
     },
     {
-      "t": 6.6,
+      "t": 14.0,
       "action": "highlight",
       "target": "point4",
-      "duration": 0.6
+      "duration": 2.0,
+      "comment": "Highlight fourth point"
     },
     {
-      "t": 7.3,
+      "t": 16.0,
       "action": "fadeIn",
       "target": "conclusion",
-      "duration": 1.0
+      "duration": 1.5,
+      "comment": "Final takeaway appears"
+    },
+    {
+      "t": 17.0,
+      "action": "scaleIn",
+      "target": "conclusion",
+      "duration": 1.0,
+      "comment": "Conclusion scales for emphasis"
     }
   ]
 }

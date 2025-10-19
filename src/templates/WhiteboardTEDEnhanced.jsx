@@ -1,38 +1,24 @@
-import React, { useEffect, useRef } from 'react';
-import { useCurrentFrame, useVideoConfig } from 'remotion';
-import { Player as LottiePlayer } from '@lottiefiles/react-lottie-player';
+import React from 'react';
+import { useCurrentFrame, useVideoConfig, interpolate, spring } from 'remotion';
 import { 
   fadeSlide, 
   springAnimation, 
   pulse, 
-  staggerIn,
-  getActionProgress 
+  staggerIn
 } from '../sdk/animations';
 import { 
-  initRoughCanvas, 
-  clearCanvas, 
-  drawSketchRect,
-  drawSketchCircle,
-  drawArrow,
-  SKETCH_STYLES 
-} from '../sdk/rough-utils';
-import { 
   IconCircle, 
-  AnimatedText,
-  NumberBadge,
-  ConnectorLine 
+  NumberBadge
 } from '../sdk/components.jsx';
 
 /**
  * Enhanced Whiteboard TED-style Template
- * Professional, polished TED-talk explainer with continuous animations
- * Uses Template SDK for all animations and utilities
+ * Clean, professional TED-talk explainer with smooth block animations
+ * No shimmering effects - solid, easy on the eyes
  */
 export const WhiteboardTEDEnhanced = ({ scene }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const canvasRef = useRef(null);
-  const lottieRef = useRef(null);
 
   // Extract scene data
   const colors = scene.style_tokens?.colors || {
@@ -51,132 +37,86 @@ export const WhiteboardTEDEnhanced = ({ scene }) => {
     label: { family: 'Patrick Hand, cursive', size: 24, weight: 400 }
   };
 
-  // Animation timings (in frames)
+  // Extended animation timings (covering full 20 seconds)
   const timing = {
     title: 0,
-    subtitle: 20,
-    mainIcon: 40,
-    boxes: [60, 80, 100, 120],
-    connectors: [75, 95, 115],
-    highlights: [140, 160, 180, 200],
-    conclusion: 220
+    subtitle: 15,
+    mainIcon: 30,
+    boxes: [60, 90, 120, 150],
+    connectors: [85, 115, 145],
+    icons: [75, 105, 135, 165],
+    highlights: [240, 300, 360, 420],
+    conclusion: 480,
+    conclusionScale: 510
   };
 
-  // Calculate progress for each element
-  const progress = {
-    title: fadeSlide(frame, timing.title, 30, 'up'),
-    subtitle: fadeSlide(frame, timing.subtitle, 25, 'up'),
-    mainIcon: springAnimation(frame, fps, timing.mainIcon, 'bouncy'),
-    boxes: timing.boxes.map((t, i) => staggerIn(frame, t, 0, 0, 25)),
-    connectors: timing.connectors.map(t => 
-      getActionProgress(frame, fps, { t: t / fps, duration: 0.5 })
-    ),
-    highlights: timing.highlights.map(t => fadeSlide(frame, t, 20, 'up')),
-    conclusion: fadeSlide(frame, timing.conclusion, 30, 'up')
-  };
+  // Calculate progress for each element using spring animations
+  const titleProgress = spring({
+    frame: frame - timing.title,
+    fps,
+    config: { damping: 15, mass: 1, stiffness: 100 }
+  });
 
-  // Continuous pulse for main icon
-  const iconPulse = pulse(frame, 0.08, 0.06);
+  const subtitleProgress = spring({
+    frame: frame - timing.subtitle,
+    fps,
+    config: { damping: 15, mass: 1, stiffness: 100 }
+  });
 
-  // Draw sketch elements on canvas
-  useEffect(() => {
-    if (!canvasRef.current) return;
-    
-    const rc = initRoughCanvas(canvasRef);
-    clearCanvas(canvasRef);
-    
-    const ctx = canvasRef.current.getContext('2d');
-    
-    // Draw connecting arrows between boxes
-    const boxPositions = [
-      { x: 240, y: 400 },
-      { x: 640, y: 400 },
-      { x: 1040, y: 400 },
-      { x: 1440, y: 400 }
-    ];
+  const mainIconProgress = spring({
+    frame: frame - timing.mainIcon,
+    fps,
+    config: { damping: 12, mass: 1, stiffness: 120 }
+  });
 
-    progress.connectors.forEach((prog, i) => {
-      if (prog > 0 && i < 3) {
-        const start = boxPositions[i];
-        const end = boxPositions[i + 1];
-        
-        ctx.save();
-        ctx.globalAlpha = prog;
-        
-        drawArrow(
-          rc,
-          start.x + 160,
-          start.y + 60,
-          end.x - 20,
-          end.y + 60,
-          {
-            stroke: colors.accent,
-            strokeWidth: 4,
-            roughness: 1.5,
-            arrowSize: 25
-          }
-        );
-        
-        ctx.restore();
-      }
-    });
+  const boxProgresses = timing.boxes.map(t => 
+    spring({
+      frame: frame - t,
+      fps,
+      config: { damping: 12, mass: 1, stiffness: 120 }
+    })
+  );
 
-    // Draw sketch boxes for each content item
-    boxPositions.forEach((pos, i) => {
-      if (progress.boxes[i] > 0) {
-        ctx.save();
-        ctx.globalAlpha = progress.boxes[i];
-        
-        drawSketchRect(
-          rc,
-          pos.x,
-          pos.y,
-          300,
-          180,
-          {
-            fill: colors.board,
-            stroke: colors.ink,
-            strokeWidth: 3,
-            roughness: 1.2,
-            fillStyle: 'solid'
-          }
-        );
-        
-        ctx.restore();
-      }
-    });
+  const iconProgresses = timing.icons.map(t => 
+    spring({
+      frame: frame - t,
+      fps,
+      config: { damping: 15, mass: 1, stiffness: 100 }
+    })
+  );
 
-    // Draw decorative circles for highlights
-    const highlightPositions = [
-      { x: 320, y: 350 },
-      { x: 720, y: 350 },
-      { x: 1120, y: 350 },
-      { x: 1520, y: 350 }
-    ];
+  const connectorProgresses = timing.connectors.map(t => 
+    interpolate(
+      frame,
+      [t, t + 20],
+      [0, 1],
+      { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+    )
+  );
 
-    highlightPositions.forEach((pos, i) => {
-      if (progress.highlights[i]?.opacity > 0) {
-        ctx.save();
-        ctx.globalAlpha = progress.highlights[i].opacity * 0.3;
-        
-        drawSketchCircle(
-          rc,
-          pos.x,
-          pos.y,
-          80,
-          {
-            fill: colors.highlight,
-            stroke: 'none',
-            fillStyle: 'solid',
-            roughness: 2
-          }
-        );
-        
-        ctx.restore();
-      }
-    });
+  const highlightProgresses = timing.highlights.map(t => 
+    interpolate(
+      frame,
+      [t, t + 30, t + 60],
+      [0, 1, 0],
+      { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+    )
+  );
 
-  }, [frame, progress, colors]);
+  const conclusionProgress = spring({
+    frame: frame - timing.conclusion,
+    fps,
+    config: { damping: 15, mass: 1, stiffness: 100 }
+  });
+
+  const conclusionScale = spring({
+    frame: frame - timing.conclusionScale,
+    fps,
+    config: { damping: 10, mass: 1, stiffness: 150 }
+  });
+
+  // Continuous subtle pulse for main icon (after it appears)
+  const iconPulse = mainIconProgress > 0 ? 1 + Math.sin(frame * 0.05) * 0.05 : 1;
 
   return (
     <div style={{
@@ -187,22 +127,7 @@ export const WhiteboardTEDEnhanced = ({ scene }) => {
       fontFamily: fonts.body.family,
       overflow: 'hidden'
     }}>
-      {/* Canvas for sketch elements */}
-      <canvas
-        ref={canvasRef}
-        width={1920}
-        height={1080}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          pointerEvents: 'none'
-        }}
-      />
-
-      {/* Main Content */}
+      {/* Main Content Container */}
       <div style={{
         position: 'relative',
         width: '100%',
@@ -211,174 +136,224 @@ export const WhiteboardTEDEnhanced = ({ scene }) => {
       }}>
         
         {/* Title Section */}
-        <div style={{
-          ...progress.title,
-          textAlign: 'center',
-          marginBottom: 20
-        }}>
-          <h1 style={{
-            fontFamily: fonts.title.family,
-            fontSize: fonts.title.size,
-            fontWeight: fonts.title.weight,
-            color: colors.ink,
-            margin: 0,
-            textShadow: '3px 3px 0px rgba(0,0,0,0.1)'
+        {titleProgress > 0 && (
+          <div style={{
+            textAlign: 'center',
+            marginBottom: 20,
+            opacity: titleProgress,
+            transform: `translateY(${(1 - titleProgress) * -20}px)`
           }}>
-            {scene.fill.texts.title}
-          </h1>
-        </div>
+            <h1 style={{
+              fontFamily: fonts.title.family,
+              fontSize: fonts.title.size,
+              fontWeight: fonts.title.weight,
+              color: colors.ink,
+              margin: 0,
+              textShadow: '2px 2px 4px rgba(0,0,0,0.1)'
+            }}>
+              {scene.fill.texts.title}
+            </h1>
+          </div>
+        )}
 
         {/* Subtitle */}
-        <div style={{
-          ...progress.subtitle,
-          textAlign: 'center',
-          marginBottom: 50
-        }}>
-          <h2 style={{
-            fontFamily: fonts.subtitle.family,
-            fontSize: fonts.subtitle.size,
-            fontWeight: fonts.subtitle.weight,
-            color: colors.accent,
-            margin: 0
+        {subtitleProgress > 0 && (
+          <div style={{
+            textAlign: 'center',
+            marginBottom: 60,
+            opacity: subtitleProgress,
+            transform: `translateY(${(1 - subtitleProgress) * -20}px)`
           }}>
-            {scene.fill.texts.subtitle}
-          </h2>
-        </div>
+            <h2 style={{
+              fontFamily: fonts.subtitle.family,
+              fontSize: fonts.subtitle.size,
+              fontWeight: fonts.subtitle.weight,
+              color: colors.accent,
+              margin: 0
+            }}>
+              {scene.fill.texts.subtitle}
+            </h2>
+          </div>
+        )}
 
         {/* Main Icon/Visual */}
-        {progress.mainIcon > 0 && (
+        {mainIconProgress > 0 && (
           <div style={{
             position: 'absolute',
-            top: 200,
+            top: 240,
             left: '50%',
-            transform: `translateX(-50%) scale(${progress.mainIcon * iconPulse})`,
-            opacity: Math.min(progress.mainIcon, 1)
+            transform: `translateX(-50%) scale(${mainIconProgress * iconPulse})`,
+            opacity: Math.min(mainIconProgress, 1),
+            transition: 'transform 0.1s ease-out'
           }}>
-            <IconCircle
-              icon="💡"
-              size={100}
-              backgroundColor={colors.accent}
-              color="#ffffff"
-              animated={true}
-              frame={frame}
-            />
+            <div style={{
+              width: 100,
+              height: 100,
+              borderRadius: '50%',
+              backgroundColor: colors.accent,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 50,
+              boxShadow: '0 8px 20px rgba(0,0,0,0.2)'
+            }}>
+              💡
+            </div>
           </div>
         )}
 
         {/* Content Boxes Section */}
         <div style={{
           position: 'absolute',
-          top: 350,
-          left: 80,
-          right: 80,
+          top: 400,
+          left: 100,
+          right: 100,
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'flex-start'
+          alignItems: 'flex-start',
+          gap: 30
         }}>
           {['point1', 'point2', 'point3', 'point4'].map((key, i) => (
             <div
               key={key}
               style={{
-                width: 300,
-                position: 'relative',
-                ...progress.boxes[i] && {
-                  opacity: progress.boxes[i],
-                  transform: `translateY(${(1 - progress.boxes[i]) * 30}px)`
-                }
+                flex: 1,
+                position: 'relative'
               }}
             >
-              {/* Number Badge */}
-              <div style={{
-                position: 'absolute',
-                top: -20,
-                left: 20,
-                zIndex: 10,
-                transform: progress.boxes[i] > 0.5 ? 'scale(1)' : 'scale(0)'
-              }}>
-                <NumberBadge
-                  number={i + 1}
-                  size={50}
-                  backgroundColor={colors.accent}
-                  color="#ffffff"
-                />
-              </div>
-
-              {/* Content */}
-              <div style={{
-                padding: '50px 30px 30px',
-                height: 180,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                position: 'relative',
-                zIndex: 1
-              }}>
-                {/* Icon */}
-                {scene.fill.images?.[`icon${i + 1}`] && (
-                  <img
-                    src={scene.fill.images[`icon${i + 1}`]}
-                    alt={`Icon ${i + 1}`}
-                    style={{
-                      width: 60,
-                      height: 60,
-                      marginBottom: 15,
-                      opacity: progress.boxes[i]
-                    }}
-                  />
-                )}
-                
-                {/* Text */}
-                <p style={{
-                  fontFamily: fonts.body.family,
-                  fontSize: fonts.body.size,
-                  color: colors.ink,
-                  textAlign: 'center',
-                  margin: 0,
-                  lineHeight: 1.4
+              {/* Box */}
+              {boxProgresses[i] > 0 && (
+                <div style={{
+                  backgroundColor: colors.board,
+                  border: `3px solid ${colors.ink}`,
+                  borderRadius: 12,
+                  padding: '30px 20px',
+                  minHeight: 200,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 20,
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  opacity: boxProgresses[i],
+                  transform: `translateY(${(1 - boxProgresses[i]) * 30}px)`,
+                  position: 'relative'
                 }}>
-                  {scene.fill.texts[key]}
-                </p>
-              </div>
+                  {/* Number Badge */}
+                  <div style={{
+                    position: 'absolute',
+                    top: -25,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    zIndex: 10
+                  }}>
+                    <NumberBadge
+                      number={i + 1}
+                      size={50}
+                      backgroundColor={colors.accent}
+                      color="#ffffff"
+                    />
+                  </div>
 
-              {/* Highlight Effect */}
-              {progress.highlights[i]?.opacity > 0 && (
+                  {/* Icon */}
+                  {iconProgresses[i] > 0 && scene.fill.images?.[`icon${i + 1}`] && (
+                    <img
+                      src={scene.fill.images[`icon${i + 1}`]}
+                      alt={`Icon ${i + 1}`}
+                      style={{
+                        width: 60,
+                        height: 60,
+                        opacity: iconProgresses[i],
+                        transform: `scale(${iconProgresses[i]})`
+                      }}
+                    />
+                  )}
+                  
+                  {/* Text */}
+                  <p style={{
+                    fontFamily: fonts.body.family,
+                    fontSize: fonts.body.size,
+                    color: colors.ink,
+                    textAlign: 'center',
+                    margin: 0,
+                    lineHeight: 1.4,
+                    wordWrap: 'break-word',
+                    maxWidth: '100%'
+                  }}>
+                    {scene.fill.texts[key]}
+                  </p>
+
+                  {/* Highlight Effect */}
+                  {highlightProgresses[i] > 0 && (
+                    <div style={{
+                      position: 'absolute',
+                      top: -6,
+                      left: -6,
+                      right: -6,
+                      bottom: -6,
+                      border: `6px solid ${colors.highlight}`,
+                      borderRadius: 16,
+                      pointerEvents: 'none',
+                      opacity: highlightProgresses[i],
+                      boxShadow: `0 0 20px ${colors.highlight}`
+                    }} />
+                  )}
+                </div>
+              )}
+
+              {/* Connector Arrow */}
+              {i < 3 && connectorProgresses[i] > 0 && (
                 <div style={{
                   position: 'absolute',
-                  top: -10,
-                  left: -10,
-                  right: -10,
-                  bottom: -10,
-                  border: `4px solid ${colors.highlight}`,
-                  borderRadius: 8,
-                  pointerEvents: 'none',
-                  ...progress.highlights[i]
-                }} />
+                  top: 120,
+                  right: -40,
+                  width: 50,
+                  height: 4,
+                  backgroundColor: colors.accent,
+                  transformOrigin: 'left center',
+                  transform: `scaleX(${connectorProgresses[i]})`,
+                  zIndex: 5
+                }}>
+                  {/* Arrow head */}
+                  {connectorProgresses[i] > 0.8 && (
+                    <div style={{
+                      position: 'absolute',
+                      right: -8,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      width: 0,
+                      height: 0,
+                      borderLeft: `12px solid ${colors.accent}`,
+                      borderTop: '8px solid transparent',
+                      borderBottom: '8px solid transparent'
+                    }} />
+                  )}
+                </div>
               )}
             </div>
           ))}
         </div>
 
         {/* Conclusion/Key Takeaway */}
-        {progress.conclusion.opacity > 0 && (
+        {conclusionProgress > 0 && (
           <div style={{
             position: 'absolute',
             bottom: 100,
             left: '50%',
-            transform: 'translateX(-50%)',
-            ...progress.conclusion
+            transform: `translateX(-50%) scale(${Math.min(conclusionScale, 1)})`,
+            opacity: conclusionProgress
           }}>
             <div style={{
               backgroundColor: colors.support,
               color: '#ffffff',
-              padding: '25px 50px',
+              padding: '25px 60px',
               borderRadius: 50,
               fontFamily: fonts.subtitle.family,
-              fontSize: 38,
+              fontSize: 42,
               fontWeight: 600,
               textAlign: 'center',
-              boxShadow: '6px 6px 0px rgba(0,0,0,0.15)',
-              transform: `rotate(-2deg) scale(${pulse(frame, 0.03, 0.04)})`
+              boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+              border: `4px solid ${colors.accent}`
             }}>
               {scene.fill.texts.conclusion || '✨ Key Insight ✨'}
             </div>
@@ -390,9 +365,9 @@ export const WhiteboardTEDEnhanced = ({ scene }) => {
           position: 'absolute',
           bottom: 40,
           right: 60,
-          fontSize: 18,
+          fontSize: 16,
           color: colors.ink,
-          opacity: 0.6,
+          opacity: 0.5,
           fontFamily: fonts.label.family
         }}>
           {scene.meta?.title || 'TED-style Explainer'}
