@@ -3,20 +3,24 @@ import { Player } from '@remotion/player';
 import { TwoColumnCompare } from './templates/TwoColumnCompare';
 import { TimelineSteps } from './templates/TimelineSteps';
 import { WhiteboardTEDv2 } from './templates/WhiteboardTEDv2';
+import { WhiteboardTEDEnhanced } from './templates/WhiteboardTEDEnhanced';
 
 // Import sample scenes
 import economyScene from './scenes/economy_currency.json';
 import lawsScene from './scenes/laws_compare.json';
 import cultureScene from './scenes/culture_ritual.json';
+import ideasSpreadScene from './scenes/ideas_spread.json';
 
 const templateMap = {
   'whiteboard_ted_v2': WhiteboardTEDv2,
+  'whiteboard_ted_enhanced': WhiteboardTEDEnhanced,
   'two_column_v1': TwoColumnCompare,
   'timeline_v1': TimelineSteps
 };
 
 const sampleScenes = {
   'whiteboard_ted_v2': economyScene,
+  'whiteboard_ted_enhanced': ideasSpreadScene,
   'two_column_v1': lawsScene,
   'timeline_v1': cultureScene
 };
@@ -97,9 +101,9 @@ const validateScene = (scene) => {
 };
 
 export default function App() {
-  const [selectedTemplate, setSelectedTemplate] = useState('whiteboard_ted_v2');
-  const [sceneJSON, setSceneJSON] = useState(JSON.stringify(economyScene, null, 2));
-  const [currentScene, setCurrentScene] = useState(economyScene);
+  const [selectedTemplate, setSelectedTemplate] = useState('whiteboard_ted_enhanced');
+  const [sceneJSON, setSceneJSON] = useState(JSON.stringify(ideasSpreadScene, null, 2));
+  const [currentScene, setCurrentScene] = useState(ideasSpreadScene);
   const [validationErrors, setValidationErrors] = useState([]);
   const [jsonError, setJsonError] = useState(null);
   
@@ -131,7 +135,7 @@ export default function App() {
     }
   };
   
-  const Component = templateMap[currentScene.template_id] || WhiteboardTEDv2;
+  const Component = templateMap[currentScene.template_id] || WhiteboardTEDEnhanced;
 
   // Debug helpers: log current scene + component so we can inspect in browser console
   // Toggle "Debug render" below to render the component directly (no iframe) for troubleshooting.
@@ -202,7 +206,8 @@ export default function App() {
             outline: 'none'
           }}
         >
-          <option value="whiteboard_ted_v2">Whiteboard TED (Economy)</option>
+          <option value="whiteboard_ted_enhanced">✨ Whiteboard TED Enhanced (How Ideas Spread)</option>
+          <option value="whiteboard_ted_v2">Whiteboard TED v2 (Economy)</option>
           <option value="two_column_v1">Two-Column Compare (Laws)</option>
           <option value="timeline_v1">Timeline / Process Steps (Culture)</option>
         </select>
@@ -390,21 +395,8 @@ export default function App() {
                 padding: 12, 
                 background: '#fff' 
               }}>
-                <WhiteboardTEDView 
-                  normalized={{
-                    title: currentScene.fill?.texts?.title || currentScene.title,
-                    subtitle: currentScene.fill?.texts?.subtitle,
-                    content: Object.entries(currentScene.fill?.texts || {})
-                      .filter(([key]) => /^b\d+$/.test(key))
-                      .map(([_, value]) => ({ title: value })),
-                    images: currentScene.fill?.images || {},
-                    colors: currentScene.style_tokens?.colors || {}
-                  }}
-                  safeFrame={0}
-                  safeFps={currentScene.fps}
-                  titleProgress={1}
-                  contentProgress={1}
-                  itemProgress={[]}
+                <Component 
+                  scene={currentScene}
                 />
               </div>
             )}
