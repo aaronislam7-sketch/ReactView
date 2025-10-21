@@ -1,6 +1,22 @@
 {
+  "schema_version": "3.0",
   "template_id": "apply_compare",
-  "duration": 30,
+  "pillar": "apply",
+  "duration_s": 30,
+  "fps": 30,
+  "meta": {
+    "title": "Study Habits Transformation",
+    "description": "Before/after comparison showing how active recall transforms study outcomes",
+    "tags": ["pedagogy:apply", "topic:study-skills", "format:comparison"],
+    "difficulty": "beginner",
+    "tone": "motivational"
+  },
+  "layout": {
+    "canvas": {
+      "w": 1920,
+      "h": 1080
+    }
+  },
   "fill": {
     "texts": {
       "title": "🔄 Transform Your Study Habits",
@@ -39,5 +55,6 @@
         "weight": 400
       }
     }
-  }
+  },
+  "timeline": []
 }

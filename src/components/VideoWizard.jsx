@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { Player } from '@remotion/player';
 import { HookTemplate } from '../templates/HookTemplate';
+import { HookStoryTemplate } from '../templates/HookStoryTemplate';
 import { ExplainTemplate } from '../templates/ExplainTemplate';
+import { ExplainTimelineTemplate } from '../templates/ExplainTimelineTemplate';
 import { ApplyTemplate } from '../templates/ApplyTemplate';
+import { ApplyCompareTemplate } from '../templates/ApplyCompareTemplate';
 import { ReflectTemplate } from '../templates/ReflectTemplate';
+import { ReflectMindMapTemplate } from '../templates/ReflectMindMapTemplate';
 import { MultiSceneVideo } from './MultiSceneVideo';
 
 // Import default scenes
@@ -12,13 +16,29 @@ import explainScene from '../scenes/explain_growth_mindset.json';
 import applyScene from '../scenes/apply_growth_mindset.json';
 import reflectScene from '../scenes/reflect_growth_mindset.json';
 
+// Template mapping - supports all template variants
+const TEMPLATE_MAP = {
+  'hook': HookTemplate,
+  'hook_story': HookStoryTemplate,
+  'explain': ExplainTemplate,
+  'explain_timeline': ExplainTimelineTemplate,
+  'apply': ApplyTemplate,
+  'apply_compare': ApplyCompareTemplate,
+  'reflect': ReflectTemplate,
+  'reflect_mindmap': ReflectMindMapTemplate
+};
+
+// Helper to get template component from template_id
+const getTemplateComponent = (templateId) => {
+  return TEMPLATE_MAP[templateId] || TEMPLATE_MAP[templateId?.split('_')[0]] || HookTemplate;
+};
+
 const PILLAR_INFO = {
   hook: {
     title: 'Hook',
     icon: '🎯',
     description: 'Grab attention and spark curiosity',
     color: '#e74c3c',
-    template: HookTemplate,
     defaultScene: hookScene
   },
   explain: {
@@ -26,7 +46,6 @@ const PILLAR_INFO = {
     icon: '📚',
     description: 'Teach core concepts clearly',
     color: '#3498db',
-    template: ExplainTemplate,
     defaultScene: explainScene
   },
   apply: {
@@ -34,7 +53,6 @@ const PILLAR_INFO = {
     icon: '🛠️',
     description: 'Practice and implement',
     color: '#86BC25',
-    template: ApplyTemplate,
     defaultScene: applyScene
   },
   reflect: {
@@ -42,7 +60,6 @@ const PILLAR_INFO = {
     icon: '🤔',
     description: 'Consolidate and plan ahead',
     color: '#732282',
-    template: ReflectTemplate,
     defaultScene: reflectScene
   }
 };
@@ -95,11 +112,38 @@ export const VideoWizard = () => {
     try {
       const parsed = JSON.parse(editingJSON[pillar]);
       
+      // Normalize attributes for consistency
+      if (!parsed.duration_s && parsed.duration) {
+        parsed.duration_s = parsed.duration;
+      }
+      if (!parsed.fps) parsed.fps = 30;
+      if (!parsed.layout) {
+        parsed.layout = { canvas: { w: 1920, h: 1080 } };
+      }
+      if (!parsed.meta) {
+        parsed.meta = {
+          title: parsed.fill?.texts?.title || `${pillar} scene`,
+          description: '',
+          tags: [],
+          difficulty: 'beginner',
+          tone: 'engaging'
+        };
+      }
+      if (!parsed.timeline) {
+        parsed.timeline = [];
+      }
+      
       // Basic validation
       const errors = [];
       if (!parsed.template_id) errors.push('Missing template_id');
-      if (!parsed.duration_s) errors.push('Missing duration_s');
+      if (!parsed.duration_s) errors.push('Missing duration_s (or duration)');
       if (!parsed.fill) errors.push('Missing fill data');
+      
+      // Validate that template_id is recognized
+      const templateComponent = getTemplateComponent(parsed.template_id);
+      if (!templateComponent) {
+        errors.push(`Unknown template_id: ${parsed.template_id}`);
+      }
       
       if (errors.length > 0) {
         setValidationErrors(prev => ({ ...prev, [pillar]: errors }));
@@ -627,11 +671,11 @@ export const VideoWizard = () => {
                     borderRadius: 8,
                     overflow: 'hidden'
                   }}>
-                    <Player
-                      component={pillarInfo.template}
-                      inputProps={{ scene: scenes[currentPillar] }}
-                      durationInFrames={scenes[currentPillar].duration_s * scenes[currentPillar].fps}
-                      fps={scenes[currentPillar].fps}
+                  <Player
+                    component={getTemplateComponent(scenes[currentPillar].template_id)}
+                    inputProps={{ scene: scenes[currentPillar] }}
+                    durationInFrames={scenes[currentPillar].duration_s * scenes[currentPillar].fps}
+                    fps={scenes[currentPillar].fps}
                       compositionWidth={scenes[currentPillar].layout.canvas.w}
                       compositionHeight={scenes[currentPillar].layout.canvas.h}
                       controls

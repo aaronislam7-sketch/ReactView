@@ -1,6 +1,22 @@
 {
+  "schema_version": "3.0",
   "template_id": "reflect_mindmap",
-  "duration": 30,
+  "pillar": "reflect",
+  "duration_s": 30,
+  "fps": 30,
+  "meta": {
+    "title": "Learning Styles Mind Map",
+    "description": "Mind map reflection connecting different learning modalities",
+    "tags": ["pedagogy:reflect", "topic:metacognition", "format:mindmap"],
+    "difficulty": "intermediate",
+    "tone": "thoughtful"
+  },
+  "layout": {
+    "canvas": {
+      "w": 1920,
+      "h": 1080
+    }
+  },
   "fill": {
     "texts": {
       "title": "🧠 Your Learning Web",
@@ -45,5 +61,6 @@
         "weight": 600
       }
     }
-  }
+  },
+  "timeline": []
 }

@@ -1,6 +1,22 @@
 {
+  "schema_version": "3.0",
   "template_id": "explain_timeline",
-  "duration": 30,
+  "pillar": "explain",
+  "duration_s": 30,
+  "fps": 30,
+  "meta": {
+    "title": "Photosynthesis Timeline",
+    "description": "Sequential timeline explaining the 5-phase photosynthesis process",
+    "tags": ["pedagogy:explain", "topic:biology", "format:timeline"],
+    "difficulty": "intermediate",
+    "tone": "educational"
+  },
+  "layout": {
+    "canvas": {
+      "w": 1920,
+      "h": 1080
+    }
+  },
   "fill": {
     "texts": {
       "title": "⏱️ How Photosynthesis Works",
@@ -45,5 +61,6 @@
         "weight": 400
       }
     }
-  }
+  },
+  "timeline": []
 }

@@ -114,10 +114,28 @@ You MUST use `imageId` references from our library. DO NOT create URLs.
 
 ### 3. JSON Structure & Schema
 
+**IMPORTANT**: All scenes MUST include these standardized attributes:
+
 ```json
 {
+  "schema_version": "3.0",
   "template_id": "hook|hook_story|explain|explain_timeline|apply|apply_compare|reflect|reflect_mindmap",
-  "duration": 30,
+  "pillar": "hook|explain|apply|reflect",
+  "duration_s": 30,
+  "fps": 30,
+  "meta": {
+    "title": "Scene Title",
+    "description": "Brief description of scene purpose",
+    "tags": ["pedagogy:hook", "topic:your-topic", "format:story"],
+    "difficulty": "beginner|intermediate|advanced",
+    "tone": "engaging|educational|inspiring|thoughtful|motivational"
+  },
+  "layout": {
+    "canvas": {
+      "w": 1920,
+      "h": 1080
+    }
+  },
   "fill": {
     "texts": {
       // Template-specific text fields (see above)
@@ -151,9 +169,22 @@ You MUST use `imageId` references from our library. DO NOT create URLs.
         "weight": 400
       }
     }
-  }
+  },
+  "timeline": []
 }
 ```
+
+**Required Attributes** (MUST be present in every scene):
+- `schema_version` - Always "3.0"
+- `template_id` - Which template to use
+- `pillar` - Which pedagogical pillar (hook/explain/apply/reflect)
+- `duration_s` - Duration in seconds (use `duration_s`, NOT `duration`)
+- `fps` - Frames per second (always 30)
+- `meta` - Scene metadata (title, description, tags, difficulty, tone)
+- `layout` - Canvas dimensions (always 1920x1080)
+- `fill` - Content (texts and images)
+- `style_tokens` - Visual styling (colors and fonts)
+- `timeline` - Animation timeline (can be empty array)
 
 ---
 
@@ -246,8 +277,24 @@ You MUST use `imageId` references from our library. DO NOT create URLs.
 **Output**:
 ```json
 {
+  "schema_version": "3.0",
   "template_id": "hook",
-  "duration": 30,
+  "pillar": "hook",
+  "duration_s": 30,
+  "fps": 30,
+  "meta": {
+    "title": "Water Cycle Hook",
+    "description": "Engaging hook about where rain comes from",
+    "tags": ["pedagogy:hook", "topic:water-cycle", "format:question"],
+    "difficulty": "beginner",
+    "tone": "engaging"
+  },
+  "layout": {
+    "canvas": {
+      "w": 1920,
+      "h": 1080
+    }
+  },
   "fill": {
     "texts": {
       "question": "💧 Where does rain actually come from?",
@@ -271,7 +318,8 @@ You MUST use `imageId` references from our library. DO NOT create URLs.
       "ink": "#2d3436",
       "highlight": "#4FC3F7"
     }
-  }
+  },
+  "timeline": []
 }
 ```
 
@@ -280,8 +328,24 @@ You MUST use `imageId` references from our library. DO NOT create URLs.
 **Output**:
 ```json
 {
+  "schema_version": "3.0",
   "template_id": "explain",
-  "duration": 30,
+  "pillar": "explain",
+  "duration_s": 30,
+  "fps": 30,
+  "meta": {
+    "title": "Active Listening Explained",
+    "description": "4-step breakdown of active listening skills",
+    "tags": ["pedagogy:explain", "topic:communication", "format:steps"],
+    "difficulty": "beginner",
+    "tone": "educational"
+  },
+  "layout": {
+    "canvas": {
+      "w": 1920,
+      "h": 1080
+    }
+  },
   "fill": {
     "texts": {
       "title": "🎧 Master Active Listening",
@@ -306,7 +370,8 @@ You MUST use `imageId` references from our library. DO NOT create URLs.
       "support": "#e74c3c",
       "ink": "#2d3436"
     }
-  }
+  },
+  "timeline": []
 }
 ```
 
@@ -315,8 +380,24 @@ You MUST use `imageId` references from our library. DO NOT create URLs.
 **Output**:
 ```json
 {
+  "schema_version": "3.0",
   "template_id": "apply_compare",
-  "duration": 30,
+  "pillar": "apply",
+  "duration_s": 30,
+  "fps": 30,
+  "meta": {
+    "title": "Growth Mindset Application",
+    "description": "Before/after comparison of mindset transformation",
+    "tags": ["pedagogy:apply", "topic:growth-mindset", "format:comparison"],
+    "difficulty": "beginner",
+    "tone": "motivational"
+  },
+  "layout": {
+    "canvas": {
+      "w": 1920,
+      "h": 1080
+    }
+  },
   "fill": {
     "texts": {
       "title": "🔄 From Fixed to Growth Mindset",
@@ -343,7 +424,8 @@ You MUST use `imageId` references from our library. DO NOT create URLs.
       "after": "#27ae60",
       "ink": "#2d3436"
     }
-  }
+  },
+  "timeline": []
 }
 ```
 
@@ -359,6 +441,8 @@ You MUST use `imageId` references from our library. DO NOT create URLs.
 6. ❌ Generic stock phrases ("In today's world...")
 7. ❌ Abstract concepts without concrete examples
 8. ❌ Leaving `style_tokens` empty (always customize colors)
+9. ❌ Using `duration` instead of `duration_s`
+10. ❌ Missing `fps`, `layout`, `meta`, or `timeline` attributes
 
 ---
 
