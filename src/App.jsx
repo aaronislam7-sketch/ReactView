@@ -5,6 +5,8 @@ import { TwoColumnCompare } from '../legacy/templates/TwoColumnCompare';
 import { TimelineSteps } from '../legacy/templates/TimelineSteps';
 import { WhiteboardTEDv2 } from '../legacy/templates/WhiteboardTEDv2';
 import { WhiteboardTEDEnhanced } from '../legacy/templates/WhiteboardTEDEnhanced';
+import {StyleTokensProvider} from './sdk/StyleTokensProvider';
+import {SceneSchema} from './sdk/scene.schema';
 
 // Import sample scenes (legacy mode)
 import economyScene from '../legacy/scenes/economy_currency.json';
