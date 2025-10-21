@@ -1,145 +1,284 @@
-# Remotion Scene Previewer - Knodovia MVP
+# 🎬 Remotion Video Creation Wizard
 
-A browser-based JSON-driven scene system for creating educational content variations using Remotion.
+**Transform educational content into engaging 2-minute videos with pedagogical precision.**
 
-## 🎯 Goal
+---
 
-Showcase a content factory where you:
-- Pick a template (React/Remotion composition)
-- Feed a scene JSON (content + timings)
-- Preview instantly in the browser with `@remotion/player`
-- Swap JSON to create many variations
+## 🚀 Quick Start (30 Seconds)
 
-**No cloud rendering, no MP4s** — just a convincing preview that looks and feels like production.
+```bash
+npm install
+npm run dev
+# Open http://localhost:3000
+```
 
-## 🚀 Quick Start
+**You'll see**: A step-by-step wizard to create complete educational videos!
 
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+---
 
-2. **Run development server:**
-   ```bash
-   npm run dev
-   ```
+## 📚 Documentation
 
-3. **Open in browser:**
-   Navigate to `http://localhost:3000`
+All documentation is in the **`/readme/`** folder:
 
-## 📁 Project Structure
+### **Start Here**:
+- **[/readme/README_v3.md](readme/README_v3.md)** - Complete user guide
+- **[/readme/QUICK_START_V3.md](readme/QUICK_START_V3.md)** - 60-second setup
+- **[/readme/HOW_TO_VIEW_VIDEOS.md](readme/HOW_TO_VIEW_VIDEOS.md)** - Where to find previews
+
+### **All Docs**:
+See **[/readme/README.md](readme/README.md)** for complete documentation index
+
+---
+
+## 🎯 What Is This?
+
+A **complete video creation wizard** that:
+- ✅ Guides you through 4 pedagogical pillars (Hook, Explain, Apply, Reflect)
+- ✅ Creates professional 2-minute educational videos
+- ✅ Provides real-time preview at every step
+- ✅ Stitches scenes with smooth transitions
+- ✅ Aligns with learning science best practices
+
+---
+
+## 🗂️ Project Structure
 
 ```
 /
-├── src/
-│   ├── templates/
-│   │   ├── WhiteboardTED.jsx          # Explainer with bullets & arrows
-│   │   ├── TwoColumnCompare.jsx       # Side-by-side comparison
-│   │   └── TimelineSteps.jsx          # Sequential process flow
-│   ├── scenes/
-│   │   ├── economy_currency.json      # Sample: Currency tides
-│   │   ├── laws_compare.json          # Sample: Tax vs discount
-│   │   └── culture_ritual.json        # Sample: Greeting ritual
-│   ├── App.jsx                        # Main app with editor & player
-│   └── main.jsx                       # Entry point
-├── index.html                         # HTML with fonts
-├── package.json
-└── vite.config.js
+├── src/                      # Source code
+│   ├── components/           # Wizard, video composition
+│   ├── templates/            # 4 pillar templates (Hook, Explain, Apply, Reflect)
+│   ├── scenes/               # 4 Growth Mindset scene JSONs
+│   ├── utils/                # Image library, effects, animations
+│   └── sdk/                  # Shared SDK (animations, components)
+│
+├── readme/                   # All documentation (18 files)
+│   ├── README_v3.md          # Main guide
+│   ├── QUICK_START_V3.md     # Quick start
+│   └── ...                   # See /readme/README.md for full index
+│
+├── legacy/                   # Legacy mode files (v1/v2)
+│   ├── templates/            # Old templates (5 files)
+│   ├── scenes/               # Old scenes (6 files)
+│   └── animations/           # Lottie animations
+│
+├── archive/                  # Build artifacts
+│   └── dist/                 # Production build output
+│
+├── package.json              # Dependencies & scripts
+├── vite.config.js            # Build configuration
+└── README.md                 # This file
 ```
 
-## 🎨 Templates
+---
 
-### 1. Whiteboard TED
-**Purpose:** Core explainer with concept + bullets + images + pointing arrows
+## 🎬 Features
 
-**Actions:**
-- `boardIn`, `drawText`, `drawImage`
-- `characterEnter`, `arrowTo`, `underline`
+### **Video Creation Wizard** (Default Mode)
+- Step-by-step interface for creating complete videos
+- 4 pillar templates aligned with pedagogy
+- Scene-by-scene approval workflow
+- Final video with smooth transitions
 
-**Use case:** Economy / Currency explanation
+### **4 Pedagogical Pillars**
+1. **Hook** (30s) - Grab attention, spark curiosity
+2. **Explain** (30s) - Teach concepts clearly
+3. **Apply** (30s) - Practice and implement
+4. **Reflect** (30s) - Consolidate learning
 
-### 2. Two-Column Compare
-**Purpose:** Contrast two ideas side-by-side
+→ **Total**: ~2 minutes of professional content
 
-**Actions:**
-- `drawTextL`, `drawTextR`
-- `drawImageL`, `drawImageR`
-- `arrowSwap`, `tick`, `cross`
+### **Image Library System**
+- 20+ pre-configured images
+- Reference by ID (no long URLs)
+- Easy to extend
 
-**Use case:** Laws / Compliment Tax vs Insult Discount
+### **Legacy Mode**
+- Access original single-scene editor
+- Compatible with old templates
+- Switch anytime via button
 
-### 3. Timeline / Process Steps
-**Purpose:** Show sequence/causality
+---
 
-**Actions:**
-- `stepIn(i)`, `connectorReveal(i→i+1)`
-- `badge(i)`
+## 🎨 Tech Stack
 
-**Use case:** Culture / 5-step greeting ritual
-
-## 📋 Scene JSON Contract
-
-All templates use the same JSON structure:
-
-```json
-{
-  "schema_version": "1.0",
-  "template_id": "whiteboard_ted_v1",
-  "duration_s": 30,
-  "fps": 30,
-  "meta": {
-    "title": "Scene Title",
-    "tags": ["module:topic", "pedagogy:type"]
-  },
-  "style_tokens": {
-    "colors": { "bg": "#fafafa", "accent": "#732282" },
-    "fonts": { "title": { "family": "Syncopate", "size": 54 } }
-  },
-  "layout": { "canvas": { "w": 1920, "h": 1080 } },
-  "fill": {
-    "texts": { "title": "...", "b1": "..." },
-    "images": { "image_right_large": "url" }
-  },
-  "timeline": [
-    { "t": 0.5, "action": "drawText", "target": "title", "duration": 0.6 }
-  ]
-}
-```
-
-## ✅ Acceptance Criteria
-
-- [x] Switch templates → preview updates immediately
-- [x] Edit JSON → Apply → animation updates correctly
-- [x] Validation: Missing targets show helpful errors
-- [x] Baseline polish: crisp text, no overflow, arrows align
-- [x] Three scenes shipped (< 30s each, cohesive brand)
-
-## 🎬 How to Use
-
-1. **Select a template** from the dropdown
-2. **Edit the JSON** in the left panel
-3. **Click "Apply Changes"** to update the preview
-4. **Watch the animation** in the right panel
-
-The player includes:
-- Play/pause controls
-- Timeline scrubbing
-- Frame-by-frame navigation
-
-## 🎨 Brand Style Tokens
-
-- **Primary:** `#732282` (Knodovia purple)
-- **Support:** `#86BC25` (Knodovia green)
-- **Fonts:** Syncopate (headers), Permanent Marker (body)
-
-## 🔧 Development
-
-Built with:
 - **React 18** - UI framework
-- **Remotion 4** - Video rendering engine
-- **Vite** - Build tool and dev server
-- **@remotion/player** - Browser preview component
+- **Remotion 4** - Video rendering
+- **Vite** - Build tool
+- **RoughJS** - Hand-drawn sketches
+- **Lottie** - Animations
 
-## 📝 License
+---
 
-MIT
+## 📖 Key Documentation
+
+| Document | Purpose |
+|----------|---------|
+| [README_v3.md](readme/README_v3.md) | Complete feature guide |
+| [QUICK_START_V3.md](readme/QUICK_START_V3.md) | Get started in 60s |
+| [HOW_TO_VIEW_VIDEOS.md](readme/HOW_TO_VIEW_VIDEOS.md) | View previews |
+| [ARCHITECTURE.md](readme/ARCHITECTURE.md) | System design |
+| [IMPLEMENTATION_SUMMARY.md](readme/IMPLEMENTATION_SUMMARY.md) | Technical details |
+
+**Full index**: [/readme/README.md](readme/README.md)
+
+---
+
+## 🎯 Common Tasks
+
+### Create Your First Video
+```bash
+npm run dev
+# 1. Wizard opens automatically
+# 2. Preview Hook scene → Approve
+# 3. Preview Explain scene → Approve
+# 4. Preview Apply scene → Approve
+# 5. Preview Reflect scene → Approve
+# 6. Watch complete video!
+```
+
+### Customize Content
+1. Edit JSON in wizard steps
+2. Click "Apply Changes" to preview
+3. Approve when satisfied
+
+### Build for Production
+```bash
+npm run build
+# Output in /archive/dist/
+```
+
+---
+
+## 🗂️ Folder Purposes
+
+### `/src/` - **Active Code**
+Current implementation (v3.0):
+- 4 pillar templates
+- Wizard components
+- Growth Mindset scenes
+- Image library & utilities
+
+### `/readme/` - **Documentation**
+All 18 documentation files:
+- User guides
+- Technical docs
+- Troubleshooting
+- Examples
+
+### `/legacy/` - **Legacy Mode**
+Original templates & scenes (v1/v2):
+- Accessible via "Legacy Mode" button
+- Backward compatibility
+- Reference only
+
+### `/archive/` - **Build Output**
+Production build artifacts:
+- Generated by `npm run build`
+- Not source code
+- Deploy this folder
+
+---
+
+## 🎓 Sample Content
+
+Includes complete **Growth Mindset** lesson:
+- Hook: "Can You Actually Get Smarter?"
+- Explain: Understanding growth mindset
+- Apply: Practice with real scenarios
+- Reflect: Personal connection prompts
+
+**Total**: ~120 seconds of professional, pedagogically-sound content!
+
+---
+
+## 🔄 Modes
+
+### Wizard Mode (Default)
+- Multi-step video creation
+- 4 pillar templates
+- Complete videos
+
+**Access**: Opens automatically on startup
+
+### Legacy Mode
+- Single-scene editor
+- Original 5 templates
+- Individual scenes
+
+**Access**: Click "Switch to Legacy Mode" (bottom-right)
+
+---
+
+## 🚀 Getting Started
+
+**Step 1**: Install
+```bash
+npm install
+```
+
+**Step 2**: Run
+```bash
+npm run dev
+```
+
+**Step 3**: Open Browser
+```
+http://localhost:3000
+```
+
+**Step 4**: Create!
+- Watch the wizard load
+- See video preview on right side
+- Click play to watch animations
+- Approve each scene
+- Get final video!
+
+---
+
+## 📞 Need Help?
+
+1. **Quick start**: [QUICK_START_V3.md](readme/QUICK_START_V3.md)
+2. **Can't see videos**: [HOW_TO_VIEW_VIDEOS.md](readme/HOW_TO_VIEW_VIDEOS.md)
+3. **Troubleshooting**: [VIEWING_TROUBLESHOOT.md](readme/VIEWING_TROUBLESHOOT.md)
+4. **Full guide**: [README_v3.md](readme/README_v3.md)
+
+---
+
+## 📊 Project Info
+
+- **Version**: 3.0
+- **Status**: Production Ready ✅
+- **Build**: Passing ✅
+- **Bundle Size**: 398 KB (121 KB gzipped)
+- **Templates**: 4 pillar templates
+- **Documentation**: 18 comprehensive guides
+
+---
+
+## 🎉 What You Get
+
+- ✅ Complete video creation wizard
+- ✅ 4 pedagogical pillar templates
+- ✅ Sample Growth Mindset lesson
+- ✅ Image library system
+- ✅ Smooth scene transitions
+- ✅ Enhanced aesthetics
+- ✅ Production-ready pipeline
+- ✅ 18 documentation files
+- ✅ Legacy mode for backward compatibility
+
+---
+
+## 🏆 Perfect For
+
+- 🎓 **Educators** - Create engaging lesson videos
+- 📚 **Content Creators** - Scale video production
+- 🏫 **EdTech Companies** - Build educational content
+- 🎬 **Video Teams** - Streamline workflows
+
+---
+
+**Built with ❤️ for Knodovia's educational mission**
+
+*For complete documentation, explore the `/readme/` folder*

@@ -5,11 +5,11 @@ import {
   springAnimation, 
   pulse, 
   staggerIn
-} from '../sdk/animations';
+} from '../../src/sdk/animations';
 import { 
   IconCircle, 
   NumberBadge
-} from '../sdk/components.jsx';
+} from '../../src/sdk/components.jsx';
 
 /**
  * Enhanced Whiteboard TED-style Template
