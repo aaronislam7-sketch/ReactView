@@ -23,10 +23,16 @@ export const ExplainTimelineTemplate = ({ scene }) => {
     line: '#95a5a6'
   };
 
-  const fonts = scene.style_tokens?.fonts || {
+  const defaultFonts = {
     title: { family: 'var(--kn-font-title)', size: 64, weight: 700 },
     milestone: { family: 'var(--kn-font-body)', size: 28, weight: 600 },
     body: { family: 'var(--kn-font-body)', size: 24, weight: 400 }
+  };
+  
+  const fonts = {
+    title: scene.style_tokens?.fonts?.title || defaultFonts.title,
+    milestone: scene.style_tokens?.fonts?.milestone || defaultFonts.milestone,
+    body: scene.style_tokens?.fonts?.body || defaultFonts.body
   };
 
   const images = resolveSceneImages(scene.fill?.images);

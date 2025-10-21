@@ -49,6 +49,11 @@
         "size": 64,
         "weight": 700
       },
+      "label": {
+        "family": "Cabin Sketch, cursive",
+        "size": 48,
+        "weight": 700
+      },
       "body": {
         "family": "Patrick Hand, cursive",
         "size": 28,

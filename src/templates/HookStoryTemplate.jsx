@@ -25,10 +25,16 @@ export const HookStoryTemplate = ({ scene }) => {
     highlight: 'var(--kn-highlight, #ff6b6b)'
   };
 
-  const fonts = scene.style_tokens?.fonts || {
+  const defaultFonts = {
     title: { family: 'var(--kn-font-title, "Cabin Sketch")', size: 72, weight: 700 },
     body: { family: 'var(--kn-font-body, "Patrick Hand")', size: 34, weight: 400 },
     story: { family: 'var(--kn-font-body, "Patrick Hand")', size: 38, weight: 400 }
+  };
+  
+  const fonts = {
+    title: scene.style_tokens?.fonts?.title || defaultFonts.title,
+    body: scene.style_tokens?.fonts?.body || defaultFonts.body,
+    story: scene.style_tokens?.fonts?.story || defaultFonts.story
   };
 
   const images = resolveSceneImages(scene.fill?.images);

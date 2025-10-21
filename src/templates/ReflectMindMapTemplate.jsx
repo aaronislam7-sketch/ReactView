@@ -26,11 +26,18 @@ export const ReflectMindMapTemplate = ({ scene }) => {
     line: '#95a5a6'
   };
 
-  const fonts = scene.style_tokens?.fonts || {
+  const defaultFonts = {
     title: { family: 'var(--kn-font-title)', size: 56, weight: 700 },
     center: { family: 'var(--kn-font-title)', size: 48, weight: 700 },
     branch: { family: 'var(--kn-font-body)', size: 26, weight: 600 },
     insight: { family: 'var(--kn-font-body)', size: 32, weight: 600 }
+  };
+  
+  const fonts = {
+    title: scene.style_tokens?.fonts?.title || defaultFonts.title,
+    center: scene.style_tokens?.fonts?.center || defaultFonts.center,
+    branch: scene.style_tokens?.fonts?.branch || defaultFonts.branch,
+    insight: scene.style_tokens?.fonts?.insight || defaultFonts.insight
   };
 
   const images = resolveSceneImages(scene.fill?.images);

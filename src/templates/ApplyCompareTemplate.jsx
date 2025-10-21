@@ -22,10 +22,16 @@ export const ApplyCompareTemplate = ({ scene }) => {
     divider: '#95a5a6'
   };
 
-  const fonts = scene.style_tokens?.fonts || {
+  const defaultFonts = {
     title: { family: 'var(--kn-font-title)', size: 64, weight: 700 },
     label: { family: 'var(--kn-font-title)', size: 48, weight: 700 },
     body: { family: 'var(--kn-font-body)', size: 28, weight: 400 }
+  };
+  
+  const fonts = {
+    title: scene.style_tokens?.fonts?.title || defaultFonts.title,
+    label: scene.style_tokens?.fonts?.label || defaultFonts.label,
+    body: scene.style_tokens?.fonts?.body || defaultFonts.body
   };
 
   const images = resolveSceneImages(scene.fill?.images);

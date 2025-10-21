@@ -55,6 +55,11 @@
         "size": 64,
         "weight": 700
       },
+      "milestone": {
+        "family": "Patrick Hand, cursive",
+        "size": 28,
+        "weight": 600
+      },
       "body": {
         "family": "Patrick Hand, cursive",
         "size": 24,

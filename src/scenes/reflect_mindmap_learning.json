@@ -55,9 +55,19 @@
         "size": 56,
         "weight": 700
       },
-      "body": {
+      "center": {
+        "family": "Cabin Sketch, cursive",
+        "size": 48,
+        "weight": 700
+      },
+      "branch": {
         "family": "Patrick Hand, cursive",
         "size": 26,
+        "weight": 600
+      },
+      "insight": {
+        "family": "Patrick Hand, cursive",
+        "size": 32,
         "weight": 600
       }
     }

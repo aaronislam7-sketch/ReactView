@@ -16,37 +16,45 @@ We have **8 templates** organized by **4 pedagogical pillars**:
 - **HookTemplate** - Question-driven with surprising facts
   - Uses: `question`, `fact1`, `fact2`, `fact3`, `challenge`
   - Style: Bold, question-centric, visual impact
+  - Fonts Required: `title`, `body`, `question`
   
 - **HookStoryTemplate** - Narrative-driven storytelling
   - Uses: `opening`, `character`, `conflict`, `moment1`, `moment2`, `moment3`, `hook`
   - Style: Story arc, emotional journey, relatable scenarios
+  - Fonts Required: `title`, `body`, `story`
 
 #### **EXPLAIN** (Teach Concepts - 30s)
 - **ExplainTemplate** - 4-step structured breakdown
   - Uses: `title`, `concept`, `step1`, `step2`, `step3`, `step4`, `summary`
   - Style: Clear boxes, numbered steps, systematic
+  - Fonts Required: `title`, `subtitle`, `body`
   
 - **ExplainTimelineTemplate** - Sequential process/timeline
   - Uses: `title`, `subtitle`, `phase1-5`, `desc1-5`, `summary`
   - Style: Horizontal timeline, cause-effect, progression
+  - Fonts Required: `title`, `milestone`, `body`
 
 #### **APPLY** (Practice Skills - 30s)
 - **ApplyTemplate** - Scenario-based application
   - Uses: `scenario`, `action1`, `action2`, `action3`, `result`
   - Style: Real-world context, step-by-step actions
+  - Fonts Required: `title`, `subtitle`, `body`
   
 - **ApplyCompareTemplate** - Before/After transformation
   - Uses: `title`, `beforeLabel`, `before1-3`, `action`, `afterLabel`, `after1-3`, `result`
   - Style: Side-by-side contrast, transformation visible
+  - Fonts Required: `title`, `label`, `body`
 
 #### **REFLECT** (Consolidate Learning - 30s)
 - **ReflectTemplate** - Question-driven reflection
   - Uses: `title`, `question1`, `question2`, `question3`, `insight`, `action`
   - Style: Thought-provoking questions, introspection
+  - Fonts Required: `title`, `body`, `emphasis`
   
 - **ReflectMindMapTemplate** - Visual synthesis web
   - Uses: `title`, `central`, `branch1-4`, `desc1-4`, `insight`
   - Style: Mind map, connections, network of ideas
+  - Fonts Required: `title`, `center`, `branch`, `insight`
 
 ---
 
@@ -168,6 +176,15 @@ You MUST use `imageId` references from our library. DO NOT create URLs.
         "size": 32,
         "weight": 400
       }
+      // Additional fonts depending on template:
+      // HookTemplate: + "question"
+      // HookStoryTemplate: + "story"
+      // ExplainTemplate: + "subtitle"
+      // ExplainTimelineTemplate: + "milestone"
+      // ApplyTemplate: + "subtitle"
+      // ApplyCompareTemplate: + "label"
+      // ReflectTemplate: + "emphasis"
+      // ReflectMindMapTemplate: + "center", "branch", "insight"
     }
   },
   "timeline": []
