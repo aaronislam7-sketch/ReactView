@@ -67,32 +67,31 @@ export const useJitter = (seed = 0, amount = 2) => {
 };
 
 /**
- * Get wobble rotation for hand-drawn elements  
- * Use with transform style for subtle rotation (reduced amount)
+ * Get pulse effect for elements (replaces wobble)
+ * Use with transform style for subtle breathing animation
  */
-export const useWobble = (seed = 0, degrees = 0.15) => {  // Reduced from 0.5 to 0.15
+export const useWobble = (seed = 0, amount = 0.01) => {
   const frame = useCurrentFrame();
-  const w = wobble(frame + seed, degrees);
-  return `rotate(${w}deg)`;
+  const scale = 1 + Math.sin((frame + seed) * 0.03) * amount;
+  return `scale(${scale})`;
 };
 
 /**
- * Combined transform with jitter and wobble - Jitter disabled
- * Only uses very subtle wobble for hand-drawn feel
+ * Clean pulse effect (replaces jitter and wobble completely)
+ * Provides subtle breathing animation
  */
 export const useHandDrawn = (opts: {
   seed?: number;
-  jitterAmount?: number;
-  wobbleAmount?: number;
+  pulseAmount?: number;
 } = {}) => {
-  const {seed = 0, wobbleAmount = 0.15} = opts;  // Reduced default wobble
+  const {seed = 0, pulseAmount = 0.01} = opts;
   const frame = useCurrentFrame();
   
-  // Jitter removed - was causing rendering issues
-  const w = wobble(frame + seed, wobbleAmount);
+  // Clean pulse effect - no jitter, no wobble
+  const scale = 1 + Math.sin((frame + seed) * 0.03) * pulseAmount;
   
   return {
-    transform: `rotate(${w}deg)`,
+    transform: `scale(${scale})`,
   };
 };
 

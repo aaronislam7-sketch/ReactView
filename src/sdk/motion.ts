@@ -120,15 +120,15 @@ export const sway = (frame: number, seed = 0, degrees = 3) => {
 };
 
 /**
- * Hand-drawn wobble effect (jitter removed for clean rendering)
+ * Gentle pulse effect (replaces jitter/wobble for clean rendering)
  */
 export const handDrawnWobble = (frame: number, seed = 0) => {
-  // Jitter removed - was causing rendering issues
-  // Keep only very subtle wobble for hand-drawn feel
-  const w = wobble(frame + seed, 0.15);  // Reduced from 0.5 to 0.15
+  // Completely replaced jitter/wobble with clean pulse
+  // Very subtle scale for smooth, professional look
+  const scale = 1 + Math.sin((frame + seed) * 0.03) * 0.01;
   
   return {
-    transform: `rotate(${w}deg)`,
+    transform: `scale(${scale})`,
   };
 };
 
@@ -317,7 +317,7 @@ export const eraserWipe = (
 // ==================== IMPERFECTION LAYER ====================
 
 /**
- * Add hand-drawn imperfections to any animation (jitter disabled)
+ * Add subtle animation to any style (jitter/wobble removed)
  */
 export const addImperfection = (
   baseStyle: Record<string, any>,
@@ -327,17 +327,16 @@ export const addImperfection = (
 ) => {
   if (amount === 0) return baseStyle;
   
-  // Jitter removed - was causing rendering issues
-  // Keep only very subtle wobble
-  const w = wobble(frame + seed, 0.15 * amount);
+  // Replaced jitter/wobble with clean pulse effect
+  const scale = 1 + Math.sin((frame + seed) * 0.03) * (0.01 * amount);
   
-  // Combine base transform with imperfection
+  // Combine base transform with pulse
   const baseTransform = baseStyle.transform || '';
-  const imperfectTransform = `${baseTransform} rotate(${w}deg)`;
+  const enhancedTransform = baseTransform ? `${baseTransform} scale(${scale})` : `scale(${scale})`;
   
   return {
     ...baseStyle,
-    transform: imperfectTransform,
+    transform: enhancedTransform,
   };
 };
 

@@ -116,16 +116,14 @@ body {
   50% { transform: translateY(-5px) rotate(2deg); }
 }
 
-/* Hand-drawn Wobble Animation - Very subtle */
+/* Gentle pulse animation (replaces wobble) */
 .kn-wobble {
-  animation: kn-subtle-wobble 6s ease-in-out infinite;
+  animation: kn-gentle-pulse 4s ease-in-out infinite;
 }
 
-@keyframes kn-subtle-wobble {
-  0%, 100% { transform: rotate(-0.15deg); }
-  25% { transform: rotate(0.15deg); }
-  50% { transform: rotate(-0.075deg); }
-  75% { transform: rotate(0.105deg); }
+@keyframes kn-gentle-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.01); }
 }
 
 /* Jitter Effect - DISABLED (caused rendering issues)
@@ -150,7 +148,7 @@ body {
 
 @keyframes kn-breathe {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+  50% { transform: scale(1.03); }
 }
 
 /* Handwritten Underline */
