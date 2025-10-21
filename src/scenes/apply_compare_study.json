@@ -1,0 +1,43 @@
+{
+  "template_id": "apply_compare",
+  "duration": 30,
+  "fill": {
+    "texts": {
+      "title": "🔄 Transform Your Study Habits",
+      "beforeLabel": "Old Way",
+      "before1": "Cramming night before exam",
+      "before2": "Passive re-reading notes",
+      "before3": "Stressed, anxious, forgetting",
+      "action": "Apply Active Recall",
+      "afterLabel": "New Way",
+      "after1": "Spaced repetition over weeks",
+      "after2": "Testing yourself actively",
+      "after3": "Confident, retaining, succeeding",
+      "result": "2x better retention, half the stress!"
+    },
+    "images": {
+      "beforeImage": "img_stressed",
+      "afterImage": "img_celebrate"
+    }
+  },
+  "style_tokens": {
+    "colors": {
+      "bg": "#fafafa",
+      "before": "#e74c3c",
+      "after": "#27ae60",
+      "ink": "#2d3436"
+    },
+    "fonts": {
+      "title": {
+        "family": "Cabin Sketch, cursive",
+        "size": 64,
+        "weight": 700
+      },
+      "body": {
+        "family": "Patrick Hand, cursive",
+        "size": 28,
+        "weight": 400
+      }
+    }
+  }
+}

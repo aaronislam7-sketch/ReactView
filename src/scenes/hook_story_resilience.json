@@ -1,0 +1,42 @@
+{
+  "template_id": "hook_story",
+  "duration": 30,
+  "fill": {
+    "texts": {
+      "opening": "📖 In 1994, a young wizard faced an impossible choice...",
+      "character": "J.K. Rowling sat in a small café, manuscript rejected by 12 publishers. Single mom. Broke. Dream dying.",
+      "conflict": "⚡ One more publisher. One last chance. Everything on the line.",
+      "moment1": "📚 Publisher #13 said YES",
+      "moment2": "🌟 Book became phenomenon",
+      "moment3": "🎯 Created billion $ empire",
+      "hook": "What if your biggest failure is actually your greatest beginning?"
+    },
+    "images": {
+      "character": "img_thinking",
+      "icon1": "img_book",
+      "icon2": "img_star",
+      "icon3": "img_trophy"
+    }
+  },
+  "style_tokens": {
+    "colors": {
+      "bg": "#faf5f0",
+      "accent": "#8e44ad",
+      "support": "#e74c3c",
+      "ink": "#2c3e50",
+      "highlight": "#f39c12"
+    },
+    "fonts": {
+      "title": {
+        "family": "Cabin Sketch, cursive",
+        "size": 72,
+        "weight": 700
+      },
+      "body": {
+        "family": "Patrick Hand, cursive",
+        "size": 34,
+        "weight": 400
+      }
+    }
+  }
+}

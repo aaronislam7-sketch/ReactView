@@ -1,0 +1,49 @@
+{
+  "template_id": "explain_timeline",
+  "duration": 30,
+  "fill": {
+    "texts": {
+      "title": "⏱️ How Photosynthesis Works",
+      "subtitle": "The 5-step energy conversion process",
+      "phase1": "Light Absorption",
+      "desc1": "Chlorophyll captures sunlight",
+      "phase2": "Water Splitting",
+      "desc2": "H₂O breaks into H, O₂",
+      "phase3": "Energy Transfer",
+      "desc3": "ATP & NADPH created",
+      "phase4": "Carbon Fixation",
+      "desc4": "CO₂ captured from air",
+      "phase5": "Glucose Made",
+      "desc5": "Sugar for plant energy",
+      "summary": "Sunlight + Water + CO₂ → Oxygen + Sugar!"
+    },
+    "images": {
+      "icon1": "img_sun",
+      "icon2": "img_water",
+      "icon3": "img_lightning",
+      "icon4": "img_atom",
+      "icon5": "img_plant"
+    }
+  },
+  "style_tokens": {
+    "colors": {
+      "bg": "#f0f8f5",
+      "accent": "#27ae60",
+      "support": "#86BC25",
+      "ink": "#2d3436",
+      "line": "#95a5a6"
+    },
+    "fonts": {
+      "title": {
+        "family": "Cabin Sketch, cursive",
+        "size": 64,
+        "weight": 700
+      },
+      "body": {
+        "family": "Patrick Hand, cursive",
+        "size": 24,
+        "weight": 400
+      }
+    }
+  }
+}
