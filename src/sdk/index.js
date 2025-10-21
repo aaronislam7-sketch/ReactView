@@ -27,5 +27,12 @@ export * from './animations';
 export * from './rough-utils';
 export * from './components.jsx';
 export * from './lottie-helpers';
+export * from './easing';
+export * from './motion';
+export * from './useWriteOn';
+export * from './time';
+export * from './typography';
+export * from './usePreloadAssets';
+export { StyleTokensProvider, useStyleTokens } from './StyleTokensProvider';
 
 export default SDK;

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useCurrentFrame, useVideoConfig, spring, interpolate } from 'remotion';
 import { resolveSceneImages } from '../utils/imageLibrary';
+import { paperTexture, handDrawnWobble, pulse } from '../sdk/motion';
 
 /**
  * REFLECT Template
@@ -14,10 +15,10 @@ export const ReflectTemplate = ({ scene }) => {
 
   // Extract scene data
   const colors = scene.style_tokens?.colors || {
-    bg: '#f8f9fa',
-    accent: '#732282',
+    bg: 'var(--kn-bg, #f8f9fa)',
+    accent: 'var(--kn-accent, #732282)',
     support: '#9b59b6',
-    ink: '#2d3436',
+    ink: 'var(--kn-ink, #2d3436)',
     highlight: '#e8daef'
   };
 
@@ -86,16 +87,7 @@ export const ReflectTemplate = ({ scene }) => {
       overflow: 'hidden'
     }}>
       {/* Soft paper texture */}
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'100\' height=\'100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence baseFrequency=\'0.9\' numOctaves=\'4\'/%3E%3C/filter%3E%3Crect width=\'100\' height=\'100\' filter=\'url(%23noise)\' opacity=\'0.05\'/%3E%3C/svg%3E")',
-        opacity: 0.2,
-        pointerEvents: 'none'
-      }} />
+      <div style={paperTexture(0.2)} />
 
       <div style={{
         position: 'relative',

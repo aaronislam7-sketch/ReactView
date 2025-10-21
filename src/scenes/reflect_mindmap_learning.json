@@ -1,0 +1,76 @@
+{
+  "schema_version": "3.0",
+  "template_id": "reflect_mindmap",
+  "pillar": "reflect",
+  "duration_s": 30,
+  "fps": 30,
+  "meta": {
+    "title": "Learning Styles Mind Map",
+    "description": "Mind map reflection connecting different learning modalities",
+    "tags": ["pedagogy:reflect", "topic:metacognition", "format:mindmap"],
+    "difficulty": "intermediate",
+    "tone": "thoughtful"
+  },
+  "layout": {
+    "canvas": {
+      "w": 1920,
+      "h": 1080
+    }
+  },
+  "fill": {
+    "texts": {
+      "title": "🧠 Your Learning Web",
+      "central": "How I Learn Best",
+      "branch1": "Visual Learning",
+      "desc1": "Diagrams, mind maps, color coding",
+      "branch2": "Active Practice",
+      "desc2": "Hands-on, testing, teaching others",
+      "branch3": "Social Learning",
+      "desc3": "Study groups, discussions, collaboration",
+      "branch4": "Reflective Time",
+      "desc4": "Journaling, connecting ideas, metacognition",
+      "insight": "My unique learning style combines all four!"
+    },
+    "images": {
+      "centralIcon": "img_brain",
+      "icon1": "img_palette",
+      "icon2": "img_tool",
+      "icon3": "img_people",
+      "icon4": "img_mirror"
+    }
+  },
+  "style_tokens": {
+    "colors": {
+      "bg": "#f5f8fa",
+      "center": "#9b59b6",
+      "branch1": "#3498db",
+      "branch2": "#27ae60",
+      "branch3": "#e74c3c",
+      "branch4": "#f39c12",
+      "ink": "#2d3436"
+    },
+    "fonts": {
+      "title": {
+        "family": "Cabin Sketch, cursive",
+        "size": 56,
+        "weight": 700
+      },
+      "center": {
+        "family": "Cabin Sketch, cursive",
+        "size": 48,
+        "weight": 700
+      },
+      "branch": {
+        "family": "Patrick Hand, cursive",
+        "size": 26,
+        "weight": 600
+      },
+      "insight": {
+        "family": "Patrick Hand, cursive",
+        "size": 32,
+        "weight": 600
+      }
+    }
+  },
+  "timeline": []
+}

@@ -5,8 +5,15 @@ import { TwoColumnCompare } from '../legacy/templates/TwoColumnCompare';
 import { TimelineSteps } from '../legacy/templates/TimelineSteps';
 import { WhiteboardTEDv2 } from '../legacy/templates/WhiteboardTEDv2';
 import { WhiteboardTEDEnhanced } from '../legacy/templates/WhiteboardTEDEnhanced';
+import { HookTemplate } from './templates/HookTemplate';
+import { HookStoryTemplate } from './templates/HookStoryTemplate';
+import { ExplainTemplate } from './templates/ExplainTemplate';
+import { ExplainTimelineTemplate } from './templates/ExplainTimelineTemplate';
+import { ApplyTemplate } from './templates/ApplyTemplate';
+import { ApplyCompareTemplate } from './templates/ApplyCompareTemplate';
+import { ReflectTemplate } from './templates/ReflectTemplate';
+import { ReflectMindMapTemplate } from './templates/ReflectMindMapTemplate';
 import {StyleTokensProvider} from './sdk/StyleTokensProvider';
-import {SceneSchema} from './sdk/scene.schema';
 
 // Import sample scenes (legacy mode)
 import economyScene from '../legacy/scenes/economy_currency.json';
@@ -14,18 +21,50 @@ import lawsScene from '../legacy/scenes/laws_compare.json';
 import cultureScene from '../legacy/scenes/culture_ritual.json';
 import ideasSpreadScene from '../legacy/scenes/ideas_spread.json';
 
+// Import new pillar scenes
+import hookGrowthMindsetScene from './scenes/hook_growth_mindset.json';
+import hookStoryResilienceScene from './scenes/hook_story_resilience.json';
+import explainGrowthMindsetScene from './scenes/explain_growth_mindset.json';
+import explainTimelinePhotosynthesisScene from './scenes/explain_timeline_photosynthesis.json';
+import applyGrowthMindsetScene from './scenes/apply_growth_mindset.json';
+import applyCompareStudyScene from './scenes/apply_compare_study.json';
+import reflectGrowthMindsetScene from './scenes/reflect_growth_mindset.json';
+import reflectMindMapLearningScene from './scenes/reflect_mindmap_learning.json';
+
 const templateMap = {
+  // Legacy templates
   'whiteboard_ted_v2': WhiteboardTEDv2,
   'whiteboard_ted_enhanced': WhiteboardTEDEnhanced,
   'two_column_v1': TwoColumnCompare,
-  'timeline_v1': TimelineSteps
+  'timeline_v1': TimelineSteps,
+  
+  // New pillar templates
+  'hook': HookTemplate,
+  'hook_story': HookStoryTemplate,
+  'explain': ExplainTemplate,
+  'explain_timeline': ExplainTimelineTemplate,
+  'apply': ApplyTemplate,
+  'apply_compare': ApplyCompareTemplate,
+  'reflect': ReflectTemplate,
+  'reflect_mindmap': ReflectMindMapTemplate
 };
 
 const sampleScenes = {
+  // Legacy scenes
   'whiteboard_ted_v2': economyScene,
   'whiteboard_ted_enhanced': ideasSpreadScene,
   'two_column_v1': lawsScene,
-  'timeline_v1': cultureScene
+  'timeline_v1': cultureScene,
+  
+  // New pillar scenes
+  'hook': hookGrowthMindsetScene,
+  'hook_story': hookStoryResilienceScene,
+  'explain': explainGrowthMindsetScene,
+  'explain_timeline': explainTimelinePhotosynthesisScene,
+  'apply': applyGrowthMindsetScene,
+  'apply_compare': applyCompareStudyScene,
+  'reflect': reflectGrowthMindsetScene,
+  'reflect_mindmap': reflectMindMapLearningScene
 };
 
 // Validation function
@@ -128,6 +167,25 @@ export default function App() {
   const handleApplyJSON = () => {
     try {
       const parsed = JSON.parse(sceneJSON);
+      
+      // Add default values for new template format if missing
+      if (!parsed.duration_s) parsed.duration_s = parsed.duration || 30;
+      if (!parsed.fps) parsed.fps = 30;
+      if (!parsed.layout) {
+        parsed.layout = {
+          canvas: { w: 1920, h: 1080 }
+        };
+      }
+      if (!parsed.meta) {
+        parsed.meta = {
+          title: parsed.fill?.texts?.title || 'Untitled Scene',
+          tags: []
+        };
+      }
+      if (!parsed.timeline) {
+        parsed.timeline = [];
+      }
+      
       const errors = validateScene(parsed);
       
       setValidationErrors(errors);
@@ -242,10 +300,28 @@ export default function App() {
             outline: 'none'
           }}
         >
-          <option value="whiteboard_ted_enhanced">✨ Whiteboard TED Enhanced (How Ideas Spread)</option>
-          <option value="whiteboard_ted_v2">Whiteboard TED v2 (Economy)</option>
-          <option value="two_column_v1">Two-Column Compare (Laws)</option>
-          <option value="timeline_v1">Timeline / Process Steps (Culture)</option>
+          <optgroup label="🎯 Hook Templates">
+            <option value="hook">Question-Driven Hook (Growth Mindset)</option>
+            <option value="hook_story">Story-Driven Hook (Resilience)</option>
+          </optgroup>
+          <optgroup label="📚 Explain Templates">
+            <option value="explain">4-Step Breakdown (Growth Mindset)</option>
+            <option value="explain_timeline">Timeline Process (Photosynthesis)</option>
+          </optgroup>
+          <optgroup label="🛠️ Apply Templates">
+            <option value="apply">Scenario-Based (Growth Mindset)</option>
+            <option value="apply_compare">Before/After Compare (Study Habits)</option>
+          </optgroup>
+          <optgroup label="🤔 Reflect Templates">
+            <option value="reflect">Question-Driven Reflection (Growth Mindset)</option>
+            <option value="reflect_mindmap">Mind Map Synthesis (Learning Styles)</option>
+          </optgroup>
+          <optgroup label="🔖 Legacy Templates">
+            <option value="whiteboard_ted_enhanced">✨ Whiteboard TED Enhanced (How Ideas Spread)</option>
+            <option value="whiteboard_ted_v2">Whiteboard TED v2 (Economy)</option>
+            <option value="two_column_v1">Two-Column Compare (Laws)</option>
+            <option value="timeline_v1">Timeline / Process Steps (Culture)</option>
+          </optgroup>
         </select>
         
         <div style={{ flex: 1 }} />
