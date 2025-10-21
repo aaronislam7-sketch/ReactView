@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { VideoWizard } from './components/VideoWizard';
 import { Player } from '@remotion/player';
 import { TwoColumnCompare } from './templates/TwoColumnCompare';
 import { TimelineSteps } from './templates/TimelineSteps';
 import { WhiteboardTEDv2 } from './templates/WhiteboardTEDv2';
 import { WhiteboardTEDEnhanced } from './templates/WhiteboardTEDEnhanced';
 
-// Import sample scenes
+// Import sample scenes (legacy mode)
 import economyScene from './scenes/economy_currency.json';
 import lawsScene from './scenes/laws_compare.json';
 import cultureScene from './scenes/culture_ritual.json';
@@ -104,6 +105,7 @@ const validateScene = (scene) => {
 };
 
 export default function App() {
+  const [mode, setMode] = useState('wizard'); // 'wizard' or 'legacy'
   const [selectedTemplate, setSelectedTemplate] = useState('whiteboard_ted_enhanced');
   const [sceneJSON, setSceneJSON] = useState(JSON.stringify(ideasSpreadScene, null, 2));
   const [currentScene, setCurrentScene] = useState(ideasSpreadScene);
@@ -140,13 +142,42 @@ export default function App() {
   
   const Component = templateMap[currentScene.template_id] || WhiteboardTEDEnhanced;
 
-  // Debug helpers: log current scene + component so we can inspect in browser console
-  // Toggle "Debug render" below to render the component directly (no iframe) for troubleshooting.
+  // Debug helpers
   console.log('Remotion debug — currentScene:', currentScene);
   console.log('Remotion debug — Component:', Component);
   
   const [debugRender, setDebugRender] = useState(false);
+
+  // Render wizard mode by default
+  if (mode === 'wizard') {
+    return (
+      <div style={{ position: 'relative' }}>
+        <VideoWizard />
+        {/* Mode toggle button */}
+        <button
+          onClick={() => setMode('legacy')}
+          style={{
+            position: 'fixed',
+            bottom: 20,
+            right: 20,
+            padding: '10px 20px',
+            fontSize: 13,
+            backgroundColor: '#666',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 6,
+            cursor: 'pointer',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+            zIndex: 9999
+          }}
+        >
+          Switch to Legacy Mode
+        </button>
+      </div>
+    );
+  }
   
+  // Legacy single-scene mode
   return (
     <div style={{
       display: 'flex',
@@ -169,7 +200,7 @@ export default function App() {
           fontWeight: 700,
           color: '#732282'
         }}>
-          Remotion Scene Previewer
+          Remotion Scene Previewer (Legacy Mode)
         </h1>
         <p style={{
           margin: '8px 0 0 0',
@@ -216,6 +247,22 @@ export default function App() {
         </select>
         
         <div style={{ flex: 1 }} />
+
+        <button
+          onClick={() => setMode('wizard')}
+          style={{
+            padding: '8px 16px',
+            fontSize: 14,
+            fontWeight: 600,
+            backgroundColor: '#732282',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 6,
+            cursor: 'pointer'
+          }}
+        >
+          Switch to Wizard Mode
+        </button>
         
         <div style={{
           fontSize: 12,

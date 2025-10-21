@@ -1,0 +1,62 @@
+{
+  "schema_version": "3.0",
+  "template_id": "apply",
+  "pillar": "apply",
+  "duration_s": 30,
+  "fps": 30,
+  "meta": {
+    "title": "Apply Growth Mindset",
+    "description": "Practice using growth mindset language and techniques",
+    "tags": ["module:psychology", "pedagogy:apply", "topic:growth-mindset"],
+    "difficulty": "beginner",
+    "tone": "practical"
+  },
+  "style_tokens": {
+    "colors": {
+      "bg": "#fafafa",
+      "accent": "#86BC25",
+      "support": "#f39c12",
+      "ink": "#2d3436",
+      "action": "#27ae60"
+    },
+    "fonts": {
+      "title": {
+        "family": "Cabin Sketch, cursive",
+        "size": 72,
+        "weight": 700
+      },
+      "subtitle": {
+        "family": "Patrick Hand, cursive",
+        "size": 36,
+        "weight": 600
+      },
+      "body": {
+        "family": "Patrick Hand, cursive",
+        "size": 28,
+        "weight": 400
+      }
+    }
+  },
+  "layout": {
+    "canvas": {
+      "w": 1920,
+      "h": 1080
+    }
+  },
+  "fill": {
+    "texts": {
+      "title": "Practice Growth Mindset",
+      "scenario": "You're struggling with a difficult math problem...",
+      "action1": "Replace 'I can't do this' with 'I can't do this YET'",
+      "action2": "Break the problem into smaller, manageable steps",
+      "action3": "Ask for help and try a different strategy",
+      "outcome": "You solve it and your brain gets stronger!"
+    },
+    "images": {
+      "tool1": "img_pencil",
+      "tool2": "img_puzzle",
+      "tool3": "img_network"
+    }
+  },
+  "timeline": []
+}

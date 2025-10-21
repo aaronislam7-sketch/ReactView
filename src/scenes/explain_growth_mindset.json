@@ -1,0 +1,64 @@
+{
+  "schema_version": "3.0",
+  "template_id": "explain",
+  "pillar": "explain",
+  "duration_s": 30,
+  "fps": 30,
+  "meta": {
+    "title": "Growth Mindset Explained",
+    "description": "Break down the concept of growth mindset vs fixed mindset",
+    "tags": ["module:psychology", "pedagogy:explain", "topic:growth-mindset"],
+    "difficulty": "beginner",
+    "tone": "educational"
+  },
+  "style_tokens": {
+    "colors": {
+      "bg": "#fafafa",
+      "accent": "#3498db",
+      "support": "#86BC25",
+      "ink": "#2d3436",
+      "board": "#ffffff"
+    },
+    "fonts": {
+      "title": {
+        "family": "Cabin Sketch, cursive",
+        "size": 68,
+        "weight": 700
+      },
+      "subtitle": {
+        "family": "Patrick Hand, cursive",
+        "size": 38,
+        "weight": 400
+      },
+      "body": {
+        "family": "Patrick Hand, cursive",
+        "size": 30,
+        "weight": 400
+      }
+    }
+  },
+  "layout": {
+    "canvas": {
+      "w": 1920,
+      "h": 1080
+    }
+  },
+  "fill": {
+    "texts": {
+      "title": "Understanding Growth Mindset",
+      "concept": "Your abilities can develop through dedication and hard work",
+      "step1": "Embrace Challenges",
+      "step2": "Persist Through Setbacks",
+      "step3": "See Effort as Path to Mastery",
+      "step4": "Learn from Criticism",
+      "summary": "Brains grow stronger with practice!"
+    },
+    "images": {
+      "icon1": "img_target",
+      "icon2": "img_rocket",
+      "icon3": "img_plant",
+      "icon4": "img_trophy"
+    }
+  },
+  "timeline": []
+}
