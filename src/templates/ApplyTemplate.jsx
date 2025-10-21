@@ -1,271 +1,286 @@
 import React from 'react';
-import { useCurrentFrame, useVideoConfig, spring, interpolate } from 'remotion';
-import { NumberBadge } from '../sdk/components.jsx';
+import { useCurrentFrame, useVideoConfig, AbsoluteFill } from 'remotion';
 import { resolveSceneImages } from '../utils/imageLibrary';
-import { paperTexture, handDrawnWobble } from '../sdk/motion';
+import {
+  GlassmorphicPane,
+  NoiseTexture,
+  SpotlightEffect,
+  TEDCard,
+  GradientBackground,
+  FloatingParticles,
+} from '../sdk/broadcastEffects';
+import {
+  fadeInScale,
+  slideInWithOvershoot,
+  staggeredEntrance,
+  sceneExitProgress,
+} from '../sdk/broadcastAnimations';
+import { AnimatedLottie } from '../sdk/lottieIntegration';
 
 /**
- * APPLY Template
- * Purpose: Practice, hands-on application, real-world examples
- * Style: Interactive, practical, action-oriented with clear steps
- * Pedagogy: Active learning, transfer of knowledge, skill building
+ * APPLY Template - Broadcast Grade
+ * Purpose: Demonstrate practical application with scenario and actions
+ * Style: Action-oriented, clear steps, tangible outcomes
+ * Pedagogy: Transfer knowledge to practice, show real-world use
+ * 
+ * Features:
+ * - Scenario-based learning cards
+ * - Progressive action reveals
+ * - Result-oriented finale
+ * - Modular and cohesive with all templates
  */
 export const ApplyTemplate = ({ scene }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, durationInFrames } = useVideoConfig();
 
-  // Extract scene data
-  const colors = scene.style_tokens?.colors || {
-    bg: 'var(--kn-bg, #fafafa)',
-    accent: 'var(--kn-accent, #86BC25)',
-    support: 'var(--kn-accent-support, #f39c12)',
-    ink: 'var(--kn-ink, #2d3436)',
-    action: '#27ae60'
+  const defaultColors = {
+    bg: '#1a1a2e',
+    accent: '#27AE60',
+    support: '#2ECC71',
+    ink: '#ffffff',
+    highlight: '#FFE66D',
   };
 
-  const fonts = scene.style_tokens?.fonts || {
-    title: { family: 'Cabin Sketch, cursive', size: 72, weight: 700 },
-    subtitle: { family: 'Patrick Hand, cursive', size: 36, weight: 600 },
-    body: { family: 'Patrick Hand, cursive', size: 28, weight: 400 }
+  const colors = scene.style_tokens?.colors || defaultColors;
+
+  const defaultFonts = {
+    title: { family: 'Cabin Sketch, cursive', size: 68, weight: 700 },
+    subtitle: { family: 'Patrick Hand, cursive', size: 32, weight: 600 },
+    body: { family: 'Patrick Hand, cursive', size: 30, weight: 400 },
   };
 
-  // Resolve images from library
+  const fonts = {
+    title: scene.style_tokens?.fonts?.title || defaultFonts.title,
+    subtitle: scene.style_tokens?.fonts?.subtitle || defaultFonts.subtitle,
+    body: scene.style_tokens?.fonts?.body || defaultFonts.body,
+  };
+
   const images = resolveSceneImages(scene.fill?.images);
 
   // Animation timing
-  const titleStart = 0;
-  const scenarioStart = 45;
-  const actionsStart = 120;
-  const outcomeStart = 420;
+  const scenarioStart = 15;
+  const actionsStart = 90;
+  const resultStart = 650;
+  const exitStart = durationInFrames - 30;
 
-  // Title animation
-  const titleProgress = spring({
-    frame: frame - titleStart,
-    fps,
-    config: { damping: 15, mass: 1, stiffness: 100 }
-  });
+  const exitProgress = sceneExitProgress(frame, fps, durationInFrames, 30);
 
-  // Scenario/Context box
-  const scenarioProgress = spring({
-    frame: frame - scenarioStart,
-    fps,
-    config: { damping: 12, mass: 1, stiffness: 110 }
-  });
+  // Scenario entrance
+  const scenarioStyle = fadeInScale(frame, fps, scenarioStart);
 
-  // Action steps (up to 3 main actions)
-  const actionProgresses = [0, 1, 2].map(i => 
-    spring({
-      frame: frame - (actionsStart + i * 90),
-      fps,
-      config: { damping: 10, mass: 1, stiffness: 120 }
-    })
+  // Actions stagger
+  const actionStyles = [0, 1, 2].map((i) =>
+    staggeredEntrance(frame, fps, i, 15, actionsStart)
   );
 
-  // Checkmarks for completed actions
-  const checkProgresses = [0, 1, 2].map(i => 
-    spring({
-      frame: frame - (actionsStart + i * 90 + 60),
-      fps,
-      config: { damping: 8, mass: 0.8, stiffness: 150 }
-    })
-  );
+  // Result finale
+  const resultStyle = slideInWithOvershoot(frame, fps, 'bottom', resultStart, 50);
 
-  // Expected outcome
-  const outcomeProgress = spring({
-    frame: frame - outcomeStart,
-    fps,
-    config: { damping: 15, mass: 1, stiffness: 100 }
-  });
+  const getGradientType = (accent) => {
+    if (accent.includes('27') || accent.includes('2E')) return 'emerald-forest';
+    if (accent.includes('E6')) return 'ted-red';
+    if (accent.includes('4A')) return 'cool-ocean';
+    return 'warm-sunset';
+  };
 
   return (
-    <div style={{
-      width: '100%',
-      height: '100%',
-      backgroundColor: colors.bg,
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
-      {/* Paper texture overlay */}
-      <div style={paperTexture(0.3)} />
+    <AbsoluteFill
+      style={{
+        backgroundColor: colors.bg,
+        transform: `scale(${1 + exitProgress * 3})`,
+        opacity: 1 - exitProgress,
+      }}
+    >
+      {/* Background */}
+      <GradientBackground
+        gradient={getGradientType(colors.accent)}
+        opacity={0.15}
+        rotate={180}
+      />
+      <NoiseTexture opacity={0.04} scale={1.3} />
+      <SpotlightEffect x={50} y={50} size={1000} color={colors.support} opacity={0.12} />
+      <FloatingParticles count={12} color={colors.accent} size={5} speed={0.4} frame={frame} />
 
-      <div style={{
-        position: 'relative',
-        width: '100%',
-        height: '100%',
-        padding: '50px 90px'
-      }}>
-        
-        {/* Title */}
-        {titleProgress > 0 && (
-          <div style={{
-            textAlign: 'center',
-            marginBottom: 30,
-            opacity: titleProgress,
-            transform: `scale(${titleProgress})`
-          }}>
-            <h1 style={{
-              fontFamily: fonts.title.family,
-              fontSize: fonts.title.size,
-              fontWeight: fonts.title.weight,
-              color: colors.accent,
-              margin: 0,
-              textShadow: '2px 2px 4px rgba(0,0,0,0.1)'
-            }}>
-              {scene.fill.texts.title || '🛠️ Let\'s Apply It!'}
-            </h1>
-          </div>
-        )}
-
-        {/* Scenario/Context Box */}
-        {scenarioProgress > 0 && scene.fill.texts.scenario && (
-          <div style={{
-            marginBottom: 40,
-            opacity: scenarioProgress,
-            transform: `translateY(${(1 - scenarioProgress) * -20}px)`
-          }}>
-            <div style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
-              border: `4px dashed ${colors.support}`,
-              borderRadius: 16,
-              padding: '30px 40px',
-              textAlign: 'center',
-              boxShadow: '0 6px 18px rgba(0,0,0,0.12)'
-            }}>
-              <p style={{
-                fontFamily: fonts.subtitle.family,
-                fontSize: fonts.subtitle.size,
-                color: colors.ink,
-                margin: 0,
-                fontWeight: 600
-              }}>
-                📋 Scenario: {scene.fill.texts.scenario}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Action Steps */}
-        <div style={{
-          position: 'absolute',
-          top: 320,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '85%',
+      <div
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '100%',
+          padding: '70px 110px',
           display: 'flex',
           flexDirection: 'column',
-          gap: 35
-        }}>
-          {['action1', 'action2', 'action3'].map((key, i) => (
-            scene.fill.texts[key] && actionProgresses[i] > 0 && (
-              <div
-                key={key}
-                style={{
-                  position: 'relative',
-                  opacity: actionProgresses[i],
-                  transform: `translateX(${(1 - actionProgresses[i]) * -50}px)`
-                }}
-              >
-                <div style={{
-                  backgroundColor: '#ffffff',
-                  border: `4px solid ${colors.accent}`,
-                  borderRadius: 20,
-                  padding: '30px 40px 30px 120px',
-                  boxShadow: '0 6px 16px rgba(0,0,0,0.15)',
-                  position: 'relative',
-                  minHeight: 100,
-                  display: 'flex',
-                  alignItems: 'center'
-                }}>
-                  {/* Step Number */}
-                  <div style={{
-                    position: 'absolute',
-                    left: 30,
-                    top: '50%',
-                    transform: 'translateY(-50%)'
-                  }}>
-                    <NumberBadge
-                      number={i + 1}
-                      size={65}
-                      backgroundColor={colors.action}
-                      color="#ffffff"
-                    />
+          gap: 40,
+        }}
+      >
+        {/* Scenario - The situation */}
+        {frame >= scenarioStart && scene.fill?.texts?.scenario && (
+          <div style={scenarioStyle}>
+            <TEDCard accentColor={colors.accent} scale={1}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 30 }}>
+                {/* Lottie icon */}
+                <div style={{ flexShrink: 0 }}>
+                  <AnimatedLottie
+                    animation="thinking"
+                    style={{ width: 100, height: 100 }}
+                    entranceDelay={scenarioStart}
+                    entranceDuration={20}
+                  />
+                </div>
+
+                <div style={{ flex: 1 }}>
+                  <div
+                    style={{
+                      fontFamily: fonts.subtitle.family,
+                      fontSize: fonts.subtitle.size,
+                      fontWeight: 700,
+                      color: colors.accent,
+                      marginBottom: 15,
+                      textTransform: 'uppercase',
+                      letterSpacing: '1px',
+                    }}
+                  >
+                    📋 Scenario
                   </div>
-
-                  {/* Action Text */}
-                  <p style={{
-                    fontFamily: fonts.body.family,
-                    fontSize: fonts.body.size,
-                    color: colors.ink,
-                    margin: 0,
-                    lineHeight: 1.5,
-                    flex: 1
-                  }}>
-                    {scene.fill.texts[key]}
-                  </p>
-
-                  {/* Checkmark */}
-                  {checkProgresses[i] > 0 && (
-                    <div style={{
-                      position: 'absolute',
-                      right: 30,
-                      top: '50%',
-                      transform: `translateY(-50%) scale(${checkProgresses[i]})`,
-                      fontSize: 50,
-                      color: colors.action
-                    }}>
-                      ✓
-                    </div>
-                  )}
-
-                  {/* Tool Icon */}
-                  {images[`tool${i + 1}`] && actionProgresses[i] > 0.5 && (
-                    <img
-                      src={images[`tool${i + 1}`]}
-                      alt={`Tool ${i + 1}`}
-                      style={{
-                        position: 'absolute',
-                        right: 100,
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        width: 50,
-                        height: 50,
-                        opacity: (actionProgresses[i] - 0.5) * 2
-                      }}
-                    />
-                  )}
+                  <div
+                    style={{
+                      fontFamily: fonts.body.family,
+                      fontSize: fonts.body.size,
+                      fontWeight: fonts.body.weight,
+                      color: colors.ink,
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {scene.fill.texts.scenario}
+                  </div>
                 </div>
               </div>
-            )
-          ))}
+            </TEDCard>
+          </div>
+        )}
+
+        {/* Actions - Steps to take */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 25 }}>
+          {[1, 2, 3].map((num, index) => {
+            const actionKey = `action${num}`;
+            const actionText = scene.fill?.texts?.[actionKey];
+            if (!actionText || frame < actionsStart + index * 15) return null;
+
+            return (
+              <div key={num} style={actionStyles[index]}>
+                <GlassmorphicPane
+                  padding={30}
+                  borderOpacity={0.35}
+                  glowOpacity={0.15}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 25 }}>
+                    {/* Arrow indicator */}
+                    <div
+                      style={{
+                        width: 60,
+                        height: 60,
+                        borderRadius: 12,
+                        background: `linear-gradient(135deg, ${colors.accent}, ${colors.support})`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        boxShadow: `0 4px 20px ${colors.accent}40`,
+                      }}
+                    >
+                      <span style={{ fontSize: 36 }}>→</span>
+                    </div>
+
+                    {/* Icon if available */}
+                    {images?.[`icon${num}`] && (
+                      <img
+                        src={images[`icon${num}`]}
+                        alt={`Action ${num}`}
+                        style={{
+                          width: 50,
+                          height: 50,
+                          flexShrink: 0,
+                        }}
+                      />
+                    )}
+
+                    {/* Action text */}
+                    <div
+                      style={{
+                        flex: 1,
+                        fontFamily: fonts.body.family,
+                        fontSize: fonts.body.size,
+                        fontWeight: fonts.body.weight,
+                        color: colors.ink,
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      <span style={{ color: colors.support, fontWeight: 700 }}>
+                        Step {num}:{' '}
+                      </span>
+                      {actionText}
+                    </div>
+                  </div>
+                </GlassmorphicPane>
+              </div>
+            );
+          })}
         </div>
 
-        {/* Expected Outcome */}
-        {outcomeProgress > 0 && scene.fill.texts.outcome && (
-          <div style={{
-            position: 'absolute',
-            bottom: 60,
-            left: '50%',
-            transform: `translateX(-50%) scale(${Math.min(outcomeProgress, 1)})`,
-            opacity: outcomeProgress,
-            maxWidth: '80%'
-          }}>
-            <div style={{
-              backgroundColor: colors.action,
-              color: '#ffffff',
-              padding: '30px 70px',
-              borderRadius: 60,
-              fontFamily: fonts.subtitle.family,
-              fontSize: 38,
-              fontWeight: 700,
-              textAlign: 'center',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
-              border: '5px solid #ffffff'
-            }}>
-              🎯 Result: {scene.fill.texts.outcome}
-            </div>
+        {/* Result - The outcome */}
+        {frame >= resultStart && scene.fill?.texts?.result && (
+          <div style={resultStyle}>
+            <GlassmorphicPane
+              padding={40}
+              borderOpacity={0.5}
+              glowOpacity={0.3}
+              backgroundColor="rgba(255, 255, 255, 0.15)"
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 30 }}>
+                {/* Success Lottie */}
+                <div style={{ flexShrink: 0 }}>
+                  <AnimatedLottie
+                    animation="checkmark"
+                    style={{ width: 100, height: 100 }}
+                    entranceDelay={resultStart}
+                    entranceDuration={20}
+                  />
+                </div>
+
+                <div style={{ flex: 1 }}>
+                  <div
+                    style={{
+                      fontFamily: fonts.subtitle.family,
+                      fontSize: fonts.subtitle.size,
+                      fontWeight: 700,
+                      color: colors.support,
+                      marginBottom: 12,
+                      textTransform: 'uppercase',
+                      letterSpacing: '1px',
+                    }}
+                  >
+                    ✓ Result
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: fonts.body.family,
+                      fontSize: fonts.body.size * 1.1,
+                      fontWeight: 700,
+                      color: colors.highlight,
+                      lineHeight: 1.4,
+                      textShadow: `0 2px 20px ${colors.highlight}50`,
+                    }}
+                  >
+                    {scene.fill.texts.result}
+                  </div>
+                </div>
+              </div>
+            </GlassmorphicPane>
           </div>
         )}
       </div>
-    </div>
+    </AbsoluteFill>
   );
 };
+
+export const APPLY_DURATION = 30 * 30;
+export const APPLY_EXIT_TRANSITION = 10;

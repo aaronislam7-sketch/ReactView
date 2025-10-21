@@ -1,291 +1,273 @@
 import React from 'react';
-import { useCurrentFrame, useVideoConfig, spring, interpolate } from 'remotion';
-import { NumberBadge } from '../sdk/components.jsx';
+import { useCurrentFrame, useVideoConfig, AbsoluteFill } from 'remotion';
 import { resolveSceneImages } from '../utils/imageLibrary';
-import { paperTexture, handDrawnWobble } from '../sdk/motion';
+import {
+  GlassmorphicPane,
+  NoiseTexture,
+  SpotlightEffect,
+  TEDCard,
+  GradientBackground,
+} from '../sdk/broadcastEffects';
+import {
+  fadeInScale,
+  slideInWithOvershoot,
+  staggeredEntrance,
+  gentleFloat,
+  sceneExitProgress,
+} from '../sdk/broadcastAnimations';
+import { LottieBackground } from '../sdk/lottieIntegration';
 
 /**
- * EXPLAIN Template
- * Purpose: Teach core concepts, break down complex ideas, provide clarity
- * Style: Structured, clear, step-by-step with visual aids
- * Pedagogy: Direct instruction, scaffolding, building understanding
+ * EXPLAIN Template - Broadcast Grade
+ * Purpose: Teach concepts clearly with 4-step breakdown
+ * Style: Structured, systematic, visually clear
+ * Pedagogy: Chunk information, scaffold learning, provide clear structure
+ * 
+ * Features:
+ * - Step-by-step glassmorphic cards
+ * - Floating animations for engagement
+ * - Cohesive with any Hook or Apply template
+ * - Professional broadcast transitions
  */
 export const ExplainTemplate = ({ scene }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, durationInFrames } = useVideoConfig();
 
-  // Extract scene data
-  const colors = scene.style_tokens?.colors || {
-    bg: 'var(--kn-bg, #fafafa)',
-    accent: 'var(--kn-accent, #3498db)',
-    support: 'var(--kn-accent-support, #86BC25)',
-    ink: 'var(--kn-ink, #2d3436)',
-    board: 'var(--kn-board, #ffffff)'
+  // Safe defaults with TED aesthetic
+  const defaultColors = {
+    bg: '#0f0f23',
+    accent: '#E62B1E',
+    support: '#4A90E2',
+    ink: '#ffffff',
+    highlight: '#FFE66D',
   };
 
-  const fonts = scene.style_tokens?.fonts || {
-    title: { family: 'Cabin Sketch, cursive', size: 68, weight: 700 },
-    subtitle: { family: 'Patrick Hand, cursive', size: 38, weight: 400 },
-    body: { family: 'Patrick Hand, cursive', size: 30, weight: 400 }
+  const colors = scene.style_tokens?.colors || defaultColors;
+
+  const defaultFonts = {
+    title: { family: 'Cabin Sketch, cursive', size: 72, weight: 700 },
+    subtitle: { family: 'Patrick Hand, cursive', size: 32, weight: 600 },
+    body: { family: 'Patrick Hand, cursive', size: 28, weight: 400 },
   };
 
-  // Resolve images from library
+  const fonts = {
+    title: scene.style_tokens?.fonts?.title || defaultFonts.title,
+    subtitle: scene.style_tokens?.fonts?.subtitle || defaultFonts.subtitle,
+    body: scene.style_tokens?.fonts?.body || defaultFonts.body,
+  };
+
   const images = resolveSceneImages(scene.fill?.images);
 
-  // Animation timing - systematic reveal
-  const titleStart = 0;
-  const conceptStart = 45;
-  const stepsStart = 90;
-  const summaryStart = 450;
+  // Animation choreography
+  const titleStart = 10;
+  const conceptStart = 40;
+  const stepsStart = 80;
+  const summaryStart = 680;
+  const exitStart = durationInFrames - 30;
+
+  const exitProgress = sceneExitProgress(frame, fps, durationInFrames, 30);
 
   // Title animation
-  const titleProgress = spring({
-    frame: frame - titleStart,
-    fps,
-    config: { damping: 15, mass: 1, stiffness: 100 }
-  });
+  const titleStyle = fadeInScale(frame, fps, titleStart);
 
-  // Main concept reveal
-  const conceptProgress = spring({
-    frame: frame - conceptStart,
-    fps,
-    config: { damping: 12, mass: 1, stiffness: 110 }
-  });
+  // Concept introduction
+  const conceptStyle = slideInWithOvershoot(frame, fps, 'left', conceptStart, 80);
 
-  // Step boxes (up to 4 steps)
-  const stepProgresses = [0, 1, 2, 3].map(i => 
-    spring({
-      frame: frame - (stepsStart + i * 75),
-      fps,
-      config: { damping: 12, mass: 1, stiffness: 100 }
-    })
+  // Steps stagger in
+  const stepStyles = [0, 1, 2, 3].map((i) =>
+    staggeredEntrance(frame, fps, i, 12, stepsStart)
   );
 
-  // Connector lines between steps
-  const connectorProgresses = [0, 1, 2].map(i => 
-    interpolate(
-      frame,
-      [stepsStart + i * 75 + 60, stepsStart + i * 75 + 85],
-      [0, 1],
-      { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
-    )
-  );
+  // Floating effect for step cards
+  const floatOffset = gentleFloat(frame, 8, 0.04);
 
-  // Summary/key takeaway
-  const summaryProgress = spring({
-    frame: frame - summaryStart,
-    fps,
-    config: { damping: 15, mass: 1, stiffness: 100 }
-  });
+  // Summary finale
+  const summaryStyle = fadeInScale(frame, fps, summaryStart);
+
+  // Determine gradient
+  const getGradientType = (accent) => {
+    if (accent.includes('E6')) return 'ted-red';
+    if (accent.includes('4A')) return 'cool-ocean';
+    return 'vibrant-purple';
+  };
 
   return (
-    <div style={{
-      width: '100%',
-      height: '100%',
-      backgroundColor: colors.bg,
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
-      {/* Paper texture overlay */}
-      <div style={paperTexture(0.3)} />
+    <AbsoluteFill
+      style={{
+        backgroundColor: colors.bg,
+        transform: `scale(${1 + exitProgress * 3})`,
+        opacity: 1 - exitProgress,
+      }}
+    >
+      {/* Background elements */}
+      <GradientBackground
+        gradient={getGradientType(colors.accent)}
+        opacity={0.12}
+        rotate={225}
+      />
+      <NoiseTexture opacity={0.04} scale={1.5} />
+      <SpotlightEffect x={80} y={20} size={1200} color={colors.accent} opacity={0.08} />
+      
+      {/* Subtle Lottie background */}
+      <LottieBackground animation="dots" opacity={0.08} scale={2} position="bottom-right" />
 
-      <div style={{
-        position: 'relative',
-        width: '100%',
-        height: '100%',
-        padding: '50px 80px'
-      }}>
-        
-        {/* Title */}
-        {titleProgress > 0 && (
-          <div style={{
-            textAlign: 'center',
-            marginBottom: 25,
-            opacity: titleProgress,
-            transform: `translateY(${(1 - titleProgress) * -30}px)`
-          }}>
-            <h1 style={{
-              fontFamily: fonts.title.family,
-              fontSize: fonts.title.size,
-              fontWeight: fonts.title.weight,
-              color: colors.accent,
-              margin: 0,
-              textShadow: '2px 2px 4px rgba(0,0,0,0.1)',
-              borderBottom: `4px solid ${colors.accent}`,
-              display: 'inline-block',
-              padding: '10px 40px'
-            }}>
-              {scene.fill.texts.title || '📚 Understanding the Concept'}
-            </h1>
-          </div>
-        )}
-
-        {/* Main Concept/Diagram */}
-        {conceptProgress > 0 && (
-          <div style={{
-            textAlign: 'center',
-            marginBottom: 40,
-            opacity: conceptProgress,
-            transform: `scale(${conceptProgress})`
-          }}>
-            <div style={{
-              display: 'inline-block',
-              backgroundColor: colors.board,
-              border: `4px solid ${colors.accent}`,
-              borderRadius: 20,
-              padding: '25px 50px',
-              boxShadow: '0 8px 20px rgba(0,0,0,0.12)'
-            }}>
-              <p style={{
-                fontFamily: fonts.subtitle.family,
-                fontSize: fonts.subtitle.size,
-                color: colors.ink,
-                margin: 0,
-                fontWeight: 600
-              }}>
-                {scene.fill.texts.concept || 'Core Concept Here'}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Step-by-Step Breakdown */}
-        <div style={{
-          position: 'absolute',
-          top: 300,
-          left: 80,
-          right: 80,
+      <div
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '100%',
+          padding: '70px 100px',
           display: 'flex',
-          justifyContent: 'space-between',
-          gap: 20
-        }}>
-          {['step1', 'step2', 'step3', 'step4'].map((key, i) => (
-            scene.fill.texts[key] && stepProgresses[i] > 0 && (
+          flexDirection: 'column',
+        }}
+      >
+        {/* Title */}
+        {frame >= titleStart && (
+          <div style={{...titleStyle, textAlign: 'center', marginBottom: 20}}>
+            <TEDCard accentColor={colors.accent} scale={1}>
               <div
-                key={key}
                 style={{
-                  flex: 1,
-                  position: 'relative'
+                  fontFamily: fonts.title.family,
+                  fontSize: fonts.title.size,
+                  fontWeight: fonts.title.weight,
+                  color: colors.ink,
+                  textShadow: `0 2px 20px ${colors.accent}40`,
+                  padding: '10px 0',
                 }}
               >
-                {/* Step Box */}
-                <div style={{
-                  backgroundColor: colors.board,
-                  border: `3px solid ${colors.ink}`,
-                  borderRadius: 12,
-                  padding: '25px 15px',
-                  minHeight: 220,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'flex-start',
-                  gap: 15,
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                  opacity: stepProgresses[i],
-                  transform: `translateY(${(1 - stepProgresses[i]) * 30}px)`
-                }}>
-                  {/* Number Badge */}
-                  <div style={{
-                    position: 'absolute',
-                    top: -25,
-                    left: '50%',
-                    transform: 'translateX(-50%)'
-                  }}>
-                    <NumberBadge
-                      number={i + 1}
-                      size={50}
-                      backgroundColor={colors.accent}
-                      color="#ffffff"
-                    />
-                  </div>
-
-                  {/* Icon */}
-                  {images[`icon${i + 1}`] && (
-                    <img
-                      src={images[`icon${i + 1}`]}
-                      alt={`Step ${i + 1}`}
-                      style={{
-                        width: 60,
-                        height: 60,
-                        marginTop: 15
-                      }}
-                    />
-                  )}
-
-                  {/* Step Text */}
-                  <p style={{
-                    fontFamily: fonts.body.family,
-                    fontSize: fonts.body.size,
-                    color: colors.ink,
-                    textAlign: 'center',
-                    margin: 0,
-                    lineHeight: 1.4,
-                    padding: '0 5px'
-                  }}>
-                    {scene.fill.texts[key]}
-                  </p>
-                </div>
-
-                {/* Connector Arrow */}
-                {i < 3 && connectorProgresses[i] > 0 && (
-                  <div style={{
-                    position: 'absolute',
-                    top: 110,
-                    right: -30,
-                    width: 40,
-                    height: 4,
-                    backgroundColor: colors.support,
-                    transformOrigin: 'left center',
-                    transform: `scaleX(${connectorProgresses[i]})`,
-                    zIndex: 5
-                  }}>
-                    {connectorProgresses[i] > 0.8 && (
-                      <div style={{
-                        position: 'absolute',
-                        right: -8,
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        width: 0,
-                        height: 0,
-                        borderLeft: `12px solid ${colors.support}`,
-                        borderTop: '8px solid transparent',
-                        borderBottom: '8px solid transparent'
-                      }} />
-                    )}
-                  </div>
-                )}
+                {scene.fill?.texts?.title || 'Understanding the Concept'}
               </div>
-            )
-          ))}
+            </TEDCard>
+          </div>
+        )}
+
+        {/* Concept introduction */}
+        {frame >= conceptStart && scene.fill?.texts?.concept && (
+          <div style={{...conceptStyle, marginBottom: 30, textAlign: 'center'}}>
+            <div
+              style={{
+                fontFamily: fonts.subtitle.family,
+                fontSize: fonts.subtitle.size,
+                fontWeight: fonts.subtitle.weight,
+                color: colors.highlight,
+                lineHeight: 1.4,
+                maxWidth: '80%',
+                margin: '0 auto',
+              }}
+            >
+              {scene.fill.texts.concept}
+            </div>
+          </div>
+        )}
+
+        {/* 4 Steps in 2x2 grid */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: 40,
+            flex: 1,
+          }}
+        >
+          {[1, 2, 3, 4].map((num, index) => {
+            const stepKey = `step${num}`;
+            const stepText = scene.fill?.texts?.[stepKey];
+            if (!stepText || frame < stepsStart + index * 12) return null;
+
+            return (
+              <div key={num} style={{...stepStyles[index], ...floatOffset}}>
+                <TEDCard accentColor={colors.accent}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 20 }}>
+                    {/* Step number circle */}
+                    <div
+                      style={{
+                        width: 70,
+                        height: 70,
+                        borderRadius: '50%',
+                        background: `linear-gradient(135deg, ${colors.accent}, ${colors.support})`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        boxShadow: `0 4px 20px ${colors.accent}50`,
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontFamily: fonts.title.family,
+                          fontSize: 36,
+                          fontWeight: 700,
+                          color: '#ffffff',
+                        }}
+                      >
+                        {num}
+                      </span>
+                    </div>
+
+                    {/* Step content */}
+                    <div style={{ flex: 1 }}>
+                      {/* Icon if available */}
+                      {images?.[`icon${num}`] && (
+                        <img
+                          src={images[`icon${num}`]}
+                          alt={`Step ${num}`}
+                          style={{
+                            width: 50,
+                            height: 50,
+                            marginBottom: 15,
+                            opacity: 0.9,
+                          }}
+                        />
+                      )}
+
+                      {/* Step text */}
+                      <div
+                        style={{
+                          fontFamily: fonts.body.family,
+                          fontSize: fonts.body.size,
+                          fontWeight: fonts.body.weight,
+                          color: colors.ink,
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        {stepText}
+                      </div>
+                    </div>
+                  </div>
+                </TEDCard>
+              </div>
+            );
+          })}
         </div>
 
-        {/* Summary/Key Takeaway */}
-        {summaryProgress > 0 && scene.fill.texts.summary && (
-          <div style={{
-            position: 'absolute',
-            bottom: 60,
-            left: '50%',
-            transform: `translateX(-50%)`,
-            opacity: summaryProgress,
-            maxWidth: '85%'
-          }}>
-            <div style={{
-              backgroundColor: colors.support,
-              color: '#ffffff',
-              padding: '25px 60px',
-              borderRadius: 50,
-              fontFamily: fonts.body.family,
-              fontSize: 36,
-              fontWeight: 600,
-              textAlign: 'center',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-              border: `4px solid ${colors.accent}`
-            }}>
-              💡 {scene.fill.texts.summary}
-            </div>
+        {/* Summary */}
+        {frame >= summaryStart && scene.fill?.texts?.summary && (
+          <div style={{...summaryStyle, marginTop: 30, textAlign: 'center'}}>
+            <GlassmorphicPane
+              padding={35}
+              borderOpacity={0.5}
+              glowOpacity={0.25}
+              backgroundColor="rgba(255, 255, 255, 0.15)"
+            >
+              <div
+                style={{
+                  fontFamily: fonts.subtitle.family,
+                  fontSize: fonts.subtitle.size * 1.1,
+                  fontWeight: 700,
+                  color: colors.highlight,
+                  lineHeight: 1.4,
+                  textShadow: `0 2px 25px ${colors.highlight}60`,
+                }}
+              >
+                💡 {scene.fill.texts.summary}
+              </div>
+            </GlassmorphicPane>
           </div>
         )}
       </div>
-    </div>
+    </AbsoluteFill>
   );
 };
+
+export const EXPLAIN_DURATION = 30 * 30;
+export const EXPLAIN_EXIT_TRANSITION = 10;

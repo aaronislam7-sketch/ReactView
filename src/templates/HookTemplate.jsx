@@ -1,236 +1,298 @@
 import React from 'react';
-import { useCurrentFrame, useVideoConfig, spring, interpolate } from 'remotion';
+import { useCurrentFrame, useVideoConfig, AbsoluteFill } from 'remotion';
 import { NumberBadge } from '../sdk/components.jsx';
 import { resolveSceneImages } from '../utils/imageLibrary';
-import { paperTexture, handDrawnWobble } from '../sdk/motion';
+import {
+  GlassmorphicPane,
+  NoiseTexture,
+  SpotlightEffect,
+  FloatingParticles,
+  GradientBackground,
+} from '../sdk/broadcastEffects';
+import {
+  fadeInScale,
+  slideInWithOvershoot,
+  staggeredEntrance,
+  gentlePulse,
+  sceneExitProgress,
+} from '../sdk/broadcastAnimations';
 
 /**
- * HOOK Template
+ * HOOK Template - Broadcast Grade
  * Purpose: Grab attention, create curiosity, pose a compelling question
- * Style: Bold, dynamic, question-driven with visual impact
+ * Style: Bold, dynamic, question-driven with cinematic impact
  * Pedagogy: Engage learners, activate prior knowledge, set context
+ * 
+ * Features:
+ * - Glassmorphic cards with depth
+ * - Spring-based animations for broadcast quality
+ * - Modular design for seamless transitions
+ * - TED talk aesthetic with modern polish
  */
 export const HookTemplate = ({ scene }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, durationInFrames } = useVideoConfig();
 
-  // Extract scene data
-  const colors = scene.style_tokens?.colors || {
-    bg: 'var(--kn-bg, #fafafa)',
-    accent: 'var(--kn-accent, #e74c3c)',
-    support: 'var(--kn-accent-support, #f39c12)',
-    ink: 'var(--kn-ink, #2d3436)',
-    highlight: 'var(--kn-highlight, #ff6b6b)'
+  // Extract scene data with safe defaults
+  const defaultColors = {
+    bg: '#1a1a2e',
+    accent: '#E62B1E',
+    support: '#FF6B6B',
+    ink: '#ffffff',
+    highlight: '#FFE66D',
   };
 
-  const fonts = scene.style_tokens?.fonts || {
+  const colors = scene.style_tokens?.colors || defaultColors;
+
+  const defaultFonts = {
     title: { family: 'Cabin Sketch, cursive', size: 80, weight: 700 },
     body: { family: 'Patrick Hand, cursive', size: 36, weight: 400 },
-    question: { family: 'Cabin Sketch, cursive', size: 64, weight: 700 }
+    question: { family: 'Cabin Sketch, cursive', size: 64, weight: 700 },
+  };
+
+  const fonts = {
+    title: scene.style_tokens?.fonts?.title || defaultFonts.title,
+    body: scene.style_tokens?.fonts?.body || defaultFonts.body,
+    question: scene.style_tokens?.fonts?.question || defaultFonts.question,
   };
 
   // Resolve images from library
   const images = resolveSceneImages(scene.fill?.images);
 
-  // Animation timing
-  const questionStart = 0;
-  const imageStart = 45;
-  const factsStart = 90;
-  const challengeStart = 360;
+  // Animation timing - choreographed for broadcast quality
+  const questionStart = 15;
+  const imageStart = 50;
+  const factsStart = 100;
+  const challengeStart = 680;
+  const exitStart = durationInFrames - 30;
 
-  // Question entrance - big and bold
-  const questionProgress = spring({
-    frame: frame - questionStart,
-    fps,
-    config: { damping: 10, mass: 1, stiffness: 120 }
-  });
+  // Scene exit progress for smooth transitions
+  const exitProgress = sceneExitProgress(frame, fps, durationInFrames, 30);
 
-  // Main image zoom in
-  const imageProgress = spring({
-    frame: frame - imageStart,
-    fps,
-    config: { damping: 12, mass: 1, stiffness: 100 }
-  });
+  // Question entrance - hero moment
+  const questionStyle = fadeInScale(frame, fps, questionStart, { damping: 12, stiffness: 100 });
+  const questionPulse = gentlePulse(frame - questionStart, 0.02, 0.06);
 
-  // Facts appear sequentially
-  const factProgresses = [0, 1, 2].map(i => 
-    spring({
-      frame: frame - (factsStart + i * 60),
-      fps,
-      config: { damping: 15, mass: 1, stiffness: 100 }
-    })
+  // Main image - zoom in with impact
+  const imageStyle = slideInWithOvershoot(frame, fps, 'bottom', imageStart, 50);
+
+  // Facts appear sequentially with stagger
+  const factStyles = [0, 1, 2].map((i) =>
+    staggeredEntrance(frame, fps, i, 10, factsStart)
   );
 
-  // Challenge/Hook statement
-  const challengeProgress = spring({
-    frame: frame - challengeStart,
-    fps,
-    config: { damping: 12, mass: 1, stiffness: 100 }
-  });
+  // Challenge/Hook statement - final punch
+  const challengeStyle = fadeInScale(frame, fps, challengeStart, { damping: 15, stiffness: 120 });
 
-  // Pulsing effect for question
-  const pulse = questionProgress > 0 ? 1 + Math.sin(frame * 0.08) * 0.03 : 1;
+  // Determine gradient type based on accent color
+  const getGradientType = (accentColor) => {
+    if (accentColor.includes('E6') || accentColor.includes('e6')) return 'ted-red';
+    if (accentColor.includes('67') || accentColor.includes('76')) return 'vibrant-purple';
+    if (accentColor.includes('00')) return 'cool-ocean';
+    if (accentColor.includes('27')) return 'emerald-forest';
+    return 'warm-sunset';
+  };
 
   return (
-    <div style={{
-      width: '100%',
-      height: '100%',
-      backgroundColor: colors.bg,
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
-      {/* Paper texture overlay */}
-      <div style={paperTexture(0.3)} />
+    <AbsoluteFill
+      style={{
+        backgroundColor: colors.bg,
+        transform: `scale(${1 + exitProgress * 3})`,
+        opacity: 1 - exitProgress,
+      }}
+    >
+      {/* Background gradient */}
+      <GradientBackground
+        gradient={getGradientType(colors.accent)}
+        opacity={0.15}
+        rotate={135}
+      />
 
-      <div style={{
-        position: 'relative',
-        width: '100%',
-        height: '100%',
-        padding: '60px 100px'
-      }}>
-        
-        {/* Main Question - Top Center */}
-        {questionProgress > 0 && (
-          <div style={{
-            textAlign: 'center',
-            marginBottom: 40,
-            opacity: questionProgress,
-            transform: `scale(${questionProgress * pulse})`
-          }}>
-            <div style={{
-              fontFamily: fonts.question.family,
-              fontSize: fonts.question.size,
-              fontWeight: fonts.question.weight,
-              color: colors.accent,
-              textShadow: '3px 3px 6px rgba(0,0,0,0.15)',
-              lineHeight: 1.3,
-              padding: '20px 40px',
-              borderBottom: `6px solid ${colors.accent}`,
-              display: 'inline-block'
-            }}>
-              {scene.fill.texts.question || '❓ Big Question ❓'}
-            </div>
-          </div>
-        )}
+      {/* Noise texture for depth */}
+      <NoiseTexture opacity={0.03} scale={1.2} />
 
-        {/* Central Visual */}
-        {imageProgress > 0 && (
-          <div style={{
-            position: 'absolute',
-            top: 250,
-            left: '50%',
-            transform: `translateX(-50%) scale(${imageProgress})`,
-            opacity: imageProgress
-          }}>
-            {images.mainImage ? (
-              <img
-                src={images.mainImage}
-                alt="Hook visual"
-                style={{
-                  width: 200,
-                  height: 200,
-                  borderRadius: '50%',
-                  boxShadow: '0 12px 30px rgba(0,0,0,0.25)',
-                  border: `6px solid ${colors.accent}`
-                }}
-              />
-            ) : (
-              <div style={{
-                width: 200,
-                height: 200,
-                borderRadius: '50%',
-                backgroundColor: colors.accent,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 100,
-                boxShadow: '0 12px 30px rgba(0,0,0,0.25)'
-              }}>
-                🎯
-              </div>
-            )}
-          </div>
-        )}
+      {/* Spotlight effect */}
+      <SpotlightEffect x={50} y={30} size={1000} color={colors.accent} opacity={0.1} />
 
-        {/* Surprising Facts/Stats */}
-        <div style={{
-          position: 'absolute',
-          top: 500,
-          left: 100,
-          right: 100,
+      {/* Floating particles for atmosphere */}
+      <FloatingParticles count={15} color={colors.support} size={6} speed={0.3} frame={frame} />
+
+      <div
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '100%',
+          padding: '80px 120px',
           display: 'flex',
-          justifyContent: 'space-around',
-          gap: 40
-        }}>
-          {['fact1', 'fact2', 'fact3'].map((key, i) => (
-            factProgresses[i] > 0 && scene.fill.texts[key] && (
+          flexDirection: 'column',
+          gap: 50,
+        }}
+      >
+        {/* Main Question - Hero moment */}
+        {frame >= questionStart && (
+          <div
+            style={{
+              ...questionStyle,
+              ...questionPulse,
+              textAlign: 'center',
+              marginBottom: 30,
+            }}
+          >
+            <GlassmorphicPane
+              padding={40}
+              borderOpacity={0.4}
+              glowOpacity={0.2}
+              style={{ display: 'inline-block' }}
+            >
               <div
-                key={key}
                 style={{
-                  flex: 1,
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  border: `4px solid ${colors.support}`,
-                  borderRadius: 16,
-                  padding: '30px 20px',
-                  textAlign: 'center',
-                  boxShadow: '0 6px 18px rgba(0,0,0,0.15)',
-                  opacity: factProgresses[i],
-                  transform: `translateY(${(1 - factProgresses[i]) * 40}px) rotate(${(1 - factProgresses[i]) * (i % 2 === 0 ? -5 : 5)}deg)`
+                  fontFamily: fonts.question.family,
+                  fontSize: fonts.question.size,
+                  fontWeight: fonts.question.weight,
+                  color: colors.ink,
+                  lineHeight: 1.2,
+                  textShadow: `0 2px 20px ${colors.accent}40`,
                 }}
               >
-                {images[`icon${i + 1}`] && (
-                  <img
-                    src={images[`icon${i + 1}`]}
-                    alt={`Icon ${i + 1}`}
-                    style={{
-                      width: 50,
-                      height: 50,
-                      marginBottom: 15
-                    }}
-                  />
-                )}
-                <p style={{
-                  fontFamily: fonts.body.family,
-                  fontSize: 28,
-                  color: colors.ink,
-                  margin: 0,
-                  fontWeight: 600
-                }}>
-                  {scene.fill.texts[key]}
-                </p>
+                {scene.fill?.texts?.question || 'What if...?'}
               </div>
-            )
-          ))}
+            </GlassmorphicPane>
+          </div>
+        )}
+
+        {/* Content area - Image and Facts */}
+        <div
+          style={{
+            display: 'flex',
+            gap: 60,
+            alignItems: 'center',
+            flex: 1,
+          }}
+        >
+          {/* Main Image - Left side */}
+          {frame >= imageStart && images?.mainImage && (
+            <div
+              style={{
+                ...imageStyle,
+                flex: '0 0 400px',
+              }}
+            >
+              <GlassmorphicPane padding={20} borderOpacity={0.3}>
+                <img
+                  src={images.mainImage}
+                  alt="Main visual"
+                  style={{
+                    width: '100%',
+                    height: '400px',
+                    objectFit: 'cover',
+                    borderRadius: 12,
+                  }}
+                />
+              </GlassmorphicPane>
+            </div>
+          )}
+
+          {/* Facts - Right side */}
+          <div
+            style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 30,
+            }}
+          >
+            {[1, 2, 3].map((num, index) => {
+              const fact = scene.fill?.texts?.[`fact${num}`];
+              if (!fact || frame < factsStart + index * 10) return null;
+
+              return (
+                <div key={num} style={factStyles[index]}>
+                  <GlassmorphicPane
+                    padding={30}
+                    borderOpacity={0.3}
+                    glowOpacity={0.15}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                      {/* Number badge */}
+                      <div
+                        style={{
+                          width: 60,
+                          height: 60,
+                          borderRadius: '50%',
+                          background: `linear-gradient(135deg, ${colors.accent}, ${colors.support})`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                          boxShadow: `0 4px 20px ${colors.accent}40`,
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontFamily: fonts.title.family,
+                            fontSize: 32,
+                            fontWeight: 700,
+                            color: '#ffffff',
+                          }}
+                        >
+                          {num}
+                        </span>
+                      </div>
+
+                      {/* Fact text */}
+                      <div
+                        style={{
+                          fontFamily: fonts.body.family,
+                          fontSize: fonts.body.size,
+                          fontWeight: fonts.body.weight,
+                          color: colors.ink,
+                          lineHeight: 1.4,
+                        }}
+                      >
+                        {fact}
+                      </div>
+                    </div>
+                  </GlassmorphicPane>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        {/* The Challenge/Hook Statement */}
-        {challengeProgress > 0 && scene.fill.texts.challenge && (
-          <div style={{
-            position: 'absolute',
-            bottom: 80,
-            left: '50%',
-            transform: `translateX(-50%) scale(${Math.min(challengeProgress, 1)})`,
-            opacity: challengeProgress,
-            maxWidth: '80%'
-          }}>
-            <div style={{
-              backgroundColor: colors.highlight,
-              color: '#ffffff',
-              padding: '30px 70px',
-              borderRadius: 60,
-              fontFamily: fonts.body.family,
-              fontSize: 40,
-              fontWeight: 700,
+        {/* Challenge statement - Final hook */}
+        {frame >= challengeStart && (
+          <div
+            style={{
+              ...challengeStyle,
               textAlign: 'center',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
-              border: `5px solid ${colors.accent}`,
-              textShadow: '2px 2px 4px rgba(0,0,0,0.2)'
-            }}>
-              {scene.fill.texts.challenge}
-            </div>
+            }}
+          >
+            <GlassmorphicPane
+              padding={40}
+              borderOpacity={0.4}
+              glowOpacity={0.25}
+              backgroundColor="rgba(255, 255, 255, 0.12)"
+            >
+              <div
+                style={{
+                  fontFamily: fonts.title.family,
+                  fontSize: fonts.title.size * 0.7,
+                  fontWeight: fonts.title.weight,
+                  color: colors.highlight,
+                  lineHeight: 1.3,
+                  textShadow: `0 2px 30px ${colors.highlight}60`,
+                }}
+              >
+                {scene.fill?.texts?.challenge || "Let's find out!"}
+              </div>
+            </GlassmorphicPane>
           </div>
         )}
       </div>
-    </div>
+    </AbsoluteFill>
   );
 };
+
+// Export scene metadata for duration calculation
+export const HOOK_DURATION = 30 * 30; // 30 seconds at 30fps
+export const HOOK_EXIT_TRANSITION = 10;
