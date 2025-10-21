@@ -116,19 +116,19 @@ body {
   50% { transform: translateY(-5px) rotate(2deg); }
 }
 
-/* Hand-drawn Wobble Animation */
+/* Hand-drawn Wobble Animation - Very subtle */
 .kn-wobble {
-  animation: kn-subtle-wobble 4s ease-in-out infinite;
+  animation: kn-subtle-wobble 6s ease-in-out infinite;
 }
 
 @keyframes kn-subtle-wobble {
-  0%, 100% { transform: rotate(calc(var(--kn-wobble) * -1)); }
-  25% { transform: rotate(var(--kn-wobble)); }
-  50% { transform: rotate(calc(var(--kn-wobble) * -0.5)); }
-  75% { transform: rotate(calc(var(--kn-wobble) * 0.7)); }
+  0%, 100% { transform: rotate(-0.15deg); }
+  25% { transform: rotate(0.15deg); }
+  50% { transform: rotate(-0.075deg); }
+  75% { transform: rotate(0.105deg); }
 }
 
-/* Jitter Effect (micro-movement) */
+/* Jitter Effect - DISABLED (caused rendering issues)
 .kn-jitter {
   animation: kn-jitter 5s ease-in-out infinite;
 }
@@ -141,6 +141,7 @@ body {
   40% { transform: translate(calc(var(--kn-jitter) * -0.2), calc(var(--kn-jitter) * -0.4)); }
   50% { transform: translate(0, 0); }
 }
+*/
 
 /* Breathing/Pulse Effect */
 .kn-breathe {

@@ -58,42 +58,41 @@ export const useWriteOn = (opts: Opts = {}) => {
 };
 
 /**
- * Get jitter transform for hand-drawn elements
- * Use with transform style for subtle position variation
+ * Get jitter transform for hand-drawn elements - DISABLED
+ * Jitter was causing rendering issues, now returns empty transform
  */
 export const useJitter = (seed = 0, amount = 2) => {
-  const frame = useCurrentFrame();
-  const j = jitter(frame + seed, amount);
-  return `translate(${j.x}px, ${j.y}px)`;
+  // Disabled - jitter caused poor rendering
+  return `translate(0px, 0px)`;
 };
 
 /**
  * Get wobble rotation for hand-drawn elements  
- * Use with transform style for subtle rotation
+ * Use with transform style for subtle rotation (reduced amount)
  */
-export const useWobble = (seed = 0, degrees = 0.5) => {
+export const useWobble = (seed = 0, degrees = 0.15) => {  // Reduced from 0.5 to 0.15
   const frame = useCurrentFrame();
   const w = wobble(frame + seed, degrees);
   return `rotate(${w}deg)`;
 };
 
 /**
- * Combined transform with jitter and wobble
- * Perfect for hand-drawn text and shapes
+ * Combined transform with jitter and wobble - Jitter disabled
+ * Only uses very subtle wobble for hand-drawn feel
  */
 export const useHandDrawn = (opts: {
   seed?: number;
   jitterAmount?: number;
   wobbleAmount?: number;
 } = {}) => {
-  const {seed = 0, jitterAmount = 2, wobbleAmount = 0.5} = opts;
+  const {seed = 0, wobbleAmount = 0.15} = opts;  // Reduced default wobble
   const frame = useCurrentFrame();
   
-  const j = jitter(frame + seed, jitterAmount);
+  // Jitter removed - was causing rendering issues
   const w = wobble(frame + seed, wobbleAmount);
   
   return {
-    transform: `translate(${j.x}px, ${j.y}px) rotate(${w}deg)`,
+    transform: `rotate(${w}deg)`,
   };
 };
 

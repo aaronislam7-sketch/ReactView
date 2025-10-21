@@ -373,13 +373,15 @@ const colors = {
 ## 🎨 Design Patterns Established
 
 ### Hand-Crafted Feel Achieved Through:
-1. **Deterministic Jitter**: `jitter(frame + seed, 2px)`
-2. **Subtle Wobble**: `wobble(frame + seed, 0.5deg)`
+1. ~~**Deterministic Jitter**~~ ❌ REMOVED - Caused rendering issues
+2. **Very Subtle Wobble**: `wobble(frame + seed, 0.15deg)` - Reduced from 0.5°
 3. **Imperfect Timing**: `imperfectDelay(baseDelay, 0.12)`
 4. **Natural Easing**: easePencil, easeMarker, easeChalk, easeBrush
 5. **Overshoot Bounces**: Spring configs with low damping
 6. **Paper Texture**: SVG noise overlay at 30% opacity
 7. **Breathing Motion**: `1 + Math.sin(frame * 0.05) * 0.04`
+
+**Note**: Jitter effects were removed for clean, professional rendering while maintaining subtle wobble for organic feel.
 
 ### Motion Hierarchy:
 - **Fast** (0.3s): UI feedback, quick reveals
