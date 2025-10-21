@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { VideoWizard } from './components/VideoWizard';
 import { Player } from '@remotion/player';
-import { TwoColumnCompare } from './templates/TwoColumnCompare';
-import { TimelineSteps } from './templates/TimelineSteps';
-import { WhiteboardTEDv2 } from './templates/WhiteboardTEDv2';
-import { WhiteboardTEDEnhanced } from './templates/WhiteboardTEDEnhanced';
+import { TwoColumnCompare } from '../legacy/templates/TwoColumnCompare';
+import { TimelineSteps } from '../legacy/templates/TimelineSteps';
+import { WhiteboardTEDv2 } from '../legacy/templates/WhiteboardTEDv2';
+import { WhiteboardTEDEnhanced } from '../legacy/templates/WhiteboardTEDEnhanced';
 
 // Import sample scenes (legacy mode)
-import economyScene from './scenes/economy_currency.json';
-import lawsScene from './scenes/laws_compare.json';
-import cultureScene from './scenes/culture_ritual.json';
-import ideasSpreadScene from './scenes/ideas_spread.json';
+import economyScene from '../legacy/scenes/economy_currency.json';
+import lawsScene from '../legacy/scenes/laws_compare.json';
+import cultureScene from '../legacy/scenes/culture_ritual.json';
+import ideasSpreadScene from '../legacy/scenes/ideas_spread.json';
 
 const templateMap = {
   'whiteboard_ted_v2': WhiteboardTEDv2,

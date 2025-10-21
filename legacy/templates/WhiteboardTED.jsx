@@ -3,7 +3,7 @@ import { spring, useCurrentFrame, useVideoConfig, random } from 'remotion';
 import rough from 'roughjs';
 import { Player as LottiePlayer } from '@lottiefiles/react-lottie-player';
 import writingAnimation from '../animations/writing.json';
-import { THEME } from '../utils/theme';
+import { THEME } from '../../src/utils/theme';
 
 const SKETCH_STYLE = {
   roughness: 1.5,
