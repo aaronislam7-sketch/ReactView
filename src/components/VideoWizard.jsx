@@ -75,6 +75,7 @@ export const VideoWizard = () => {
   });
   const [editingJSON, setEditingJSON] = useState({});
   const [validationErrors, setValidationErrors] = useState({});
+  const [showPreviewHelper, setShowPreviewHelper] = useState(true);
 
   const currentPillar = STEPS[currentStep];
   const isFinalStep = currentPillar === 'final';
@@ -189,8 +190,37 @@ export const VideoWizard = () => {
           justifyContent: 'space-between',
           alignItems: 'center',
           maxWidth: 1200,
-          margin: '0 auto'
+          margin: '0 auto',
+          position: 'relative'
         }}>
+          {/* Quick Jump to Final Button */}
+          {currentStep < 4 && (
+            <button
+              onClick={() => setCurrentStep(4)}
+              style={{
+                position: 'absolute',
+                right: -10,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                padding: '8px 16px',
+                fontSize: 12,
+                fontWeight: 600,
+                backgroundColor: '#2ecc71',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 6,
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(46, 204, 113, 0.3)',
+                zIndex: 10,
+                whiteSpace: 'nowrap'
+              }}
+              onMouseOver={(e) => e.target.style.transform = 'translateY(-50%) scale(1.05)'}
+              onMouseOut={(e) => e.target.style.transform = 'translateY(-50%) scale(1)'}
+            >
+              ⚡ Skip to Final Video
+            </button>
+          )}
+
           {STEPS.map((step, index) => {
             const info = step === 'final' 
               ? { title: 'Final Video', icon: '🎥', color: '#2ecc71' }
@@ -290,26 +320,55 @@ export const VideoWizard = () => {
               </p>
             </div>
 
+            {/* Video Player with Frame */}
             <div style={{
-              backgroundColor: '#fff',
-              borderRadius: 12,
-              overflow: 'hidden',
-              boxShadow: '0 12px 32px rgba(0,0,0,0.2)'
+              backgroundColor: '#2d3436',
+              borderRadius: 16,
+              padding: 6,
+              boxShadow: '0 16px 48px rgba(0,0,0,0.3)',
+              maxWidth: 1200,
+              width: '100%'
             }}>
-              <Player
-                component={MultiSceneVideo}
-                inputProps={{ scenes }}
-                durationInFrames={(totalDuration) * 30}
-                fps={30}
-                compositionWidth={1920}
-                compositionHeight={1080}
-                controls
-                style={{
-                  width: '100%',
-                  maxWidth: 1200,
-                  aspectRatio: '16/9'
-                }}
-              />
+              <div style={{
+                backgroundColor: '#fff',
+                borderRadius: 12,
+                overflow: 'hidden'
+              }}>
+                <Player
+                  component={MultiSceneVideo}
+                  inputProps={{ scenes }}
+                  durationInFrames={Math.floor(totalDuration * 30)}
+                  fps={30}
+                  compositionWidth={1920}
+                  compositionHeight={1080}
+                  controls
+                  loop
+                  clickToPlay
+                  style={{
+                    width: '100%'
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Playback Info */}
+            <div style={{
+              marginTop: 20,
+              padding: '15px 30px',
+              backgroundColor: '#fff',
+              borderRadius: 8,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: 13, color: '#666', marginBottom: 8 }}>
+                Complete Video
+              </div>
+              <div style={{ fontSize: 18, fontWeight: 600, color: '#2ecc71' }}>
+                {Math.floor(totalDuration)}s • 1920×1080 • 30 fps
+              </div>
+              <div style={{ fontSize: 12, color: '#999', marginTop: 5 }}>
+                Click play button or anywhere on video to watch
+              </div>
             </div>
 
             {/* Scene Summary */}
@@ -507,29 +566,101 @@ export const VideoWizard = () => {
               alignItems: 'center',
               justifyContent: 'center',
               padding: 40,
-              backgroundColor: '#f8f8f8'
+              backgroundColor: '#f8f8f8',
+              position: 'relative'
             }}>
+              {/* Helper Banner */}
+              {showPreviewHelper && currentStep === 0 && (
+                <div style={{
+                  position: 'absolute',
+                  top: 20,
+                  left: 20,
+                  right: 20,
+                  backgroundColor: '#4a9c3b',
+                  color: '#fff',
+                  padding: '15px 20px',
+                  borderRadius: 8,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  zIndex: 10
+                }}>
+                  <div style={{ flex: 1 }}>
+                    <strong style={{ fontSize: 15 }}>👋 Welcome!</strong>
+                    <div style={{ fontSize: 13, marginTop: 5, opacity: 0.95 }}>
+                      Watch the preview below, then click "Apply Changes" to update, or "Approve & Continue" to move forward!
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowPreviewHelper(false)}
+                    style={{
+                      marginLeft: 15,
+                      padding: '5px 10px',
+                      backgroundColor: 'rgba(255,255,255,0.2)',
+                      border: '1px solid rgba(255,255,255,0.4)',
+                      borderRadius: 4,
+                      color: '#fff',
+                      cursor: 'pointer',
+                      fontSize: 12
+                    }}
+                  >
+                    Got it!
+                  </button>
+                </div>
+              )}
+
               <div style={{
-                backgroundColor: '#fff',
-                borderRadius: 8,
-                overflow: 'hidden',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-                marginBottom: 30
+                marginTop: showPreviewHelper && currentStep === 0 ? 100 : 0,
+                marginBottom: 30,
+                width: '100%',
+                maxWidth: 960
               }}>
-                <Player
-                  component={pillarInfo.template}
-                  inputProps={{ scene: scenes[currentPillar] }}
-                  durationInFrames={scenes[currentPillar].duration_s * scenes[currentPillar].fps}
-                  fps={scenes[currentPillar].fps}
-                  compositionWidth={scenes[currentPillar].layout.canvas.w}
-                  compositionHeight={scenes[currentPillar].layout.canvas.h}
-                  controls
-                  style={{
-                    width: '100%',
-                    maxWidth: 960,
-                    aspectRatio: '16/9'
-                  }}
-                />
+                <div style={{
+                  backgroundColor: '#2d3436',
+                  borderRadius: 12,
+                  padding: 4,
+                  boxShadow: '0 12px 32px rgba(0,0,0,0.25)'
+                }}>
+                  <div style={{
+                    backgroundColor: '#fff',
+                    borderRadius: 8,
+                    overflow: 'hidden'
+                  }}>
+                    <Player
+                      component={pillarInfo.template}
+                      inputProps={{ scene: scenes[currentPillar] }}
+                      durationInFrames={scenes[currentPillar].duration_s * scenes[currentPillar].fps}
+                      fps={scenes[currentPillar].fps}
+                      compositionWidth={scenes[currentPillar].layout.canvas.w}
+                      compositionHeight={scenes[currentPillar].layout.canvas.h}
+                      controls
+                      loop
+                      style={{
+                        width: '100%'
+                      }}
+                    />
+                  </div>
+                </div>
+                <div style={{
+                  marginTop: 15,
+                  textAlign: 'center',
+                  fontSize: 14,
+                  color: '#666',
+                  padding: '10px 20px',
+                  backgroundColor: '#fff',
+                  borderRadius: 8,
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+                }}>
+                  <div style={{ marginBottom: 5 }}>
+                    <strong style={{ color: pillarInfo.color, fontSize: 16 }}>
+                      {pillarInfo.icon} {scenes[currentPillar].meta.title}
+                    </strong>
+                  </div>
+                  <div style={{ fontSize: 12, color: '#999' }}>
+                    {scenes[currentPillar].duration_s}s • {scenes[currentPillar].layout.canvas.w}×{scenes[currentPillar].layout.canvas.h} • {scenes[currentPillar].fps} fps
+                  </div>
+                </div>
               </div>
 
               <div style={{

@@ -19,6 +19,9 @@ import { SceneTransition } from './SceneTransition';
 export const MultiSceneVideo = ({ scenes, transitionDuration = 20 }) => {
   const { fps } = useVideoConfig();
 
+  // Debug log
+  console.log('MultiSceneVideo rendering with scenes:', scenes);
+
   // Template mapping
   const templateMap = {
     'hook': HookTemplate,
@@ -32,6 +35,8 @@ export const MultiSceneVideo = ({ scenes, transitionDuration = 20 }) => {
   const orderedScenes = sceneOrder
     .map(pillar => scenes[pillar])
     .filter(Boolean); // Remove any missing scenes
+
+  console.log('Ordered scenes:', orderedScenes.length, 'scenes');
 
   // Calculate timing for each scene
   let currentFrame = 0;

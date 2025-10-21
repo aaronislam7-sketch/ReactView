@@ -25,6 +25,28 @@ You'll be greeted by the **Video Creation Wizard** interface!
 
 ---
 
+## 🎥 WHERE TO SEE THE VIDEOS
+
+### ✅ Video previews are visible in TWO places:
+
+#### 1. **Individual Scene Previews (Steps 1-4)**
+- **Location**: Right side of screen
+- **What you see**: Each 30-second scene preview
+- **Controls**: Play/pause, timeline scrubber, loop enabled
+- **How to play**: Click the ▶ button or click anywhere on the video
+
+#### 2. **Complete Video Preview (Step 5)**
+- **Location**: Center of screen after approving all scenes
+- **What you see**: Full 2-minute video with all 4 scenes stitched together
+- **Features**: Smooth eraser transitions between scenes
+- **Quick access**: Click "⚡ Skip to Final Video" button in progress bar
+
+**Note**: Video players load immediately when you open each step. If you don't see them, check the troubleshooting guides:
+- **HOW_TO_VIEW_VIDEOS.md** - Complete viewing guide
+- **VIEWING_TROUBLESHOOT.md** - Fix common issues
+
+---
+
 ## 🎯 Key Features
 
 ### ✨ Video Creation Wizard
