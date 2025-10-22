@@ -1,236 +1,332 @@
 import React from 'react';
-import { useCurrentFrame, useVideoConfig, spring, interpolate } from 'remotion';
-import { NumberBadge } from '../sdk/components.jsx';
+import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate, Easing } from 'remotion';
 import { resolveSceneImages } from '../utils/imageLibrary';
-import { paperTexture, handDrawnWobble } from '../sdk/motion';
+import {
+  GlassmorphicPane,
+  NoiseTexture,
+  SpotlightEffect,
+  GradientBackground,
+} from '../sdk/broadcastEffects';
+import { sceneExitProgress } from '../sdk/broadcastAnimations';
 
 /**
- * HOOK Template
- * Purpose: Grab attention, create curiosity, pose a compelling question
- * Style: Bold, dynamic, question-driven with visual impact
- * Pedagogy: Engage learners, activate prior knowledge, set context
+ * HOOK Template - OPTIMIZED CINEMATIC
+ * Broadcast quality without browser crashes
  */
 export const HookTemplate = ({ scene }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, durationInFrames } = useVideoConfig();
 
-  // Extract scene data
-  const colors = scene.style_tokens?.colors || {
-    bg: 'var(--kn-bg, #fafafa)',
-    accent: 'var(--kn-accent, #e74c3c)',
-    support: 'var(--kn-accent-support, #f39c12)',
-    ink: 'var(--kn-ink, #2d3436)',
-    highlight: 'var(--kn-highlight, #ff6b6b)'
+  const defaultColors = {
+    bg: '#0a0a1e',
+    accent: '#E62B1E',
+    support: '#FF6B6B',
+    ink: '#ffffff',
+    highlight: '#FFE66D',
   };
 
-  const fonts = scene.style_tokens?.fonts || {
+  const colors = scene.style_tokens?.colors || defaultColors;
+
+  const defaultFonts = {
     title: { family: 'Cabin Sketch, cursive', size: 80, weight: 700 },
     body: { family: 'Patrick Hand, cursive', size: 36, weight: 400 },
-    question: { family: 'Cabin Sketch, cursive', size: 64, weight: 700 }
+    question: { family: 'Cabin Sketch, cursive', size: 68, weight: 700 },
   };
 
-  // Resolve images from library
+  const fonts = {
+    title: scene.style_tokens?.fonts?.title || defaultFonts.title,
+    body: scene.style_tokens?.fonts?.body || defaultFonts.body,
+    question: scene.style_tokens?.fonts?.question || defaultFonts.question,
+  };
+
   const images = resolveSceneImages(scene.fill?.images);
 
-  // Animation timing
-  const questionStart = 0;
-  const imageStart = 45;
-  const factsStart = 90;
-  const challengeStart = 360;
+  // SIMPLIFIED TIMELINE
+  const timeline = {
+    question: { start: 15, end: 850 },
+    mainVisual: { start: 60, end: 850 },
+    facts: [
+      { start: 120, end: 850 },
+      { start: 180, end: 850 },
+      { start: 240, end: 850 },
+    ],
+    challenge: { start: 680, end: 870 },
+  };
 
-  // Question entrance - big and bold
-  const questionProgress = spring({
-    frame: frame - questionStart,
-    fps,
-    config: { damping: 10, mass: 1, stiffness: 120 }
-  });
-
-  // Main image zoom in
-  const imageProgress = spring({
-    frame: frame - imageStart,
-    fps,
-    config: { damping: 12, mass: 1, stiffness: 100 }
-  });
-
-  // Facts appear sequentially
-  const factProgresses = [0, 1, 2].map(i => 
-    spring({
-      frame: frame - (factsStart + i * 60),
-      fps,
-      config: { damping: 15, mass: 1, stiffness: 100 }
-    })
+  // Simple camera zoom - no complex transforms
+  const cameraScale = interpolate(
+    frame,
+    [0, 40, durationInFrames - 40, durationInFrames],
+    [1.1, 1, 1, 1.3],
+    {
+      easing: Easing.bezier(0.4, 0, 0.2, 1),
+      extrapolateLeft: 'clamp',
+      extrapolateRight: 'clamp',
+    }
   );
 
-  // Challenge/Hook statement
-  const challengeProgress = spring({
-    frame: frame - challengeStart,
-    fps,
-    config: { damping: 12, mass: 1, stiffness: 100 }
-  });
+  const exitProgress = sceneExitProgress(frame, fps, durationInFrames, 30);
 
-  // Pulsing effect for question
-  const pulse = questionProgress > 0 ? 1 + Math.sin(frame * 0.08) * 0.03 : 1;
+  // Gentle pulse
+  const pulse = 1 + Math.sin(frame * 0.05) * 0.02;
 
   return (
-    <div style={{
-      width: '100%',
-      height: '100%',
-      backgroundColor: colors.bg,
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
-      {/* Paper texture overlay */}
-      <div style={paperTexture(0.3)} />
+    <AbsoluteFill>
+      <AbsoluteFill
+        style={{
+          backgroundColor: colors.bg,
+          transform: `scale(${1 + exitProgress * 2})`,
+          opacity: 1 - exitProgress * 0.8,
+        }}
+      >
+        {/* Background - simplified */}
+        <GradientBackground gradient="ted-red" opacity={0.15} rotate={135} />
+        <NoiseTexture opacity={0.04} scale={1.2} />
+        <SpotlightEffect x={50} y={30} size={1200} color={colors.accent} opacity={0.12} />
 
-      <div style={{
-        position: 'relative',
-        width: '100%',
-        height: '100%',
-        padding: '60px 100px'
-      }}>
-        
-        {/* Main Question - Top Center */}
-        {questionProgress > 0 && (
-          <div style={{
-            textAlign: 'center',
-            marginBottom: 40,
-            opacity: questionProgress,
-            transform: `scale(${questionProgress * pulse})`
-          }}>
-            <div style={{
-              fontFamily: fonts.question.family,
-              fontSize: fonts.question.size,
-              fontWeight: fonts.question.weight,
-              color: colors.accent,
-              textShadow: '3px 3px 6px rgba(0,0,0,0.15)',
-              lineHeight: 1.3,
-              padding: '20px 40px',
-              borderBottom: `6px solid ${colors.accent}`,
-              display: 'inline-block'
-            }}>
-              {scene.fill.texts.question || '❓ Big Question ❓'}
-            </div>
-          </div>
-        )}
-
-        {/* Central Visual */}
-        {imageProgress > 0 && (
-          <div style={{
-            position: 'absolute',
-            top: 250,
-            left: '50%',
-            transform: `translateX(-50%) scale(${imageProgress})`,
-            opacity: imageProgress
-          }}>
-            {images.mainImage ? (
-              <img
-                src={images.mainImage}
-                alt="Hook visual"
+        {/* Content container with simple zoom */}
+        <AbsoluteFill style={{ transform: `scale(${cameraScale})` }}>
+          <div
+            style={{
+              position: 'relative',
+              width: '100%',
+              height: '100%',
+              padding: '70px 100px',
+            }}
+          >
+            {/* Question */}
+            {frame >= timeline.question.start && (
+              <div
                 style={{
-                  width: 200,
-                  height: 200,
-                  borderRadius: '50%',
-                  boxShadow: '0 12px 30px rgba(0,0,0,0.25)',
-                  border: `6px solid ${colors.accent}`
+                  textAlign: 'center',
+                  marginBottom: 40,
+                  opacity: interpolate(
+                    frame,
+                    [timeline.question.start, timeline.question.start + 30],
+                    [0, 1],
+                    { extrapolateRight: 'clamp' }
+                  ),
+                  transform: `
+                    scale(${interpolate(
+                      frame,
+                      [timeline.question.start, timeline.question.start + 30],
+                      [0.8, 1],
+                      { easing: Easing.out(Easing.cubic), extrapolateRight: 'clamp' }
+                    ) * pulse})
+                    translateY(${interpolate(
+                      frame,
+                      [timeline.question.start, timeline.question.start + 30],
+                      [-30, 0],
+                      { easing: Easing.out(Easing.cubic), extrapolateRight: 'clamp' }
+                    )}px)
+                  `,
                 }}
-              />
-            ) : (
-              <div style={{
-                width: 200,
-                height: 200,
-                borderRadius: '50%',
-                backgroundColor: colors.accent,
+              >
+                <GlassmorphicPane padding={45} borderOpacity={0.5} glowOpacity={0.25}>
+                  <div
+                    style={{
+                      fontFamily: fonts.question.family,
+                      fontSize: fonts.question.size,
+                      fontWeight: fonts.question.weight,
+                      color: colors.ink,
+                      lineHeight: 1.3,
+                      textShadow: `0 3px 20px ${colors.accent}60`,
+                    }}
+                  >
+                    {scene.fill?.texts?.question || '❓ What if...?'}
+                  </div>
+                </GlassmorphicPane>
+              </div>
+            )}
+
+            {/* Main visual */}
+            {frame >= timeline.mainVisual.start && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '28%',
+                  left: '50%',
+                  transform: `
+                    translateX(-50%)
+                    scale(${interpolate(
+                      frame,
+                      [timeline.mainVisual.start, timeline.mainVisual.start + 40],
+                      [0.5, 1],
+                      { easing: Easing.elastic(1.2), extrapolateRight: 'clamp' }
+                    )})
+                  `,
+                  opacity: interpolate(
+                    frame,
+                    [timeline.mainVisual.start, timeline.mainVisual.start + 30],
+                    [0, 1],
+                    { extrapolateRight: 'clamp' }
+                  ),
+                }}
+              >
+                {images?.mainImage ? (
+                  <img
+                    src={images.mainImage}
+                    alt="Main visual"
+                    style={{
+                      width: 180,
+                      height: 180,
+                      borderRadius: '50%',
+                      border: `6px solid ${colors.accent}`,
+                      boxShadow: `0 0 50px ${colors.accent}70`,
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: 180,
+                      height: 180,
+                      borderRadius: '50%',
+                      background: `linear-gradient(135deg, ${colors.accent}, ${colors.support})`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: 80,
+                      boxShadow: `0 0 50px ${colors.accent}70`,
+                    }}
+                  >
+                    💡
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Facts */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '52%',
+                left: 100,
+                right: 100,
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 100,
-                boxShadow: '0 12px 30px rgba(0,0,0,0.25)'
-              }}>
-                🎯
+                gap: 30,
+              }}
+            >
+              {[1, 2, 3].map((num, index) => {
+                const fact = scene.fill?.texts?.[`fact${num}`];
+                const factTimeline = timeline.facts[index];
+                
+                if (!fact || frame < factTimeline.start) return null;
+
+                const factProgress = interpolate(
+                  frame,
+                  [factTimeline.start, factTimeline.start + 30],
+                  [0, 1],
+                  { easing: Easing.out(Easing.cubic), extrapolateRight: 'clamp' }
+                );
+
+                return (
+                  <div
+                    key={num}
+                    style={{
+                      flex: 1,
+                      opacity: factProgress,
+                      transform: `
+                        translateY(${(1 - factProgress) * 50}px)
+                        scale(${0.9 + factProgress * 0.1})
+                      `,
+                    }}
+                  >
+                    <GlassmorphicPane padding={30} borderOpacity={0.4} glowOpacity={0.18}>
+                      <div
+                        style={{
+                          width: 60,
+                          height: 60,
+                          borderRadius: '50%',
+                          background: `linear-gradient(135deg, ${colors.accent}, ${colors.support})`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          margin: '0 auto 20px',
+                          boxShadow: `0 0 30px ${colors.accent}50`,
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontFamily: fonts.title.family,
+                            fontSize: 32,
+                            fontWeight: 700,
+                            color: '#ffffff',
+                          }}
+                        >
+                          {num}
+                        </span>
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: fonts.body.family,
+                          fontSize: fonts.body.size,
+                          fontWeight: fonts.body.weight,
+                          color: colors.ink,
+                          textAlign: 'center',
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        {fact}
+                      </div>
+                    </GlassmorphicPane>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Challenge */}
+            {frame >= timeline.challenge.start && scene.fill?.texts?.challenge && (
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: 70,
+                  left: '50%',
+                  transform: `
+                    translateX(-50%)
+                    scale(${interpolate(
+                      frame,
+                      [timeline.challenge.start, timeline.challenge.start + 30],
+                      [0.8, 1],
+                      { easing: Easing.elastic(1.2), extrapolateRight: 'clamp' }
+                    )})
+                  `,
+                  opacity: interpolate(
+                    frame,
+                    [timeline.challenge.start, timeline.challenge.start + 30],
+                    [0, 1],
+                    { extrapolateRight: 'clamp' }
+                  ),
+                  maxWidth: '85%',
+                }}
+              >
+                <GlassmorphicPane
+                  padding={40}
+                  borderOpacity={0.6}
+                  glowOpacity={0.3}
+                  backgroundColor="rgba(255, 255, 255, 0.12)"
+                >
+                  <div
+                    style={{
+                      fontFamily: fonts.title.family,
+                      fontSize: fonts.title.size * 0.6,
+                      fontWeight: fonts.title.weight,
+                      color: colors.highlight,
+                      textAlign: 'center',
+                      lineHeight: 1.4,
+                      textShadow: `0 3px 30px ${colors.highlight}70`,
+                    }}
+                  >
+                    {scene.fill.texts.challenge}
+                  </div>
+                </GlassmorphicPane>
               </div>
             )}
           </div>
-        )}
-
-        {/* Surprising Facts/Stats */}
-        <div style={{
-          position: 'absolute',
-          top: 500,
-          left: 100,
-          right: 100,
-          display: 'flex',
-          justifyContent: 'space-around',
-          gap: 40
-        }}>
-          {['fact1', 'fact2', 'fact3'].map((key, i) => (
-            factProgresses[i] > 0 && scene.fill.texts[key] && (
-              <div
-                key={key}
-                style={{
-                  flex: 1,
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  border: `4px solid ${colors.support}`,
-                  borderRadius: 16,
-                  padding: '30px 20px',
-                  textAlign: 'center',
-                  boxShadow: '0 6px 18px rgba(0,0,0,0.15)',
-                  opacity: factProgresses[i],
-                  transform: `translateY(${(1 - factProgresses[i]) * 40}px) rotate(${(1 - factProgresses[i]) * (i % 2 === 0 ? -5 : 5)}deg)`
-                }}
-              >
-                {images[`icon${i + 1}`] && (
-                  <img
-                    src={images[`icon${i + 1}`]}
-                    alt={`Icon ${i + 1}`}
-                    style={{
-                      width: 50,
-                      height: 50,
-                      marginBottom: 15
-                    }}
-                  />
-                )}
-                <p style={{
-                  fontFamily: fonts.body.family,
-                  fontSize: 28,
-                  color: colors.ink,
-                  margin: 0,
-                  fontWeight: 600
-                }}>
-                  {scene.fill.texts[key]}
-                </p>
-              </div>
-            )
-          ))}
-        </div>
-
-        {/* The Challenge/Hook Statement */}
-        {challengeProgress > 0 && scene.fill.texts.challenge && (
-          <div style={{
-            position: 'absolute',
-            bottom: 80,
-            left: '50%',
-            transform: `translateX(-50%) scale(${Math.min(challengeProgress, 1)})`,
-            opacity: challengeProgress,
-            maxWidth: '80%'
-          }}>
-            <div style={{
-              backgroundColor: colors.highlight,
-              color: '#ffffff',
-              padding: '30px 70px',
-              borderRadius: 60,
-              fontFamily: fonts.body.family,
-              fontSize: 40,
-              fontWeight: 700,
-              textAlign: 'center',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
-              border: `5px solid ${colors.accent}`,
-              textShadow: '2px 2px 4px rgba(0,0,0,0.2)'
-            }}>
-              {scene.fill.texts.challenge}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+        </AbsoluteFill>
+      </AbsoluteFill>
+    </AbsoluteFill>
   );
 };
+
+export const HOOK_DURATION = 30 * 30;
+export const HOOK_EXIT_TRANSITION = 10;

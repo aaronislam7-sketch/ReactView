@@ -1,271 +1,385 @@
 import React from 'react';
-import { useCurrentFrame, useVideoConfig, spring, interpolate } from 'remotion';
-import { NumberBadge } from '../sdk/components.jsx';
+import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate, Easing } from 'remotion';
 import { resolveSceneImages } from '../utils/imageLibrary';
-import { paperTexture, handDrawnWobble } from '../sdk/motion';
+import {
+  GlassmorphicPane,
+  NoiseTexture,
+  SpotlightEffect,
+  GradientBackground,
+} from '../sdk/broadcastEffects';
+import { sceneExitProgress } from '../sdk/broadcastAnimations';
 
 /**
- * APPLY Template
- * Purpose: Practice, hands-on application, real-world examples
- * Style: Interactive, practical, action-oriented with clear steps
- * Pedagogy: Active learning, transfer of knowledge, skill building
+ * APPLY Template - OPTIMIZED PROGRESSIVE
+ * Smooth progression without browser crashes
  */
 export const ApplyTemplate = ({ scene }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, durationInFrames } = useVideoConfig();
 
-  // Extract scene data
-  const colors = scene.style_tokens?.colors || {
-    bg: 'var(--kn-bg, #fafafa)',
-    accent: 'var(--kn-accent, #86BC25)',
-    support: 'var(--kn-accent-support, #f39c12)',
-    ink: 'var(--kn-ink, #2d3436)',
-    action: '#27ae60'
+  const defaultColors = {
+    bg: '#0f0f1e',
+    accent: '#27AE60',
+    support: '#2ECC71',
+    ink: '#ffffff',
+    highlight: '#FFE66D',
   };
 
-  const fonts = scene.style_tokens?.fonts || {
-    title: { family: 'Cabin Sketch, cursive', size: 72, weight: 700 },
-    subtitle: { family: 'Patrick Hand, cursive', size: 36, weight: 600 },
-    body: { family: 'Patrick Hand, cursive', size: 28, weight: 400 }
+  const colors = scene.style_tokens?.colors || defaultColors;
+
+  const defaultFonts = {
+    title: { family: 'Cabin Sketch, cursive', size: 68, weight: 700 },
+    subtitle: { family: 'Patrick Hand, cursive', size: 32, weight: 600 },
+    body: { family: 'Patrick Hand, cursive', size: 30, weight: 400 },
   };
 
-  // Resolve images from library
+  const fonts = {
+    title: scene.style_tokens?.fonts?.title || defaultFonts.title,
+    subtitle: scene.style_tokens?.fonts?.subtitle || defaultFonts.subtitle,
+    body: scene.style_tokens?.fonts?.body || defaultFonts.body,
+  };
+
   const images = resolveSceneImages(scene.fill?.images);
 
-  // Animation timing
-  const titleStart = 0;
-  const scenarioStart = 45;
-  const actionsStart = 120;
-  const outcomeStart = 420;
+  // SIMPLIFIED TIMELINE
+  const timeline = {
+    scenario: { start: 15, end: 850 },
+    actions: [
+      { start: 120, complete: 400, end: 850 },
+      { start: 240, complete: 520, end: 850 },
+      { start: 360, complete: 640, end: 850 },
+    ],
+    result: { start: 680, end: 900 },
+  };
 
-  // Title animation
-  const titleProgress = spring({
-    frame: frame - titleStart,
-    fps,
-    config: { damping: 15, mass: 1, stiffness: 100 }
-  });
-
-  // Scenario/Context box
-  const scenarioProgress = spring({
-    frame: frame - scenarioStart,
-    fps,
-    config: { damping: 12, mass: 1, stiffness: 110 }
-  });
-
-  // Action steps (up to 3 main actions)
-  const actionProgresses = [0, 1, 2].map(i => 
-    spring({
-      frame: frame - (actionsStart + i * 90),
-      fps,
-      config: { damping: 10, mass: 1, stiffness: 120 }
-    })
+  // Simple camera movement
+  const cameraScale = interpolate(
+    frame,
+    [0, 60, durationInFrames - 60, durationInFrames],
+    [1.15, 1, 1, 1.25],
+    { easing: Easing.bezier(0.4, 0, 0.2, 1), extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
   );
 
-  // Checkmarks for completed actions
-  const checkProgresses = [0, 1, 2].map(i => 
-    spring({
-      frame: frame - (actionsStart + i * 90 + 60),
-      fps,
-      config: { damping: 8, mass: 0.8, stiffness: 150 }
-    })
-  );
-
-  // Expected outcome
-  const outcomeProgress = spring({
-    frame: frame - outcomeStart,
-    fps,
-    config: { damping: 15, mass: 1, stiffness: 100 }
-  });
+  const exitProgress = sceneExitProgress(frame, fps, durationInFrames, 30);
 
   return (
-    <div style={{
-      width: '100%',
-      height: '100%',
-      backgroundColor: colors.bg,
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
-      {/* Paper texture overlay */}
-      <div style={paperTexture(0.3)} />
+    <AbsoluteFill>
+      <AbsoluteFill
+        style={{
+          backgroundColor: colors.bg,
+          transform: `scale(${1 + exitProgress * 2})`,
+          opacity: 1 - exitProgress * 0.8,
+        }}
+      >
+        {/* Background */}
+        <GradientBackground gradient="emerald-forest" opacity={0.18} rotate={180} />
+        <NoiseTexture opacity={0.06} scale={1.4} />
+        <SpotlightEffect x={50} y={50} size={1200} color={colors.support} opacity={0.12} />
 
-      <div style={{
-        position: 'relative',
-        width: '100%',
-        height: '100%',
-        padding: '50px 90px'
-      }}>
-        
-        {/* Title */}
-        {titleProgress > 0 && (
-          <div style={{
-            textAlign: 'center',
-            marginBottom: 30,
-            opacity: titleProgress,
-            transform: `scale(${titleProgress})`
-          }}>
-            <h1 style={{
-              fontFamily: fonts.title.family,
-              fontSize: fonts.title.size,
-              fontWeight: fonts.title.weight,
-              color: colors.accent,
-              margin: 0,
-              textShadow: '2px 2px 4px rgba(0,0,0,0.1)'
-            }}>
-              {scene.fill.texts.title || '🛠️ Let\'s Apply It!'}
-            </h1>
-          </div>
-        )}
-
-        {/* Scenario/Context Box */}
-        {scenarioProgress > 0 && scene.fill.texts.scenario && (
-          <div style={{
-            marginBottom: 40,
-            opacity: scenarioProgress,
-            transform: `translateY(${(1 - scenarioProgress) * -20}px)`
-          }}>
-            <div style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
-              border: `4px dashed ${colors.support}`,
-              borderRadius: 16,
-              padding: '30px 40px',
-              textAlign: 'center',
-              boxShadow: '0 6px 18px rgba(0,0,0,0.12)'
-            }}>
-              <p style={{
-                fontFamily: fonts.subtitle.family,
-                fontSize: fonts.subtitle.size,
-                color: colors.ink,
-                margin: 0,
-                fontWeight: 600
-              }}>
-                📋 Scenario: {scene.fill.texts.scenario}
-              </p>
+        {/* Content with simple zoom */}
+        <AbsoluteFill style={{ transform: `scale(${cameraScale})` }}>
+          <div
+            style={{
+              position: 'relative',
+              width: '100%',
+              height: '100%',
+              padding: '60px 95px',
+            }}
+          >
+            {/* Progress indicator */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 30,
+                right: 95,
+                display: 'flex',
+                gap: 12,
+                opacity: frame >= timeline.scenario.start ? 1 : 0,
+                transition: 'opacity 0.5s',
+              }}
+            >
+              {[1, 2, 3].map((i) => {
+                const actionTimeline = timeline.actions[i - 1];
+                const isComplete = frame >= actionTimeline.complete;
+                const isActive = frame >= actionTimeline.start && frame < actionTimeline.complete;
+                
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      width: 35,
+                      height: 35,
+                      borderRadius: '50%',
+                      border: `3px solid ${isComplete ? colors.accent : colors.ink}30`,
+                      backgroundColor: isComplete ? colors.accent : isActive ? `${colors.accent}30` : 'transparent',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: isComplete ? `0 0 25px ${colors.accent}` : 'none',
+                      transform: isActive ? 'scale(1.15)' : 'scale(1)',
+                      transition: 'all 0.3s ease',
+                    }}
+                  >
+                    {isComplete && <span style={{ fontSize: 18 }}>✓</span>}
+                  </div>
+                );
+              })}
             </div>
-          </div>
-        )}
 
-        {/* Action Steps */}
-        <div style={{
-          position: 'absolute',
-          top: 320,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '85%',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 35
-        }}>
-          {['action1', 'action2', 'action3'].map((key, i) => (
-            scene.fill.texts[key] && actionProgresses[i] > 0 && (
+            {/* Scenario */}
+            {frame >= timeline.scenario.start && scene.fill?.texts?.scenario && (
               <div
-                key={key}
                 style={{
-                  position: 'relative',
-                  opacity: actionProgresses[i],
-                  transform: `translateX(${(1 - actionProgresses[i]) * -50}px)`
+                  marginTop: 20,
+                  opacity: interpolate(
+                    frame,
+                    [timeline.scenario.start, timeline.scenario.start + 30],
+                    [0, 1],
+                    { extrapolateRight: 'clamp' }
+                  ),
+                  transform: `
+                    translateY(${interpolate(
+                      frame,
+                      [timeline.scenario.start, timeline.scenario.start + 35],
+                      [-40, 0],
+                      { easing: Easing.out(Easing.cubic), extrapolateRight: 'clamp' }
+                    )}px)
+                    scale(${interpolate(
+                      frame,
+                      [timeline.scenario.start, timeline.scenario.start + 30],
+                      [0.95, 1],
+                      { easing: Easing.out(Easing.cubic), extrapolateRight: 'clamp' }
+                    )})
+                  `,
                 }}
               >
-                <div style={{
-                  backgroundColor: '#ffffff',
-                  border: `4px solid ${colors.accent}`,
-                  borderRadius: 20,
-                  padding: '30px 40px 30px 120px',
-                  boxShadow: '0 6px 16px rgba(0,0,0,0.15)',
-                  position: 'relative',
-                  minHeight: 100,
-                  display: 'flex',
-                  alignItems: 'center'
-                }}>
-                  {/* Step Number */}
-                  <div style={{
-                    position: 'absolute',
-                    left: 30,
-                    top: '50%',
-                    transform: 'translateY(-50%)'
-                  }}>
-                    <NumberBadge
-                      number={i + 1}
-                      size={65}
-                      backgroundColor={colors.action}
-                      color="#ffffff"
-                    />
+                <GlassmorphicPane padding={40} borderOpacity={0.5} glowOpacity={0.22}>
+                  <div
+                    style={{
+                      fontFamily: 'monospace',
+                      fontSize: 18,
+                      color: colors.support,
+                      textTransform: 'uppercase',
+                      letterSpacing: '2px',
+                      marginBottom: 15,
+                    }}
+                  >
+                    📋 SITUATION
                   </div>
-
-                  {/* Action Text */}
-                  <p style={{
-                    fontFamily: fonts.body.family,
-                    fontSize: fonts.body.size,
-                    color: colors.ink,
-                    margin: 0,
-                    lineHeight: 1.5,
-                    flex: 1
-                  }}>
-                    {scene.fill.texts[key]}
-                  </p>
-
-                  {/* Checkmark */}
-                  {checkProgresses[i] > 0 && (
-                    <div style={{
-                      position: 'absolute',
-                      right: 30,
-                      top: '50%',
-                      transform: `translateY(-50%) scale(${checkProgresses[i]})`,
-                      fontSize: 50,
-                      color: colors.action
-                    }}>
-                      ✓
-                    </div>
-                  )}
-
-                  {/* Tool Icon */}
-                  {images[`tool${i + 1}`] && actionProgresses[i] > 0.5 && (
-                    <img
-                      src={images[`tool${i + 1}`]}
-                      alt={`Tool ${i + 1}`}
-                      style={{
-                        position: 'absolute',
-                        right: 100,
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        width: 50,
-                        height: 50,
-                        opacity: (actionProgresses[i] - 0.5) * 2
-                      }}
-                    />
-                  )}
-                </div>
+                  <div
+                    style={{
+                      fontFamily: fonts.body.family,
+                      fontSize: fonts.body.size,
+                      fontWeight: fonts.body.weight,
+                      color: colors.ink,
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    {scene.fill.texts.scenario}
+                  </div>
+                </GlassmorphicPane>
               </div>
-            )
-          ))}
-        </div>
+            )}
 
-        {/* Expected Outcome */}
-        {outcomeProgress > 0 && scene.fill.texts.outcome && (
-          <div style={{
-            position: 'absolute',
-            bottom: 60,
-            left: '50%',
-            transform: `translateX(-50%) scale(${Math.min(outcomeProgress, 1)})`,
-            opacity: outcomeProgress,
-            maxWidth: '80%'
-          }}>
-            <div style={{
-              backgroundColor: colors.action,
-              color: '#ffffff',
-              padding: '30px 70px',
-              borderRadius: 60,
-              fontFamily: fonts.subtitle.family,
-              fontSize: 38,
-              fontWeight: 700,
-              textAlign: 'center',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
-              border: '5px solid #ffffff'
-            }}>
-              🎯 Result: {scene.fill.texts.outcome}
+            {/* Actions - progressive reveal */}
+            <div
+              style={{
+                marginTop: 50,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 28,
+              }}
+            >
+              {[1, 2, 3].map((num, index) => {
+                const actionKey = `action${num}`;
+                const actionText = scene.fill?.texts?.[actionKey];
+                const actionTimeline = timeline.actions[index];
+                
+                if (!actionText || frame < actionTimeline.start) return null;
+
+                const isActive = frame >= actionTimeline.start && frame < actionTimeline.complete;
+                const isComplete = frame >= actionTimeline.complete;
+
+                const actionProgress = interpolate(
+                  frame,
+                  [actionTimeline.start, actionTimeline.start + 30],
+                  [0, 1],
+                  { easing: Easing.out(Easing.cubic), extrapolateRight: 'clamp' }
+                );
+
+                // Progress bar for active action
+                const progress = isActive
+                  ? interpolate(
+                      frame,
+                      [actionTimeline.start, actionTimeline.complete],
+                      [0, 100],
+                      { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+                    )
+                  : isComplete
+                  ? 100
+                  : 0;
+
+                return (
+                  <div
+                    key={num}
+                    style={{
+                      opacity: actionProgress,
+                      transform: `
+                        translateX(${(1 - actionProgress) * 60}px)
+                        scale(${0.98 + actionProgress * 0.02})
+                      `,
+                    }}
+                  >
+                    <GlassmorphicPane
+                      padding={32}
+                      borderOpacity={isComplete ? 0.55 : 0.35}
+                      glowOpacity={isActive ? 0.28 : 0.15}
+                      backgroundColor={isComplete ? 'rgba(39, 174, 96, 0.12)' : 'rgba(255, 255, 255, 0.08)'}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 25 }}>
+                        {/* Action indicator */}
+                        <div
+                          style={{
+                            width: 65,
+                            height: 65,
+                            borderRadius: '50%',
+                            background: isComplete
+                              ? `linear-gradient(135deg, ${colors.accent}, ${colors.support})`
+                              : `linear-gradient(135deg, ${colors.accent}60, ${colors.support}60)`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                            boxShadow: isComplete ? `0 0 35px ${colors.accent}` : isActive ? `0 0 25px ${colors.accent}50` : 'none',
+                            transform: isActive ? 'scale(1.08)' : 'scale(1)',
+                            transition: 'all 0.3s ease',
+                          }}
+                        >
+                          <span style={{ fontSize: 30 }}>
+                            {isComplete ? '✓' : '→'}
+                          </span>
+                        </div>
+
+                        {/* Action content */}
+                        <div style={{ flex: 1 }}>
+                          <div
+                            style={{
+                              fontFamily: 'monospace',
+                              fontSize: 16,
+                              color: isComplete ? colors.accent : colors.support,
+                              textTransform: 'uppercase',
+                              letterSpacing: '2px',
+                              marginBottom: 10,
+                            }}
+                          >
+                            ACTION {num} {isComplete ? '- COMPLETE' : isActive ? '- IN PROGRESS' : ''}
+                          </div>
+                          <div
+                            style={{
+                              fontFamily: fonts.body.family,
+                              fontSize: fonts.body.size * 0.95,
+                              fontWeight: fonts.body.weight,
+                              color: colors.ink,
+                              lineHeight: 1.5,
+                            }}
+                          >
+                            {actionText}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Progress bar */}
+                      {isActive && (
+                        <div
+                          style={{
+                            marginTop: 18,
+                            height: 6,
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                            borderRadius: 3,
+                            overflow: 'hidden',
+                          }}
+                        >
+                          <div
+                            style={{
+                              height: '100%',
+                              width: `${progress}%`,
+                              background: `linear-gradient(90deg, ${colors.accent}, ${colors.support})`,
+                              boxShadow: `0 0 15px ${colors.accent}`,
+                              transition: 'width 0.1s linear',
+                            }}
+                          />
+                        </div>
+                      )}
+                    </GlassmorphicPane>
+                  </div>
+                );
+              })}
             </div>
+
+            {/* Result */}
+            {frame >= timeline.result.start && scene.fill?.texts?.result && (
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: 55,
+                  left: 95,
+                  right: 95,
+                  opacity: interpolate(
+                    frame,
+                    [timeline.result.start, timeline.result.start + 35],
+                    [0, 1],
+                    { extrapolateRight: 'clamp' }
+                  ),
+                  transform: `scale(${interpolate(
+                    frame,
+                    [timeline.result.start, timeline.result.start + 35],
+                    [0.9, 1],
+                    { easing: Easing.elastic(1.2), extrapolateRight: 'clamp' }
+                  )})`,
+                }}
+              >
+                <GlassmorphicPane
+                  padding={42}
+                  borderOpacity={0.65}
+                  glowOpacity={0.35}
+                  backgroundColor="rgba(39, 174, 96, 0.18)"
+                >
+                  <div style={{ textAlign: 'center' }}>
+                    <div
+                      style={{
+                        fontFamily: 'monospace',
+                        fontSize: 24,
+                        color: colors.accent,
+                        textTransform: 'uppercase',
+                        letterSpacing: '4px',
+                        marginBottom: 18,
+                        textShadow: `0 0 25px ${colors.accent}`,
+                      }}
+                    >
+                      ★ COMPLETE ★
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: fonts.body.family,
+                        fontSize: fonts.body.size * 1.1,
+                        fontWeight: 700,
+                        color: colors.highlight,
+                        lineHeight: 1.4,
+                        textShadow: `0 3px 35px ${colors.highlight}80`,
+                      }}
+                    >
+                      {scene.fill.texts.result}
+                    </div>
+                  </div>
+                </GlassmorphicPane>
+              </div>
+            )}
           </div>
-        )}
-      </div>
-    </div>
+        </AbsoluteFill>
+      </AbsoluteFill>
+    </AbsoluteFill>
   );
 };
+
+export const APPLY_DURATION = 30 * 30;
+export const APPLY_EXIT_TRANSITION = 10;

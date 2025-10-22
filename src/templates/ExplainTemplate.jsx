@@ -1,291 +1,323 @@
 import React from 'react';
-import { useCurrentFrame, useVideoConfig, spring, interpolate } from 'remotion';
-import { NumberBadge } from '../sdk/components.jsx';
+import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate, Easing } from 'remotion';
 import { resolveSceneImages } from '../utils/imageLibrary';
-import { paperTexture, handDrawnWobble } from '../sdk/motion';
+import {
+  GlassmorphicPane,
+  NoiseTexture,
+  SpotlightEffect,
+  TEDCard,
+  GradientBackground,
+} from '../sdk/broadcastEffects';
+import { sceneExitProgress } from '../sdk/broadcastAnimations';
 
 /**
- * EXPLAIN Template
- * Purpose: Teach core concepts, break down complex ideas, provide clarity
- * Style: Structured, clear, step-by-step with visual aids
- * Pedagogy: Direct instruction, scaffolding, building understanding
+ * EXPLAIN Template - OPTIMIZED BROADCAST
+ * Clean, smooth, no browser crashes
  */
 export const ExplainTemplate = ({ scene }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, durationInFrames } = useVideoConfig();
 
-  // Extract scene data
-  const colors = scene.style_tokens?.colors || {
-    bg: 'var(--kn-bg, #fafafa)',
-    accent: 'var(--kn-accent, #3498db)',
-    support: 'var(--kn-accent-support, #86BC25)',
-    ink: 'var(--kn-ink, #2d3436)',
-    board: 'var(--kn-board, #ffffff)'
+  const defaultColors = {
+    bg: '#0a0a1e',
+    accent: '#4A90E2',
+    support: '#00D4FF',
+    ink: '#ffffff',
+    highlight: '#FFE66D',
   };
 
-  const fonts = scene.style_tokens?.fonts || {
-    title: { family: 'Cabin Sketch, cursive', size: 68, weight: 700 },
-    subtitle: { family: 'Patrick Hand, cursive', size: 38, weight: 400 },
-    body: { family: 'Patrick Hand, cursive', size: 30, weight: 400 }
+  const colors = scene.style_tokens?.colors || defaultColors;
+
+  const defaultFonts = {
+    title: { family: 'Cabin Sketch, cursive', size: 72, weight: 700 },
+    subtitle: { family: 'Patrick Hand, cursive', size: 32, weight: 600 },
+    body: { family: 'Patrick Hand, cursive', size: 28, weight: 400 },
   };
 
-  // Resolve images from library
+  const fonts = {
+    title: scene.style_tokens?.fonts?.title || defaultFonts.title,
+    subtitle: scene.style_tokens?.fonts?.subtitle || defaultFonts.subtitle,
+    body: scene.style_tokens?.fonts?.body || defaultFonts.body,
+  };
+
   const images = resolveSceneImages(scene.fill?.images);
 
-  // Animation timing - systematic reveal
-  const titleStart = 0;
-  const conceptStart = 45;
-  const stepsStart = 90;
-  const summaryStart = 450;
+  // SIMPLIFIED TIMELINE
+  const timeline = {
+    title: { start: 10, end: 850 },
+    concept: { start: 40, end: 850 },
+    steps: [
+      { start: 100, end: 850 },
+      { start: 160, end: 850 },
+      { start: 220, end: 850 },
+      { start: 280, end: 850 },
+    ],
+    summary: { start: 680, end: 900 },
+  };
 
-  // Title animation
-  const titleProgress = spring({
-    frame: frame - titleStart,
-    fps,
-    config: { damping: 15, mass: 1, stiffness: 100 }
-  });
-
-  // Main concept reveal
-  const conceptProgress = spring({
-    frame: frame - conceptStart,
-    fps,
-    config: { damping: 12, mass: 1, stiffness: 110 }
-  });
-
-  // Step boxes (up to 4 steps)
-  const stepProgresses = [0, 1, 2, 3].map(i => 
-    spring({
-      frame: frame - (stepsStart + i * 75),
-      fps,
-      config: { damping: 12, mass: 1, stiffness: 100 }
-    })
+  // Simple camera movement
+  const cameraScale = interpolate(
+    frame,
+    [0, 50, durationInFrames - 50, durationInFrames],
+    [1.1, 1, 1, 1.2],
+    { easing: Easing.bezier(0.4, 0, 0.2, 1), extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
   );
 
-  // Connector lines between steps
-  const connectorProgresses = [0, 1, 2].map(i => 
-    interpolate(
-      frame,
-      [stepsStart + i * 75 + 60, stepsStart + i * 75 + 85],
-      [0, 1],
-      { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
-    )
-  );
+  const exitProgress = sceneExitProgress(frame, fps, durationInFrames, 30);
 
-  // Summary/key takeaway
-  const summaryProgress = spring({
-    frame: frame - summaryStart,
-    fps,
-    config: { damping: 15, mass: 1, stiffness: 100 }
-  });
+  // Gentle float effect
+  const floatY = Math.sin(frame * 0.04) * 3;
 
   return (
-    <div style={{
-      width: '100%',
-      height: '100%',
-      backgroundColor: colors.bg,
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
-      {/* Paper texture overlay */}
-      <div style={paperTexture(0.3)} />
+    <AbsoluteFill>
+      <AbsoluteFill
+        style={{
+          backgroundColor: colors.bg,
+          transform: `scale(${1 + exitProgress * 2})`,
+          opacity: 1 - exitProgress * 0.8,
+        }}
+      >
+        {/* Background */}
+        <GradientBackground gradient="cool-ocean" opacity={0.18} rotate={225} />
+        <NoiseTexture opacity={0.05} scale={1.3} />
+        <SpotlightEffect x={70} y={30} size={1100} color={colors.accent} opacity={0.1} />
 
-      <div style={{
-        position: 'relative',
-        width: '100%',
-        height: '100%',
-        padding: '50px 80px'
-      }}>
-        
-        {/* Title */}
-        {titleProgress > 0 && (
-          <div style={{
-            textAlign: 'center',
-            marginBottom: 25,
-            opacity: titleProgress,
-            transform: `translateY(${(1 - titleProgress) * -30}px)`
-          }}>
-            <h1 style={{
-              fontFamily: fonts.title.family,
-              fontSize: fonts.title.size,
-              fontWeight: fonts.title.weight,
-              color: colors.accent,
-              margin: 0,
-              textShadow: '2px 2px 4px rgba(0,0,0,0.1)',
-              borderBottom: `4px solid ${colors.accent}`,
-              display: 'inline-block',
-              padding: '10px 40px'
-            }}>
-              {scene.fill.texts.title || '📚 Understanding the Concept'}
-            </h1>
-          </div>
-        )}
-
-        {/* Main Concept/Diagram */}
-        {conceptProgress > 0 && (
-          <div style={{
-            textAlign: 'center',
-            marginBottom: 40,
-            opacity: conceptProgress,
-            transform: `scale(${conceptProgress})`
-          }}>
-            <div style={{
-              display: 'inline-block',
-              backgroundColor: colors.board,
-              border: `4px solid ${colors.accent}`,
-              borderRadius: 20,
-              padding: '25px 50px',
-              boxShadow: '0 8px 20px rgba(0,0,0,0.12)'
-            }}>
-              <p style={{
-                fontFamily: fonts.subtitle.family,
-                fontSize: fonts.subtitle.size,
-                color: colors.ink,
-                margin: 0,
-                fontWeight: 600
-              }}>
-                {scene.fill.texts.concept || 'Core Concept Here'}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Step-by-Step Breakdown */}
-        <div style={{
-          position: 'absolute',
-          top: 300,
-          left: 80,
-          right: 80,
-          display: 'flex',
-          justifyContent: 'space-between',
-          gap: 20
-        }}>
-          {['step1', 'step2', 'step3', 'step4'].map((key, i) => (
-            scene.fill.texts[key] && stepProgresses[i] > 0 && (
+        {/* Content with simple zoom */}
+        <AbsoluteFill style={{ transform: `scale(${cameraScale})` }}>
+          <div
+            style={{
+              position: 'relative',
+              width: '100%',
+              height: '100%',
+              padding: '60px 90px',
+            }}
+          >
+            {/* Title */}
+            {frame >= timeline.title.start && (
               <div
-                key={key}
                 style={{
-                  flex: 1,
-                  position: 'relative'
+                  textAlign: 'center',
+                  marginBottom: 25,
+                  opacity: interpolate(
+                    frame,
+                    [timeline.title.start, timeline.title.start + 30],
+                    [0, 1],
+                    { extrapolateRight: 'clamp' }
+                  ),
+                  transform: `
+                    translateY(${interpolate(
+                      frame,
+                      [timeline.title.start, timeline.title.start + 30],
+                      [-40, 0],
+                      { easing: Easing.out(Easing.cubic), extrapolateRight: 'clamp' }
+                    )}px)
+                    scale(${interpolate(
+                      frame,
+                      [timeline.title.start, timeline.title.start + 30],
+                      [0.9, 1],
+                      { easing: Easing.out(Easing.cubic), extrapolateRight: 'clamp' }
+                    )})
+                  `,
                 }}
               >
-                {/* Step Box */}
-                <div style={{
-                  backgroundColor: colors.board,
-                  border: `3px solid ${colors.ink}`,
-                  borderRadius: 12,
-                  padding: '25px 15px',
-                  minHeight: 220,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'flex-start',
-                  gap: 15,
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                  opacity: stepProgresses[i],
-                  transform: `translateY(${(1 - stepProgresses[i]) * 30}px)`
-                }}>
-                  {/* Number Badge */}
-                  <div style={{
-                    position: 'absolute',
-                    top: -25,
-                    left: '50%',
-                    transform: 'translateX(-50%)'
-                  }}>
-                    <NumberBadge
-                      number={i + 1}
-                      size={50}
-                      backgroundColor={colors.accent}
-                      color="#ffffff"
-                    />
+                <TEDCard accentColor={colors.accent}>
+                  <div
+                    style={{
+                      fontFamily: fonts.title.family,
+                      fontSize: fonts.title.size,
+                      fontWeight: fonts.title.weight,
+                      color: colors.ink,
+                      textShadow: `0 3px 20px ${colors.accent}50`,
+                      padding: '10px 0',
+                    }}
+                  >
+                    {scene.fill?.texts?.title || '📚 Understanding the Concept'}
                   </div>
-
-                  {/* Icon */}
-                  {images[`icon${i + 1}`] && (
-                    <img
-                      src={images[`icon${i + 1}`]}
-                      alt={`Step ${i + 1}`}
-                      style={{
-                        width: 60,
-                        height: 60,
-                        marginTop: 15
-                      }}
-                    />
-                  )}
-
-                  {/* Step Text */}
-                  <p style={{
-                    fontFamily: fonts.body.family,
-                    fontSize: fonts.body.size,
-                    color: colors.ink,
-                    textAlign: 'center',
-                    margin: 0,
-                    lineHeight: 1.4,
-                    padding: '0 5px'
-                  }}>
-                    {scene.fill.texts[key]}
-                  </p>
-                </div>
-
-                {/* Connector Arrow */}
-                {i < 3 && connectorProgresses[i] > 0 && (
-                  <div style={{
-                    position: 'absolute',
-                    top: 110,
-                    right: -30,
-                    width: 40,
-                    height: 4,
-                    backgroundColor: colors.support,
-                    transformOrigin: 'left center',
-                    transform: `scaleX(${connectorProgresses[i]})`,
-                    zIndex: 5
-                  }}>
-                    {connectorProgresses[i] > 0.8 && (
-                      <div style={{
-                        position: 'absolute',
-                        right: -8,
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        width: 0,
-                        height: 0,
-                        borderLeft: `12px solid ${colors.support}`,
-                        borderTop: '8px solid transparent',
-                        borderBottom: '8px solid transparent'
-                      }} />
-                    )}
-                  </div>
-                )}
+                </TEDCard>
               </div>
-            )
-          ))}
-        </div>
+            )}
 
-        {/* Summary/Key Takeaway */}
-        {summaryProgress > 0 && scene.fill.texts.summary && (
-          <div style={{
-            position: 'absolute',
-            bottom: 60,
-            left: '50%',
-            transform: `translateX(-50%)`,
-            opacity: summaryProgress,
-            maxWidth: '85%'
-          }}>
-            <div style={{
-              backgroundColor: colors.support,
-              color: '#ffffff',
-              padding: '25px 60px',
-              borderRadius: 50,
-              fontFamily: fonts.body.family,
-              fontSize: 36,
-              fontWeight: 600,
-              textAlign: 'center',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-              border: `4px solid ${colors.accent}`
-            }}>
-              💡 {scene.fill.texts.summary}
+            {/* Concept */}
+            {frame >= timeline.concept.start && scene.fill?.texts?.concept && (
+              <div
+                style={{
+                  textAlign: 'center',
+                  marginBottom: 40,
+                  opacity: interpolate(
+                    frame,
+                    [timeline.concept.start, timeline.concept.start + 25],
+                    [0, 1],
+                    { extrapolateRight: 'clamp' }
+                  ),
+                  transform: `scale(${interpolate(
+                    frame,
+                    [timeline.concept.start, timeline.concept.start + 25],
+                    [0.95, 1],
+                    { easing: Easing.out(Easing.cubic), extrapolateRight: 'clamp' }
+                  )})`,
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: fonts.subtitle.family,
+                    fontSize: fonts.subtitle.size,
+                    fontWeight: fonts.subtitle.weight,
+                    color: colors.highlight,
+                    maxWidth: '80%',
+                    margin: '0 auto',
+                  }}
+                >
+                  {scene.fill.texts.concept}
+                </div>
+              </div>
+            )}
+
+            {/* 4 Steps in 2x2 grid */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: 30,
+                height: '55%',
+              }}
+            >
+              {[1, 2, 3, 4].map((num, index) => {
+                const stepKey = `step${num}`;
+                const stepText = scene.fill?.texts?.[stepKey];
+                const stepTimeline = timeline.steps[index];
+                
+                if (!stepText || frame < stepTimeline.start) return null;
+
+                const stepProgress = interpolate(
+                  frame,
+                  [stepTimeline.start, stepTimeline.start + 30],
+                  [0, 1],
+                  { easing: Easing.out(Easing.cubic), extrapolateRight: 'clamp' }
+                );
+
+                const slideDistance = index % 2 === 0 ? -60 : 60;
+
+                return (
+                  <div
+                    key={num}
+                    style={{
+                      opacity: stepProgress,
+                      transform: `
+                        translateX(${(1 - stepProgress) * slideDistance}px)
+                        translateY(${floatY}px)
+                        scale(${0.95 + stepProgress * 0.05})
+                      `,
+                    }}
+                  >
+                    <TEDCard accentColor={colors.accent}>
+                      <div
+                        style={{
+                          width: 65,
+                          height: 65,
+                          borderRadius: '50%',
+                          background: `linear-gradient(135deg, ${colors.accent}, ${colors.support})`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          margin: '0 auto 20px',
+                          boxShadow: `0 0 35px ${colors.accent}60`,
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontFamily: fonts.title.family,
+                            fontSize: 36,
+                            fontWeight: 700,
+                            color: '#ffffff',
+                          }}
+                        >
+                          {num}
+                        </span>
+                      </div>
+                      {images?.[`icon${num}`] && (
+                        <img
+                          src={images[`icon${num}`]}
+                          alt={`Step ${num}`}
+                          style={{
+                            width: 50,
+                            height: 50,
+                            display: 'block',
+                            margin: '0 auto 15px',
+                            opacity: 0.85,
+                          }}
+                        />
+                      )}
+                      <div
+                        style={{
+                          fontFamily: fonts.body.family,
+                          fontSize: fonts.body.size,
+                          fontWeight: fonts.body.weight,
+                          color: colors.ink,
+                          textAlign: 'center',
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        {stepText}
+                      </div>
+                    </TEDCard>
+                  </div>
+                );
+              })}
             </div>
+
+            {/* Summary */}
+            {frame >= timeline.summary.start && scene.fill?.texts?.summary && (
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: 50,
+                  left: '50%',
+                  transform: `
+                    translateX(-50%)
+                    scale(${interpolate(
+                      frame,
+                      [timeline.summary.start, timeline.summary.start + 30],
+                      [0.9, 1],
+                      { easing: Easing.elastic(1.2), extrapolateRight: 'clamp' }
+                    )})
+                  `,
+                  opacity: interpolate(
+                    frame,
+                    [timeline.summary.start, timeline.summary.start + 30],
+                    [0, 1],
+                    { extrapolateRight: 'clamp' }
+                  ),
+                  maxWidth: '82%',
+                }}
+              >
+                <GlassmorphicPane
+                  padding={38}
+                  borderOpacity={0.6}
+                  glowOpacity={0.3}
+                  backgroundColor="rgba(255, 255, 255, 0.15)"
+                >
+                  <div
+                    style={{
+                      fontFamily: fonts.subtitle.family,
+                      fontSize: fonts.subtitle.size * 1.15,
+                      fontWeight: 700,
+                      color: colors.highlight,
+                      textAlign: 'center',
+                      lineHeight: 1.4,
+                      textShadow: `0 3px 30px ${colors.highlight}70`,
+                    }}
+                  >
+                    💡 {scene.fill.texts.summary}
+                  </div>
+                </GlassmorphicPane>
+              </div>
+            )}
           </div>
-        )}
-      </div>
-    </div>
+        </AbsoluteFill>
+      </AbsoluteFill>
+    </AbsoluteFill>
   );
 };
+
+export const EXPLAIN_DURATION = 30 * 30;
+export const EXPLAIN_EXIT_TRANSITION = 10;

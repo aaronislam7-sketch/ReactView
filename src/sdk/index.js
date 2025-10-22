@@ -27,9 +27,17 @@ export * from './animations';
 export * from './rough-utils';
 export * from './components.jsx';
 export * from './lottie-helpers';
+// Core animation & motion
 export * from './easing';
 export * from './motion';
 export * from './useWriteOn';
+
+// Broadcast-grade enhancements
+export * from './broadcastAnimations';
+export * from './broadcastEffects';
+export * from './lottieIntegration';
+
+// Utilities
 export * from './time';
 export * from './typography';
 export * from './usePreloadAssets';
