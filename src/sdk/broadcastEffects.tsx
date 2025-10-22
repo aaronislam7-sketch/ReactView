@@ -217,7 +217,7 @@ export const SpotlightEffect: React.FC<{
   );
 };
 
-// ==================== ANIMATED PARTICLES ====================
+// ==================== ANIMATED PARTICLES - OPTIMIZED ====================
 
 export const FloatingParticles: React.FC<{
   count?: number;
@@ -226,22 +226,25 @@ export const FloatingParticles: React.FC<{
   speed?: number;
   frame: number;
 }> = ({ count = 20, color = '#ffffff', size = 4, speed = 0.5, frame }) => {
+  // Cap count to prevent performance issues
+  const safeCount = Math.min(count, 50);
+  
   const particles = React.useMemo(() => {
-    return Array.from({ length: count }, (_, i) => ({
+    return Array.from({ length: safeCount }, (_, i) => ({
       id: i,
       x: (i * 137.508) % 100, // Golden angle distribution
       y: (i * 47.8) % 100,
       delay: i * 3,
-      amplitude: 20 + (i % 3) * 15,
+      amplitude: 15 + (i % 3) * 10,
     }));
-  }, [count]);
+  }, [safeCount]);
 
   return (
-    <AbsoluteFill style={{ pointerEvents: 'none' }}>
+    <AbsoluteFill style={{ pointerEvents: 'none', overflow: 'hidden' }}>
       {particles.map((particle) => {
         const adjustedFrame = Math.max(0, frame - particle.delay);
-        const y = particle.y + Math.sin((adjustedFrame * speed) / 30) * particle.amplitude / 100;
-        const opacity = Math.sin((adjustedFrame * speed) / 60) * 0.3 + 0.5;
+        const y = particle.y + Math.sin((adjustedFrame * speed) / 40) * particle.amplitude / 100;
+        const opacity = Math.sin((adjustedFrame * speed) / 80) * 0.2 + 0.4;
 
         return (
           <div
@@ -254,8 +257,9 @@ export const FloatingParticles: React.FC<{
               height: size,
               borderRadius: '50%',
               backgroundColor: color,
-              opacity: opacity * 0.6,
-              filter: 'blur(2px)',
+              opacity: opacity * 0.5,
+              filter: 'blur(1px)',
+              willChange: 'transform',
             }}
           />
         );
