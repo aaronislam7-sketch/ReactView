@@ -2,328 +2,372 @@ import React from 'react';
 import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate, Easing } from 'remotion';
 import { resolveSceneImages } from '../utils/imageLibrary';
 import {
-  GlassmorphicPane,
-  NoiseTexture,
-  SpotlightEffect,
-  GradientBackground,
-} from '../sdk/broadcastEffects';
-import { sceneExitProgress } from '../sdk/broadcastAnimations';
+  HandDrawnArrow,
+  HandDrawnCircle,
+  HandDrawnUnderline,
+  WhiteboardTexture,
+  ChalkSmudge,
+  HandDrawnBox,
+} from '../sdk/whiteboardEffects';
 
 /**
- * HOOK Template - OPTIMIZED CINEMATIC
- * Broadcast quality without browser crashes
+ * HOOK Template - WHITEBOARD STYLE
+ * Like explaining on a whiteboard with chalk
+ * Everything has its place, just revealed with chalk drawing
  */
 export const HookTemplate = ({ scene }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
 
   const defaultColors = {
-    bg: '#0a0a1e',
-    accent: '#E62B1E',
-    support: '#FF6B6B',
-    ink: '#ffffff',
-    highlight: '#FFE66D',
+    bg: '#1a3a2e', // Dark green chalkboard
+    chalk: '#f5f5dc', // Beige chalk
+    accent: '#ff6b6b', // Red chalk
+    yellow: '#ffd93d', // Yellow chalk
+    blue: '#4ecdc4', // Blue chalk
   };
 
   const colors = scene.style_tokens?.colors || defaultColors;
-
-  const defaultFonts = {
-    title: { family: 'Cabin Sketch, cursive', size: 80, weight: 700 },
-    body: { family: 'Patrick Hand, cursive', size: 36, weight: 400 },
-    question: { family: 'Cabin Sketch, cursive', size: 68, weight: 700 },
-  };
-
-  const fonts = {
-    title: scene.style_tokens?.fonts?.title || defaultFonts.title,
-    body: scene.style_tokens?.fonts?.body || defaultFonts.body,
-    question: scene.style_tokens?.fonts?.question || defaultFonts.question,
-  };
+  const chalkColor = colors.chalk || '#f5f5dc';
+  const accentColor = colors.accent || '#ff6b6b';
 
   const images = resolveSceneImages(scene.fill?.images);
 
-  // SIMPLIFIED TIMELINE
+  // FIXED TIMELINE - Everything has its place
   const timeline = {
-    question: { start: 15, end: 850 },
-    mainVisual: { start: 60, end: 850 },
-    facts: [
-      { start: 120, end: 850 },
-      { start: 180, end: 850 },
-      { start: 240, end: 850 },
+    question: { start: 10, writeEnd: 40 },
+    questionCircle: { start: 45, end: 65 },
+    mainVisual: { start: 50, end: 80 },
+    fact1: { start: 100, writeEnd: 130 },
+    fact2: { start: 150, writeEnd: 180 },
+    fact3: { start: 200, writeEnd: 230 },
+    arrows: [
+      { start: 135, end: 155 },
+      { start: 185, end: 205 },
+      { start: 235, end: 255 },
     ],
-    challenge: { start: 680, end: 870 },
+    challenge: { start: 650, writeEnd: 680 },
+    challengeUnderline: { start: 685, end: 705 },
   };
 
-  // Simple camera zoom - no complex transforms
-  const cameraScale = interpolate(
-    frame,
-    [0, 40, durationInFrames - 40, durationInFrames],
-    [1.1, 1, 1, 1.3],
-    {
-      easing: Easing.bezier(0.4, 0, 0.2, 1),
+  // Calculate progress for each element
+  const getWriteProgress = (start, end) => {
+    return interpolate(frame, [start, end], [0, 1], {
       extrapolateLeft: 'clamp',
       extrapolateRight: 'clamp',
-    }
-  );
-
-  const exitProgress = sceneExitProgress(frame, fps, durationInFrames, 30);
-
-  // Gentle pulse
-  const pulse = 1 + Math.sin(frame * 0.05) * 0.02;
+    });
+  };
 
   return (
-    <AbsoluteFill>
-      <AbsoluteFill
+    <AbsoluteFill style={{ backgroundColor: colors.bg }}>
+      {/* Whiteboard texture */}
+      <WhiteboardTexture opacity={0.3} />
+      
+      {/* Chalk smudges for depth */}
+      <ChalkSmudge x={100} y={100} width={300} height={200} opacity={0.1} />
+      <ChalkSmudge x={1500} y={800} width={250} height={180} opacity={0.08} />
+
+      {/* FIXED LAYOUT - Everything in its place */}
+      <div
         style={{
-          backgroundColor: colors.bg,
-          transform: `scale(${1 + exitProgress * 2})`,
-          opacity: 1 - exitProgress * 0.8,
+          position: 'absolute',
+          inset: 0,
+          padding: '80px 100px',
         }}
       >
-        {/* Background - simplified */}
-        <GradientBackground gradient="ted-red" opacity={0.15} rotate={135} />
-        <NoiseTexture opacity={0.04} scale={1.2} />
-        <SpotlightEffect x={50} y={30} size={1200} color={colors.accent} opacity={0.12} />
-
-        {/* Content container with simple zoom */}
-        <AbsoluteFill style={{ transform: `scale(${cameraScale})` }}>
-          <div
-            style={{
-              position: 'relative',
-              width: '100%',
-              height: '100%',
-              padding: '70px 100px',
-            }}
-          >
-            {/* Question */}
-            {frame >= timeline.question.start && (
+        {/* QUESTION - Top center (FIXED POSITION) */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 80,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '80%',
+            textAlign: 'center',
+          }}
+        >
+          {frame >= timeline.question.start && (
+            <>
               <div
                 style={{
-                  textAlign: 'center',
-                  marginBottom: 40,
-                  opacity: interpolate(
-                    frame,
-                    [timeline.question.start, timeline.question.start + 30],
-                    [0, 1],
-                    { extrapolateRight: 'clamp' }
-                  ),
-                  transform: `
-                    scale(${interpolate(
-                      frame,
-                      [timeline.question.start, timeline.question.start + 30],
-                      [0.8, 1],
-                      { easing: Easing.out(Easing.cubic), extrapolateRight: 'clamp' }
-                    ) * pulse})
-                    translateY(${interpolate(
-                      frame,
-                      [timeline.question.start, timeline.question.start + 30],
-                      [-30, 0],
-                      { easing: Easing.out(Easing.cubic), extrapolateRight: 'clamp' }
-                    )}px)
-                  `,
+                  fontFamily: 'Caveat, Patrick Hand, cursive',
+                  fontSize: 72,
+                  fontWeight: 700,
+                  color: chalkColor,
+                  lineHeight: 1.3,
+                  textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
+                  opacity: getWriteProgress(timeline.question.start, timeline.question.writeEnd),
+                  filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.3))',
                 }}
               >
-                <GlassmorphicPane padding={45} borderOpacity={0.5} glowOpacity={0.25}>
-                  <div
-                    style={{
-                      fontFamily: fonts.question.family,
-                      fontSize: fonts.question.size,
-                      fontWeight: fonts.question.weight,
-                      color: colors.ink,
-                      lineHeight: 1.3,
-                      textShadow: `0 3px 20px ${colors.accent}60`,
-                    }}
-                  >
-                    {scene.fill?.texts?.question || '❓ What if...?'}
-                  </div>
-                </GlassmorphicPane>
+                {scene.fill?.texts?.question || '❓ What if everything changed?'}
               </div>
-            )}
+              
+              {/* Hand-drawn circle around question */}
+              {frame >= timeline.questionCircle.start && (
+                <HandDrawnCircle
+                  x={960}
+                  y={140}
+                  radius={320}
+                  progress={getWriteProgress(timeline.questionCircle.start, timeline.questionCircle.end)}
+                  color={accentColor}
+                />
+              )}
+            </>
+          )}
+        </div>
 
-            {/* Main visual */}
-            {frame >= timeline.mainVisual.start && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '28%',
-                  left: '50%',
-                  transform: `
-                    translateX(-50%)
-                    scale(${interpolate(
-                      frame,
-                      [timeline.mainVisual.start, timeline.mainVisual.start + 40],
-                      [0.5, 1],
-                      { easing: Easing.elastic(1.2), extrapolateRight: 'clamp' }
-                    )})
-                  `,
-                  opacity: interpolate(
-                    frame,
-                    [timeline.mainVisual.start, timeline.mainVisual.start + 30],
-                    [0, 1],
-                    { extrapolateRight: 'clamp' }
-                  ),
-                }}
-              >
-                {images?.mainImage ? (
-                  <img
-                    src={images.mainImage}
-                    alt="Main visual"
-                    style={{
-                      width: 180,
-                      height: 180,
-                      borderRadius: '50%',
-                      border: `6px solid ${colors.accent}`,
-                      boxShadow: `0 0 50px ${colors.accent}70`,
-                    }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      width: 180,
-                      height: 180,
-                      borderRadius: '50%',
-                      background: `linear-gradient(135deg, ${colors.accent}, ${colors.support})`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: 80,
-                      boxShadow: `0 0 50px ${colors.accent}70`,
-                    }}
-                  >
-                    💡
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Facts */}
+        {/* MAIN VISUAL - Center (FIXED POSITION) */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 320,
+            left: '50%',
+            transform: 'translateX(-50%)',
+          }}
+        >
+          {frame >= timeline.mainVisual.start && (
             <div
               style={{
-                position: 'absolute',
-                top: '52%',
-                left: 100,
-                right: 100,
-                display: 'flex',
-                gap: 30,
+                opacity: getWriteProgress(timeline.mainVisual.start, timeline.mainVisual.end),
+                transform: `scale(${0.8 + getWriteProgress(timeline.mainVisual.start, timeline.mainVisual.end) * 0.2})`,
               }}
             >
-              {[1, 2, 3].map((num, index) => {
-                const fact = scene.fill?.texts?.[`fact${num}`];
-                const factTimeline = timeline.facts[index];
-                
-                if (!fact || frame < factTimeline.start) return null;
-
-                const factProgress = interpolate(
-                  frame,
-                  [factTimeline.start, factTimeline.start + 30],
-                  [0, 1],
-                  { easing: Easing.out(Easing.cubic), extrapolateRight: 'clamp' }
-                );
-
-                return (
-                  <div
-                    key={num}
-                    style={{
-                      flex: 1,
-                      opacity: factProgress,
-                      transform: `
-                        translateY(${(1 - factProgress) * 50}px)
-                        scale(${0.9 + factProgress * 0.1})
-                      `,
-                    }}
-                  >
-                    <GlassmorphicPane padding={30} borderOpacity={0.4} glowOpacity={0.18}>
-                      <div
-                        style={{
-                          width: 60,
-                          height: 60,
-                          borderRadius: '50%',
-                          background: `linear-gradient(135deg, ${colors.accent}, ${colors.support})`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          margin: '0 auto 20px',
-                          boxShadow: `0 0 30px ${colors.accent}50`,
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontFamily: fonts.title.family,
-                            fontSize: 32,
-                            fontWeight: 700,
-                            color: '#ffffff',
-                          }}
-                        >
-                          {num}
-                        </span>
-                      </div>
-                      <div
-                        style={{
-                          fontFamily: fonts.body.family,
-                          fontSize: fonts.body.size,
-                          fontWeight: fonts.body.weight,
-                          color: colors.ink,
-                          textAlign: 'center',
-                          lineHeight: 1.5,
-                        }}
-                      >
-                        {fact}
-                      </div>
-                    </GlassmorphicPane>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Challenge */}
-            {frame >= timeline.challenge.start && scene.fill?.texts?.challenge && (
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: 70,
-                  left: '50%',
-                  transform: `
-                    translateX(-50%)
-                    scale(${interpolate(
-                      frame,
-                      [timeline.challenge.start, timeline.challenge.start + 30],
-                      [0.8, 1],
-                      { easing: Easing.elastic(1.2), extrapolateRight: 'clamp' }
-                    )})
-                  `,
-                  opacity: interpolate(
-                    frame,
-                    [timeline.challenge.start, timeline.challenge.start + 30],
-                    [0, 1],
-                    { extrapolateRight: 'clamp' }
-                  ),
-                  maxWidth: '85%',
-                }}
-              >
-                <GlassmorphicPane
-                  padding={40}
-                  borderOpacity={0.6}
-                  glowOpacity={0.3}
-                  backgroundColor="rgba(255, 255, 255, 0.12)"
+              {images?.mainImage ? (
+                <img
+                  src={images.mainImage}
+                  alt="Main visual"
+                  style={{
+                    width: 160,
+                    height: 160,
+                    borderRadius: '50%',
+                    border: `4px solid ${chalkColor}`,
+                    filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.5))',
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: 160,
+                    height: 160,
+                    borderRadius: '50%',
+                    backgroundColor: accentColor,
+                    border: `4px solid ${chalkColor}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 70,
+                    filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.5))',
+                  }}
                 >
-                  <div
-                    style={{
-                      fontFamily: fonts.title.family,
-                      fontSize: fonts.title.size * 0.6,
-                      fontWeight: fonts.title.weight,
-                      color: colors.highlight,
-                      textAlign: 'center',
-                      lineHeight: 1.4,
-                      textShadow: `0 3px 30px ${colors.highlight}70`,
-                    }}
-                  >
-                    {scene.fill.texts.challenge}
-                  </div>
-                </GlassmorphicPane>
-              </div>
+                  💡
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* FACTS - Fixed grid positions (NO SHIFTING) */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 550,
+            left: 100,
+            right: 100,
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: 40,
+          }}
+        >
+          {/* FACT 1 - ALWAYS IN SAME PLACE */}
+          <div style={{ opacity: frame >= timeline.fact1.start ? 1 : 0 }}>
+            {frame >= timeline.fact1.start && (
+              <HandDrawnBox
+                progress={getWriteProgress(timeline.fact1.start, timeline.fact1.writeEnd)}
+                color={chalkColor}
+                backgroundColor="rgba(0,0,0,0.25)"
+              >
+                {/* Number badge */}
+                <div
+                  style={{
+                    fontFamily: 'Caveat, cursive',
+                    fontSize: 48,
+                    fontWeight: 700,
+                    color: colors.yellow || '#ffd93d',
+                    textAlign: 'center',
+                    marginBottom: 15,
+                    filter: 'drop-shadow(0 0 8px rgba(255,217,61,0.6))',
+                  }}
+                >
+                  1
+                </div>
+                
+                {/* Fact text */}
+                <div
+                  style={{
+                    fontFamily: 'Patrick Hand, cursive',
+                    fontSize: 28,
+                    color: chalkColor,
+                    textAlign: 'center',
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {scene.fill?.texts?.fact1 || 'First surprising fact'}
+                </div>
+              </HandDrawnBox>
+            )}
+            
+            {/* Arrow pointing from visual to fact 1 */}
+            {frame >= timeline.arrows[0].start && (
+              <HandDrawnArrow
+                startX={960}
+                startY={420}
+                endX={320}
+                endY={600}
+                progress={getWriteProgress(timeline.arrows[0].start, timeline.arrows[0].end)}
+                color={colors.yellow || '#ffd93d'}
+              />
             )}
           </div>
-        </AbsoluteFill>
-      </AbsoluteFill>
+
+          {/* FACT 2 - ALWAYS IN SAME PLACE */}
+          <div style={{ opacity: frame >= timeline.fact2.start ? 1 : 0 }}>
+            {frame >= timeline.fact2.start && (
+              <HandDrawnBox
+                progress={getWriteProgress(timeline.fact2.start, timeline.fact2.writeEnd)}
+                color={chalkColor}
+                backgroundColor="rgba(0,0,0,0.25)"
+              >
+                <div
+                  style={{
+                    fontFamily: 'Caveat, cursive',
+                    fontSize: 48,
+                    fontWeight: 700,
+                    color: colors.blue || '#4ecdc4',
+                    textAlign: 'center',
+                    marginBottom: 15,
+                    filter: 'drop-shadow(0 0 8px rgba(78,205,196,0.6))',
+                  }}
+                >
+                  2
+                </div>
+                
+                <div
+                  style={{
+                    fontFamily: 'Patrick Hand, cursive',
+                    fontSize: 28,
+                    color: chalkColor,
+                    textAlign: 'center',
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {scene.fill?.texts?.fact2 || 'Second key insight'}
+                </div>
+              </HandDrawnBox>
+            )}
+            
+            {frame >= timeline.arrows[1].start && (
+              <HandDrawnArrow
+                startX={960}
+                startY={420}
+                endX={960}
+                endY={600}
+                progress={getWriteProgress(timeline.arrows[1].start, timeline.arrows[1].end)}
+                color={colors.blue || '#4ecdc4'}
+              />
+            )}
+          </div>
+
+          {/* FACT 3 - ALWAYS IN SAME PLACE */}
+          <div style={{ opacity: frame >= timeline.fact3.start ? 1 : 0 }}>
+            {frame >= timeline.fact3.start && (
+              <HandDrawnBox
+                progress={getWriteProgress(timeline.fact3.start, timeline.fact3.writeEnd)}
+                color={chalkColor}
+                backgroundColor="rgba(0,0,0,0.25)"
+              >
+                <div
+                  style={{
+                    fontFamily: 'Caveat, cursive',
+                    fontSize: 48,
+                    fontWeight: 700,
+                    color: accentColor,
+                    textAlign: 'center',
+                    marginBottom: 15,
+                    filter: `drop-shadow(0 0 8px ${accentColor}99)`,
+                  }}
+                >
+                  3
+                </div>
+                
+                <div
+                  style={{
+                    fontFamily: 'Patrick Hand, cursive',
+                    fontSize: 28,
+                    color: chalkColor,
+                    textAlign: 'center',
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {scene.fill?.texts?.fact3 || 'Third important point'}
+                </div>
+              </HandDrawnBox>
+            )}
+            
+            {frame >= timeline.arrows[2].start && (
+              <HandDrawnArrow
+                startX={960}
+                startY={420}
+                endX={1600}
+                endY={600}
+                progress={getWriteProgress(timeline.arrows[2].start, timeline.arrows[2].end)}
+                color={accentColor}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* CHALLENGE - Bottom center (FIXED POSITION) */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 80,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '70%',
+          }}
+        >
+          {frame >= timeline.challenge.start && scene.fill?.texts?.challenge && (
+            <>
+              <div
+                style={{
+                  fontFamily: 'Caveat, cursive',
+                  fontSize: 54,
+                  fontWeight: 700,
+                  color: colors.yellow || '#ffd93d',
+                  textAlign: 'center',
+                  lineHeight: 1.4,
+                  filter: 'drop-shadow(0 0 12px rgba(255,217,61,0.7))',
+                  opacity: getWriteProgress(timeline.challenge.start, timeline.challenge.writeEnd),
+                }}
+              >
+                {scene.fill.texts.challenge}
+              </div>
+              
+              {/* Hand-drawn underline */}
+              {frame >= timeline.challengeUnderline.start && (
+                <HandDrawnUnderline
+                  x={380}
+                  y={990}
+                  width={1160}
+                  progress={getWriteProgress(timeline.challengeUnderline.start, timeline.challengeUnderline.end)}
+                  color={colors.yellow || '#ffd93d'}
+                />
+              )}
+            </>
+          )}
+        </div>
+      </div>
     </AbsoluteFill>
   );
 };

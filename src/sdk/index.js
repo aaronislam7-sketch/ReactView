@@ -36,6 +36,7 @@ export * from './useWriteOn';
 export * from './broadcastAnimations';
 export * from './broadcastEffects';
 export * from './lottieIntegration';
+export * from './whiteboardEffects';
 
 // Utilities
 export * from './time';
