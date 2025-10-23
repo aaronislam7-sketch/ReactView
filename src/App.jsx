@@ -44,7 +44,7 @@ import reflectMindMapLearningScene from './scenes/reflect_mindmap_learning.json'
 
 // Knodovia video scenes
 import hookKnodoviaMapScene from './scenes/hook_knodovia_map.json';
-import hook1AKnodoviaScene from './scenes/hook_1a_knodovia_map.json';
+import hook1AKnodoviaScene from './scenes/hook_1a_knodovia_map_v2.json';
 import hook1EMysteryScene from './scenes/hook_1e_mystery.json';
 import explainFourRegionsScene from './scenes/explain_four_regions.json';
 import explain2ABreakdownScene from './scenes/explain_2a_breakdown.json';
