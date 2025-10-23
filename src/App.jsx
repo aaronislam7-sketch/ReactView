@@ -22,7 +22,7 @@ import cultureScene from '../legacy/scenes/culture_ritual.json';
 import ideasSpreadScene from '../legacy/scenes/ideas_spread.json';
 
 // Import new pillar scenes
-import hookGrowthMindsetScene from './scenes/hook_growth_mindset.json';
+import hookSleepScienceScene from './scenes/hook_sleep_science.json';
 import hookStoryResilienceScene from './scenes/hook_story_resilience.json';
 import explainGrowthMindsetScene from './scenes/explain_growth_mindset.json';
 import explainTimelinePhotosynthesisScene from './scenes/explain_timeline_photosynthesis.json';
@@ -57,7 +57,7 @@ const sampleScenes = {
   'timeline_v1': cultureScene,
   
   // New pillar scenes
-  'hook': hookGrowthMindsetScene,
+  'hook': hookSleepScienceScene,
   'hook_story': hookStoryResilienceScene,
   'explain': explainGrowthMindsetScene,
   'explain_timeline': explainTimelinePhotosynthesisScene,
@@ -301,7 +301,7 @@ export default function App() {
           }}
         >
           <optgroup label="🎯 Hook Templates">
-            <option value="hook">Question-Driven Hook (Growth Mindset)</option>
+            <option value="hook">Cinematic Write-On Hook (Sleep Science)</option>
             <option value="hook_story">Story-Driven Hook (Resilience)</option>
           </optgroup>
           <optgroup label="📚 Explain Templates">

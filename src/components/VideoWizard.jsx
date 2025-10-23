@@ -11,7 +11,7 @@ import { ReflectMindMapTemplate } from '../templates/ReflectMindMapTemplate';
 import { MultiSceneVideo } from './MultiSceneVideo';
 
 // Import default scenes
-import hookScene from '../scenes/hook_growth_mindset.json';
+import hookScene from '../scenes/hook_sleep_science.json';
 import explainScene from '../scenes/explain_growth_mindset.json';
 import applyScene from '../scenes/apply_growth_mindset.json';
 import reflectScene from '../scenes/reflect_growth_mindset.json';
