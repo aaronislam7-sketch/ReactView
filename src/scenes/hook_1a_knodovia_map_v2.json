@@ -70,7 +70,8 @@
     ]
   },
   
-  "timeline": {
+  "timeline": [],
+  "timing": {
     "beats": [
       { "name": "prelude", "frame": 0, "duration": 29 },
       { "name": "questionPart1", "frame": 29, "duration": 43 },
