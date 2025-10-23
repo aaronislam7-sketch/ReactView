@@ -24,6 +24,7 @@ import { Apply3BScenarioChoice } from './templates/Apply3BScenarioChoice';
 import { Reflect4AKeyTakeaways } from './templates/Reflect4AKeyTakeaways';
 import { Reflect4DForwardLink } from './templates/Reflect4DForwardLink';
 import {StyleTokensProvider} from './sdk/StyleTokensProvider';
+import { DebugOverlay } from './components/DebugOverlay';
 
 // Import sample scenes (legacy mode)
 import economyScene from '../legacy/scenes/economy_currency.json';
@@ -569,6 +570,12 @@ export default function App() {
                 maxWidth: 960,
                 aspectRatio: '16/9'
               }}
+            />
+
+            {/* Debug Overlay */}
+            <DebugOverlay 
+              scene={currentScene}
+              templateId={currentScene.template_id}
             />
 
             {/* Debug Toggle */}

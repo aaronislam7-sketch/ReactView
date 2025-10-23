@@ -2,7 +2,12 @@
  * Rough.js Helpers
  * 
  * Hand-drawn sketch utilities for Knode scenes
- * Break free from perfect boxes - embrace imperfection!
+ * 
+ * ZERO WOBBLE POLICY:
+ * - All roughness set to 0 (no jitter/wobble)
+ * - All bowing set to 0 (clean lines)
+ * - Use rough.js for SHAPE RENDERING only
+ * - Preserve hand-drawn feel through layout, color, easing
  */
 
 import rough from 'roughjs/bundled/rough.esm.js';
@@ -21,8 +26,8 @@ export const sketchCircle = (rc, x, y, diameter, options = {}) => {
   const defaultOptions = {
     stroke: '#1A1A1A',
     strokeWidth: 3,
-    roughness: 1.5,
-    bowing: 1,
+    roughness: 0,
+    bowing: 0,
     fill: options.fill || 'none',
     fillStyle: options.fillStyle || 'solid',
   };
@@ -37,8 +42,8 @@ export const sketchRect = (rc, x, y, width, height, options = {}) => {
   const defaultOptions = {
     stroke: '#1A1A1A',
     strokeWidth: 3,
-    roughness: 1.2,
-    bowing: 2,
+    roughness: 0,
+    bowing: 0,
     fill: options.fill || 'none',
     fillStyle: options.fillStyle || 'hachure',
     fillWeight: 1.5,
@@ -56,8 +61,8 @@ export const sketchLine = (rc, x1, y1, x2, y2, options = {}) => {
   const defaultOptions = {
     stroke: '#1A1A1A',
     strokeWidth: 3,
-    roughness: 1.5,
-    bowing: 3,
+    roughness: 0,
+    bowing: 0,
   };
 
   return rc.line(x1, y1, x2, y2, { ...defaultOptions, ...options });
@@ -70,8 +75,8 @@ export const sketchPath = (rc, pathData, options = {}) => {
   const defaultOptions = {
     stroke: '#1A1A1A',
     strokeWidth: 3,
-    roughness: 1.3,
-    bowing: 2,
+    roughness: 0,
+    bowing: 0,
     fill: options.fill || 'none',
   };
 
@@ -85,8 +90,8 @@ export const sketchEllipse = (rc, x, y, width, height, options = {}) => {
   const defaultOptions = {
     stroke: '#1A1A1A',
     strokeWidth: 3,
-    roughness: 1.5,
-    bowing: 2,
+    roughness: 0,
+    bowing: 0,
     fill: options.fill || 'none',
     fillStyle: options.fillStyle || 'hachure',
   };
@@ -173,8 +178,8 @@ export const sketchUnderline = (rc, x, y, width, options = {}) => {
   const defaultOptions = {
     stroke: options.color || '#E74C3C',
     strokeWidth: 4,
-    roughness: 2,
-    bowing: 4,
+    roughness: 0,
+    bowing: 0,
   };
 
   // Slightly curved underline
@@ -196,7 +201,7 @@ export const sketchHighlight = (rc, x, y, width, height, options = {}) => {
     hachureAngle: -45,
     hachureGap: 10,
     stroke: 'none',
-    roughness: 2,
+    roughness: 0,
   };
 
   return rc.rectangle(x, y, width, height, { ...defaultOptions, ...options });
@@ -208,30 +213,30 @@ export const sketchHighlight = (rc, x, y, width, height, options = {}) => {
 export const ROUGH_PRESETS = {
   title: {
     strokeWidth: 4,
-    roughness: 1.5,
-    bowing: 2,
+    roughness: 0,
+    bowing: 0,
   },
   emphasis: {
     strokeWidth: 5,
-    roughness: 2,
-    bowing: 3,
+    roughness: 0,
+    bowing: 0,
     stroke: '#E74C3C',
   },
   subtle: {
     strokeWidth: 2,
-    roughness: 1,
-    bowing: 1,
+    roughness: 0,
+    bowing: 0,
     stroke: '#999',
   },
   bold: {
     strokeWidth: 6,
-    roughness: 2.5,
-    bowing: 4,
+    roughness: 0,
+    bowing: 0,
   },
   connector: {
     strokeWidth: 3,
-    roughness: 1.8,
-    bowing: 5,
+    roughness: 0,
+    bowing: 0,
     stroke: '#4A5568',
   },
 };
