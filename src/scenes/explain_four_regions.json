@@ -1,0 +1,62 @@
+{
+  "schema_version": "3.0",
+  "template_id": "explain_sequential",
+  "pillar": "explain",
+  "duration_s": 70,
+  "fps": 30,
+  "meta": {
+    "title": "The Four Regions of Learning",
+    "description": "Sequential reveal of Learnville, Reviseton, Evalua City, Playport",
+    "tags": ["module:welcome-knodovia", "pedagogy:explain", "topic:four-regions"],
+    "difficulty": "beginner",
+    "tone": "educational"
+  },
+  "style_tokens": {
+    "colors": {
+      "bg": "#FFF9F0",
+      "accent": "#8B7355",
+      "ink": "#1A1A1A"
+    }
+  },
+  "layout": {
+    "canvas": {
+      "w": 1920,
+      "h": 1080
+    }
+  },
+  "fill": {
+    "title": "🗺️ The Four Regions of Learning",
+    "regions": [
+      {
+        "name": "Learnville",
+        "icon": "💡",
+        "color": "#FF8C42",
+        "description": "The city of sparks. Streets hum with curiosity, every building asks 'what if?'",
+        "annotation": "where ideas are born"
+      },
+      {
+        "name": "Reviseton",
+        "icon": "📝",
+        "color": "#4ECDC4",
+        "description": "Home of reflection. Learning sticks when you sketch it, explain it, teach it back.",
+        "annotation": "notebooks for memory, not neatness"
+      },
+      {
+        "name": "Evalua City",
+        "icon": "✅",
+        "color": "#86BC25",
+        "description": "The proving ground. Test what you know and celebrate the gaps you uncover.",
+        "annotation": "every answer earns XP, every mistake earns insight"
+      },
+      {
+        "name": "Playport",
+        "icon": "🎮",
+        "color": "#9B59B6",
+        "description": "The coastal playground. Experimentation isn't optional — it's currency.",
+        "annotation": "joyful trial-and-error"
+      }
+    ],
+    "summary": "Four regions. One journey. Endless pathways."
+  },
+  "timeline": []
+}

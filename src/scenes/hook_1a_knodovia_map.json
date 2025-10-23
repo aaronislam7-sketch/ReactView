@@ -1,0 +1,40 @@
+{
+  "schema_version": "3.0",
+  "template_id": "hook_1a",
+  "pillar": "hook",
+  "variant": "1A",
+  "duration_s": 20,
+  "fps": 30,
+  "meta": {
+    "title": "HOOK 1A: Question Burst - Knodovia Map",
+    "description": "Provocative question about geography and mindsets",
+    "tags": ["module:welcome-knodovia", "pedagogy:hook", "variant:1A", "pattern:question-burst"],
+    "difficulty": "beginner",
+    "tone": "thoughtful",
+    "narrative_pattern": "What if...?",
+    "visual_archetype": "kinetic type, soft texture",
+    "compatible_next": ["explain_2a", "explain_2b", "explain_2e"]
+  },
+  "style_tokens": {
+    "colors": {
+      "bg": "#FFF9F0",
+      "accent": "#E74C3C",
+      "accent2": "#E67E22",
+      "ink": "#1A1A1A"
+    }
+  },
+  "layout": {
+    "canvas": {
+      "w": 1920,
+      "h": 1080
+    }
+  },
+  "fill": {
+    "texts": {
+      "questionPart1": "What if geography",
+      "questionPart2": "was measured in mindsets?",
+      "subtitle": "Welcome to Knodovia..."
+    }
+  },
+  "timeline": []
+}

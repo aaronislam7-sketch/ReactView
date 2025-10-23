@@ -1,0 +1,43 @@
+{
+  "schema_version": "3.0",
+  "template_id": "apply_3b",
+  "pillar": "apply",
+  "variant": "3B",
+  "duration_s": 28,
+  "fps": 30,
+  "meta": {
+    "title": "APPLY 3B: Scenario Choice",
+    "description": "Present decision point with branching paths",
+    "tags": ["pedagogy:apply", "variant:3B", "pattern:scenario", "tone:thoughtful"],
+    "tone": "thoughtful"
+  },
+  "style_tokens": {
+    "colors": {
+      "bg": "#FFF9F0",
+      "accent": "#8E44AD",
+      "path1": "#2E7FE4",
+      "path2": "#E67E22",
+      "ink": "#1A1A1A"
+    }
+  },
+  "layout": { "canvas": { "w": 1920, "h": 1080 } },
+  "fill": {
+    "scenario": {
+      "scenario": "You're visiting Knodovia for the first time",
+      "prompt": "Which region do you explore first?",
+      "choices": [
+        {
+          "label": "Start in Pragmatica",
+          "description": "Learn the rules and structure first",
+          "outcome": "Build a logical foundation"
+        },
+        {
+          "label": "Begin in Empathios",
+          "description": "Connect with the people and culture",
+          "outcome": "Understand the heart of the land"
+        }
+      ]
+    }
+  },
+  "timeline": []
+}

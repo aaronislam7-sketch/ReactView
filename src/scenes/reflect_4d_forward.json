@@ -1,0 +1,40 @@
+{
+  "schema_version": "3.0",
+  "template_id": "reflect_4d",
+  "pillar": "reflect",
+  "variant": "4D",
+  "duration_s": 20,
+  "fps": 30,
+  "meta": {
+    "title": "REFLECT 4D: Forward Link",
+    "description": "Connect current lesson to next learning step",
+    "tags": ["pedagogy:reflect", "variant:4D", "pattern:forward-link", "tone:encouraging"],
+    "tone": "encouraging"
+  },
+  "style_tokens": {
+    "colors": {
+      "bg": "#FFF9F0",
+      "accent": "#8E44AD",
+      "accent2": "#E67E22",
+      "path": "#2E7FE4",
+      "ink": "#1A1A1A"
+    }
+  },
+  "layout": { "canvas": { "w": 1920, "h": 1080 } },
+  "fill": {
+    "forward": {
+      "title": "Your Journey Continues",
+      "current": {
+        "label": "You learned:",
+        "summary": "How Knodovia's four regions represent different mindsets and ways of thinking"
+      },
+      "connection": "leads to",
+      "next": {
+        "label": "Coming up:",
+        "teaser": "Exploring how these mindsets interact and combine to solve real problems"
+      },
+      "cta": "Ready to dive deeper?"
+    }
+  },
+  "timeline": []
+}

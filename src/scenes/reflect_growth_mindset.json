@@ -2,38 +2,38 @@
   "schema_version": "3.0",
   "template_id": "reflect",
   "pillar": "reflect",
-  "duration_s": 30,
+  "duration_s": 35,
   "fps": 30,
   "meta": {
-    "title": "Reflect on Growth Mindset",
-    "description": "Consolidate learning and plan future application",
+    "title": "Growth Mindset Reflection",
+    "description": "Consolidate learning and prompt deeper thinking",
     "tags": ["module:psychology", "pedagogy:reflect", "topic:growth-mindset"],
     "difficulty": "beginner",
     "tone": "thoughtful"
   },
   "style_tokens": {
     "colors": {
-      "bg": "#f8f9fa",
-      "accent": "#732282",
-      "support": "#9b59b6",
-      "ink": "#2d3436",
-      "highlight": "#e8daef"
+      "bg": "#FFF9F0",
+      "accent": "#8E44AD",
+      "support": "#2E7FE4",
+      "ink": "#1A1A1A",
+      "highlight": "#F3EBFA"
     },
     "fonts": {
       "title": {
         "family": "Cabin Sketch, cursive",
-        "size": 70,
+        "size": 64,
         "weight": 700
+      },
+      "subtitle": {
+        "family": "Inter, sans-serif",
+        "size": 30,
+        "weight": 600
       },
       "body": {
         "family": "Patrick Hand, cursive",
         "size": 32,
         "weight": 400
-      },
-      "emphasis": {
-        "family": "Cabin Sketch, cursive",
-        "size": 42,
-        "weight": 600
       }
     }
   },
@@ -45,15 +45,12 @@
   },
   "fill": {
     "texts": {
-      "title": "Reflect on Your Journey",
-      "question1": "What challenge will you approach differently now?",
-      "question2": "How can you use 'yet' in your daily life?",
-      "question3": "Who can you share this mindset with?",
-      "insight": "Every mistake is a step toward mastery",
-      "nextSteps": "Start your growth journey today!"
-    },
-    "images": {
-      "reflectionIcon": "img_mirror"
+      "title": "Let's Reflect",
+      "insight1": "Intelligence isn't fixed — your brain physically changes when you learn",
+      "insight2": "Challenges and mistakes are opportunities for growth, not signs of failure",
+      "insight3": "The word \"yet\" transforms how you see your abilities",
+      "question": "When was the last time you said 'I can't' about something? What would change if you added 'yet'?",
+      "nextSteps": "Try this week: Add 'yet' to one challenge you're facing"
     }
   },
   "timeline": []

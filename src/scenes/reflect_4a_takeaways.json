@@ -1,0 +1,34 @@
+{
+  "schema_version": "3.0",
+  "template_id": "reflect_4a",
+  "pillar": "reflect",
+  "variant": "4A",
+  "duration_s": 22,
+  "fps": 30,
+  "meta": {
+    "title": "REFLECT 4A: Key Takeaways",
+    "description": "Summarize core lessons in memorable list",
+    "tags": ["pedagogy:reflect", "variant:4A", "pattern:takeaways", "tone:affirming"],
+    "tone": "affirming"
+  },
+  "style_tokens": {
+    "colors": {
+      "bg": "#FAFBFC",
+      "accent": "#27AE60",
+      "accent2": "#2E7FE4",
+      "ink": "#1A1A1A"
+    }
+  },
+  "layout": { "canvas": { "w": 1920, "h": 1080 } },
+  "fill": {
+    "reflection": {
+      "title": "Key Takeaways",
+      "takeaways": [
+        "Geography can be understood through mindsets, not just physical borders",
+        "Each region of Knodovia reflects a different way of thinking",
+        "Understanding these perspectives helps us navigate complex ideas"
+      ]
+    }
+  },
+  "timeline": []
+}

@@ -1,0 +1,42 @@
+{
+  "schema_version": "3.0",
+  "template_id": "hook_1e",
+  "pillar": "hook",
+  "variant": "1E",
+  "duration_s": 15,
+  "fps": 30,
+  "meta": {
+    "title": "HOOK 1E: Ambient Mystery",
+    "description": "Build intrigue through atmospheric question with fog and mystery",
+    "tags": ["pedagogy:hook", "variant:1E", "pattern:ambient-mystery", "tone:mysterious"],
+    "difficulty": "beginner",
+    "tone": "mysterious",
+    "narrative_pattern": "In the shadows of...",
+    "visual_archetype": "fog particles, whisper text, dim spotlight",
+    "compatible_next": ["explain_2a", "explain_2b", "explain_2e"]
+  },
+  "style_tokens": {
+    "colors": {
+      "bg": "#1A1F2E",
+      "fog": "#4A5568",
+      "accent": "#8E44AD",
+      "accent2": "#6C7A89",
+      "ink": "#E8F4FD",
+      "spotlight": "#F39C12"
+    }
+  },
+  "layout": {
+    "canvas": {
+      "w": 1920,
+      "h": 1080
+    }
+  },
+  "fill": {
+    "texts": {
+      "whisper": "In the depths of Knodovia...",
+      "question": "What secrets shape the land?",
+      "hint": "Let's discover together..."
+    }
+  },
+  "timeline": []
+}

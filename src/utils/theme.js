@@ -1,50 +1,95 @@
+/**
+ * Knode Visual Theme
+ * 
+ * Aligned with the Knode Scene Vision:
+ * - Hand-drawn clarity, not chaos
+ * - Light canvas with purposeful color pops
+ * - Flat, minimal, energetic
+ * - 70% indie charm / 30% studio polish
+ */
+
 export const THEME = {
+  // Typography - Marker fonts for emphasis, clean sans-serif for structure
   fonts: {
-    display: {
-      primary: "'Space Grotesk', sans-serif",
-      secondary: "'DM Sans', sans-serif"
+    marker: {
+      primary: "'Permanent Marker', cursive",
+      secondary: "'Cabin Sketch', cursive",
+      handwritten: "'Patrick Hand', cursive"
     },
-    body: {
+    structure: {
       primary: "'Inter', sans-serif",
-      secondary: "'Poppins', sans-serif"
+      secondary: "'DM Sans', sans-serif",
+      clean: "'Work Sans', sans-serif"
     }
   },
+
+  // Colors - Light canvas with purposeful color pops
   colors: {
-    palettes: {
-      modern: {
-        primary: '#2D3436',
-        secondary: '#0984E3',
-        accent: '#00B894',
-        background: '#F7FAFC'
-      },
-      vibrant: {
-        primary: '#6C5CE7',
-        secondary: '#00B894',
-        accent: '#FD79A8',
-        background: '#FFFFFF'
-      },
-      corporate: {
-        primary: '#2C3E50',
-        secondary: '#3498DB',
-        accent: '#E74C3C',
-        background: '#ECF0F1'
-      }
+    // Canvas backgrounds
+    canvas: {
+      primary: '#FAFBFC',      // Light whiteboard white
+      paper: '#F5F6F8',         // Subtle paper texture
+      cream: '#FFF9F0'          // Warm canvas option
     },
+
+    // Marker colors - energetic, clear
+    markers: {
+      black: '#1A1A1A',         // Main ink
+      blue: '#2E7FE4',          // Primary emphasis
+      red: '#E74C3C',           // Alert/hook
+      green: '#27AE60',         // Success/apply
+      purple: '#8E44AD',        // Reflect/thoughtful
+      orange: '#E67E22',        // Warm accent
+      yellow: '#F39C12'         // Highlight
+    },
+
+    // Semantic colors
     text: {
-      primary: '#2D3436',
-      secondary: '#636E72',
-      light: '#B2BEC3'
+      primary: '#1A1A1A',       // Main text
+      secondary: '#4A5568',     // Supporting text
+      muted: '#718096'          // De-emphasized
     },
-    gradients: {
-      primary: 'linear-gradient(135deg, #6C5CE7 0%, #3498DB 100%)',
-      accent: 'linear-gradient(135deg, #00B894 0%, #00CEC9 100%)',
-      warm: 'linear-gradient(135deg, #FD79A8 0%, #FAB1A0 100%)'
+
+    // Subtle accents
+    accents: {
+      lightBlue: '#E8F4FD',
+      lightGreen: '#E8F8F2',
+      lightRed: '#FEF0EF',
+      lightPurple: '#F3EBFA',
+      lightYellow: '#FEF9E6'
     }
   },
+
+  // Hand-drawn aesthetic
+  strokes: {
+    thin: 2,
+    medium: 3,
+    thick: 5,
+    bold: 8
+  },
+
+  // Minimal shadows - just enough depth
   shadows: {
-    sm: '0 2px 4px rgba(0,0,0,0.05)',
-    md: '0 4px 8px rgba(0,0,0,0.1)',
-    lg: '0 8px 16px rgba(0,0,0,0.1)',
-    xl: '0 12px 24px rgba(0,0,0,0.15)'
+    subtle: '0 1px 3px rgba(0,0,0,0.04)',
+    soft: '0 2px 6px rgba(0,0,0,0.06)',
+    card: '0 3px 12px rgba(0,0,0,0.08)'
+  },
+
+  // Motion feel - breathing, not jittery
+  motion: {
+    breathingSpeed: 0.04,     // Gentle micro-drift
+    breathingAmount: 0.012,    // Subtle scale variation
+    drawSpeed: 30,            // Frames for line drawing
+    transitionSpeed: 20       // Smooth transitions
+  },
+
+  // Spacing - clean and airy
+  spacing: {
+    xs: 8,
+    sm: 16,
+    md: 24,
+    lg: 40,
+    xl: 60,
+    xxl: 80
   }
 };

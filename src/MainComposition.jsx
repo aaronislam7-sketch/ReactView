@@ -1,27 +1,23 @@
 /**
  * Main Video Composition
- * Orchestrates scene transitions like GitHub Unwrapped
+ * Orchestrates pedagogical scene flow with smooth transitions
  * 
- * Features:
- * - Series.Sequence with negative offsets for smooth transitions
- * - Dynamic duration calculation
- * - Modular scene system
- * - Broadcast-grade transitions
+ * Knode Vision Implementation:
+ * - Hand-drawn whiteboard aesthetic throughout
+ * - 30-40 second scenes with natural rhythm
+ * - Smooth transitions between pedagogical beats
+ * - Light, clean, educational flow
  */
 
 import React from 'react';
-import { AbsoluteFill, Series, Audio, staticFile } from 'remotion';
+import { AbsoluteFill, Series } from 'remotion';
 import { HookTemplate, HOOK_DURATION, HOOK_EXIT_TRANSITION } from './templates/HookTemplate';
 import { ExplainTemplate, EXPLAIN_DURATION, EXPLAIN_EXIT_TRANSITION } from './templates/ExplainTemplate';
 import { ApplyTemplate, APPLY_DURATION, APPLY_EXIT_TRANSITION } from './templates/ApplyTemplate';
-import { ReflectTemplate } from './templates/ReflectTemplate';
+import { ReflectTemplate, REFLECT_DURATION, REFLECT_EXIT_TRANSITION } from './templates/ReflectTemplate';
 
-// Scene durations (in frames at 30fps)
-const REFLECT_DURATION = 30 * 30; // 30 seconds
-const REFLECT_EXIT_TRANSITION = 10;
-
-// Opening overlap (like GitHub Unwrapped)
-const OPENING_OVERLAP = 10;
+// Transition overlap for smooth flow
+const TRANSITION_OVERLAP = 10;
 
 /**
  * Calculate total video duration based on scenes
@@ -37,23 +33,18 @@ export const calculateDuration = (scenes) => {
     explainDuration +
     applyDuration +
     reflectDuration +
-    OPENING_OVERLAP
+    TRANSITION_OVERLAP
   );
 };
 
 /**
- * Main composition that stitches all scenes together
- * Any Hook variant → Any Explain variant → Any Apply variant → Any Reflect variant
+ * Main composition that stitches all pedagogical scenes together
+ * Hook → Explain → Apply → Reflect (any combination)
  */
 export const MainComposition = ({ scenes }) => {
   return (
-    <AbsoluteFill
-      style={{
-        backgroundColor: '#060842',
-      }}
-    >
-      {/* Background music (optional - scaffolded for future) */}
-      {/* <Audio src={staticFile('background-music.mp3')} /> */}
+    <AbsoluteFill>
+      {/* Each template manages its own background - light canvas aesthetic */}
 
       <Series>
         {/* HOOK Scene */}

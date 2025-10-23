@@ -2,37 +2,37 @@
   "schema_version": "3.0",
   "template_id": "apply",
   "pillar": "apply",
-  "duration_s": 30,
+  "duration_s": 35,
   "fps": 30,
   "meta": {
-    "title": "Apply Growth Mindset",
-    "description": "Practice using growth mindset language and techniques",
+    "title": "Growth Mindset in Action",
+    "description": "See how to apply growth mindset in real situations",
     "tags": ["module:psychology", "pedagogy:apply", "topic:growth-mindset"],
     "difficulty": "beginner",
     "tone": "practical"
   },
   "style_tokens": {
     "colors": {
-      "bg": "#fafafa",
-      "accent": "#86BC25",
-      "support": "#f39c12",
-      "ink": "#2d3436",
-      "action": "#27ae60"
+      "bg": "#FFF9F0",
+      "accent": "#27AE60",
+      "support": "#2E7FE4",
+      "ink": "#1A1A1A",
+      "highlight": "#E8F8F2"
     },
     "fonts": {
       "title": {
         "family": "Cabin Sketch, cursive",
-        "size": 72,
+        "size": 58,
         "weight": 700
       },
       "subtitle": {
-        "family": "Patrick Hand, cursive",
-        "size": 36,
+        "family": "Inter, sans-serif",
+        "size": 28,
         "weight": 600
       },
       "body": {
         "family": "Patrick Hand, cursive",
-        "size": 28,
+        "size": 32,
         "weight": 400
       }
     }
@@ -45,17 +45,11 @@
   },
   "fill": {
     "texts": {
-      "title": "Practice Growth Mindset",
-      "scenario": "You're struggling with a difficult math problem...",
-      "action1": "Replace 'I can't do this' with 'I can't do this YET'",
-      "action2": "Break the problem into smaller, manageable steps",
-      "action3": "Ask for help and try a different strategy",
-      "outcome": "You solve it and your brain gets stronger!"
-    },
-    "images": {
-      "tool1": "img_pencil",
-      "tool2": "img_puzzle",
-      "tool3": "img_network"
+      "scenario": "You're struggling with a difficult math problem and feel like giving up.",
+      "action1": "Reframe: \"I can't do this yet\" instead of \"I can't do this\"",
+      "action2": "Break it down: Split the problem into smaller, manageable steps",
+      "action3": "Seek help: Ask a teacher or peer to explain a tricky concept",
+      "result": "You solve the problem AND strengthen your brain's problem-solving pathways! 🎯"
     }
   },
   "timeline": []

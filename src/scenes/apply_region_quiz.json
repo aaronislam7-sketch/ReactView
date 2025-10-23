@@ -1,0 +1,44 @@
+{
+  "schema_version": "3.0",
+  "template_id": "apply_quiz",
+  "pillar": "apply",
+  "duration_s": 30,
+  "fps": 30,
+  "meta": {
+    "title": "Test Your Bearings",
+    "description": "Multiple choice quiz about the four regions",
+    "tags": ["module:welcome-knodovia", "pedagogy:apply", "topic:four-regions"],
+    "difficulty": "beginner",
+    "tone": "playful"
+  },
+  "style_tokens": {
+    "colors": {
+      "bg": "#FFF9F0",
+      "accent": "#86BC25",
+      "correct": "#86BC25",
+      "incorrect": "#999",
+      "ink": "#1A1A1A"
+    }
+  },
+  "layout": {
+    "canvas": {
+      "w": 1920,
+      "h": 1080
+    }
+  },
+  "fill": {
+    "texts": {
+      "context": "All four regions glow on the map, connected by neural pathways.",
+      "explanation": "Exactly. Reflection turns information into understanding. That's why Knodovians never finish a journey without looking back."
+    },
+    "quiz": {
+      "question": "If a Knodovian wants to reinforce what they've learned, which region should they visit?",
+      "optionA": "Learnville",
+      "optionB": "Reviseton",
+      "optionC": "Evalua City",
+      "optionD": "Playport",
+      "correctAnswer": "B"
+    }
+  },
+  "timeline": []
+}
