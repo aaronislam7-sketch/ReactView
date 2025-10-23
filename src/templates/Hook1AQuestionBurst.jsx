@@ -77,8 +77,8 @@ const Hook1AQuestionBurst = ({ scene }) => {
       const underline1 = rc.line(220, 310, 220 + 700 * progress, 315, {
         stroke: colors.accent,
         strokeWidth: 6,
-        roughness: 2.2,
-        bowing: 6,
+        roughness: 0.8,
+        bowing: 2,
       });
       svg.appendChild(underline1);
     }
@@ -89,8 +89,8 @@ const Hook1AQuestionBurst = ({ scene }) => {
       const underline2 = rc.line(280, 430, 280 + 820 * progress, 438, {
         stroke: colors.accent,
         strokeWidth: 7,
-        roughness: 2.5,
-        bowing: 8,
+        roughness: 1.0,
+        bowing: 2,
       });
       svg.appendChild(underline2);
     }
@@ -103,8 +103,8 @@ const Hook1AQuestionBurst = ({ scene }) => {
       const circle = rc.circle(960, 540, 360, {
         stroke: `${colors.accent}60`,
         strokeWidth: 5,
-        roughness: 2.5,
-        bowing: 4,
+        roughness: 0.6,
+        bowing: 1,
         fill: 'none',
       });
       
@@ -153,7 +153,7 @@ const Hook1AQuestionBurst = ({ scene }) => {
         const star = rc.path(pathData, {
           stroke: colors.accent,
           strokeWidth: 3,
-          roughness: 1.8,
+          roughness: 0.8,
           fill: `${colors.accent2}40`,
           fillStyle: 'hachure',
           hachureGap: 8,
@@ -185,8 +185,8 @@ const Hook1AQuestionBurst = ({ scene }) => {
           {
             stroke: `${colors.accent}50`,
             strokeWidth: 4,
-            roughness: 3,
-            bowing: 6,
+            roughness: 1.0,
+            bowing: 2,
           }
         );
         svg.appendChild(scribble);

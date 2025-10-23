@@ -1,0 +1,54 @@
+{
+  "schema_version": "3.0",
+  "template_id": "explain_2a",
+  "pillar": "explain",
+  "variant": "2A",
+  "duration_s": 30,
+  "fps": 30,
+  "meta": {
+    "title": "EXPLAIN 2A: Concept Breakdown",
+    "description": "Break complex concept into clear, digestible parts with branching structure",
+    "tags": ["pedagogy:explain", "variant:2A", "pattern:breakdown", "tone:clear"],
+    "difficulty": "beginner",
+    "tone": "clear",
+    "narrative_pattern": "X is made of Y, Z, A...",
+    "visual_archetype": "branching structure, labeled nodes",
+    "compatible_next": ["apply_3a", "apply_3b"]
+  },
+  "style_tokens": {
+    "colors": {
+      "bg": "#FFF9F0",
+      "accent": "#2E7FE4",
+      "accent2": "#27AE60",
+      "accent3": "#8E44AD",
+      "ink": "#1A1A1A"
+    }
+  },
+  "layout": {
+    "canvas": {
+      "w": 1920,
+      "h": 1080
+    }
+  },
+  "fill": {
+    "concept": {
+      "title": "Knodovia's Geography",
+      "concept": "Four Distinct Regions",
+      "parts": [
+        {
+          "label": "Pragmatica",
+          "description": "Logic and efficiency drive every decision"
+        },
+        {
+          "label": "Empathios",
+          "description": "Connection and understanding guide the way"
+        },
+        {
+          "label": "Innovara",
+          "description": "Creativity and possibility fuel progress"
+        }
+      ]
+    }
+  },
+  "timeline": []
+}

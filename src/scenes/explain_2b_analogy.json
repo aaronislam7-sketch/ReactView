@@ -1,0 +1,38 @@
+{
+  "schema_version": "3.0",
+  "template_id": "explain_2b",
+  "pillar": "explain",
+  "variant": "2B",
+  "duration_s": 25,
+  "fps": 30,
+  "meta": {
+    "title": "EXPLAIN 2B: Analogy",
+    "description": "Explain concept through relatable comparison",
+    "tags": ["pedagogy:explain", "variant:2B", "pattern:analogy", "tone:relatable"],
+    "tone": "relatable"
+  },
+  "style_tokens": {
+    "colors": {
+      "bg": "#FFF9F0",
+      "accent": "#E67E22",
+      "accent2": "#2E7FE4",
+      "ink": "#1A1A1A"
+    }
+  },
+  "layout": { "canvas": { "w": 1920, "h": 1080 } },
+  "fill": {
+    "analogy": {
+      "title": "Think of it like this...",
+      "familiar": {
+        "label": "A Compass",
+        "description": "Points you in the right direction, shows you where North is, helps you navigate unfamiliar territory."
+      },
+      "newConcept": {
+        "label": "A Mindset",
+        "description": "Guides your decisions, shows you what matters most, helps you navigate life's challenges."
+      },
+      "connection": "works like"
+    }
+  },
+  "timeline": []
+}

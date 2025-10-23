@@ -16,6 +16,13 @@ import { ReflectMindMapTemplate } from './templates/ReflectMindMapTemplate';
 import { ExplainSequentialTemplate } from './templates/ExplainSequentialTemplate';
 import { ApplyQuizTemplate } from './templates/ApplyQuizTemplate';
 import { Hook1AQuestionBurst } from './templates/Hook1AQuestionBurst';
+import { Hook1EAmbientMystery } from './templates/Hook1EAmbientMystery';
+import { Explain2AConceptBreakdown } from './templates/Explain2AConceptBreakdown';
+import { Explain2BAnalogy } from './templates/Explain2BAnalogy';
+import { Apply3AMicroQuiz } from './templates/Apply3AMicroQuiz';
+import { Apply3BScenarioChoice } from './templates/Apply3BScenarioChoice';
+import { Reflect4AKeyTakeaways } from './templates/Reflect4AKeyTakeaways';
+import { Reflect4DForwardLink } from './templates/Reflect4DForwardLink';
 import {StyleTokensProvider} from './sdk/StyleTokensProvider';
 
 // Import sample scenes (legacy mode)
@@ -37,9 +44,16 @@ import reflectMindMapLearningScene from './scenes/reflect_mindmap_learning.json'
 // Knodovia video scenes
 import hookKnodoviaMapScene from './scenes/hook_knodovia_map.json';
 import hook1AKnodoviaScene from './scenes/hook_1a_knodovia_map.json';
+import hook1EMysteryScene from './scenes/hook_1e_mystery.json';
 import explainFourRegionsScene from './scenes/explain_four_regions.json';
+import explain2ABreakdownScene from './scenes/explain_2a_breakdown.json';
+import explain2BAnalogyScene from './scenes/explain_2b_analogy.json';
 import applyRegionQuizScene from './scenes/apply_region_quiz.json';
+import apply3AQuizScene from './scenes/apply_3a_quiz.json';
+import apply3BScenarioScene from './scenes/apply_3b_scenario.json';
 import reflectKnodoviaJourneyScene from './scenes/reflect_knodovia_journey.json';
+import reflect4ATakeawaysScene from './scenes/reflect_4a_takeaways.json';
+import reflect4DForwardScene from './scenes/reflect_4d_forward.json';
 
 const templateMap = {
   // Legacy templates
@@ -51,15 +65,22 @@ const templateMap = {
   // New pillar templates
   'hook': HookTemplate,
   'hook_1a': Hook1AQuestionBurst,
+  'hook_1e': Hook1EAmbientMystery,
   'hook_story': HookStoryTemplate,
   'explain': ExplainTemplate,
   'explain_sequential': ExplainSequentialTemplate,
   'explain_timeline': ExplainTimelineTemplate,
+  'explain_2a': Explain2AConceptBreakdown,
+  'explain_2b': Explain2BAnalogy,
   'apply': ApplyTemplate,
   'apply_quiz': ApplyQuizTemplate,
   'apply_compare': ApplyCompareTemplate,
+  'apply_3a': Apply3AMicroQuiz,
+  'apply_3b': Apply3BScenarioChoice,
   'reflect': ReflectTemplate,
-  'reflect_mindmap': ReflectMindMapTemplate
+  'reflect_mindmap': ReflectMindMapTemplate,
+  'reflect_4a': Reflect4AKeyTakeaways,
+  'reflect_4d': Reflect4DForwardLink
 };
 
 const sampleScenes = {
@@ -84,9 +105,16 @@ const sampleScenes = {
   // Knodovia video scenes
   'hook_knodovia': hookKnodoviaMapScene,
   'hook_1a_knodovia': hook1AKnodoviaScene,
+  'hook_1e_mystery': hook1EMysteryScene,
   'explain_knodovia': explainFourRegionsScene,
+  'explain_2a_breakdown': explain2ABreakdownScene,
+  'explain_2b_analogy': explain2BAnalogyScene,
   'apply_knodovia': applyRegionQuizScene,
-  'reflect_knodovia': reflectKnodoviaJourneyScene
+  'apply_3a_quiz': apply3AQuizScene,
+  'apply_3b_scenario': apply3BScenarioScene,
+  'reflect_knodovia': reflectKnodoviaJourneyScene,
+  'reflect_4a_takeaways': reflect4ATakeawaysScene,
+  'reflect_4d_forward': reflect4DForwardScene
 };
 
 // Validation function
@@ -322,8 +350,17 @@ export default function App() {
             outline: 'none'
           }}
         >
+          <optgroup label="🎨 NEW: Rough.js Templates (9+/10)">
+            <option value="hook_1a_knodovia">🔥 Hook 1A: Question Burst (20s)</option>
+            <option value="hook_1e_mystery">🌫️ Hook 1E: Ambient Mystery (15s)</option>
+            <option value="explain_2a_breakdown">📊 Explain 2A: Concept Breakdown (30s)</option>
+            <option value="explain_2b_analogy">🔄 Explain 2B: Analogy (25s)</option>
+            <option value="apply_3a_quiz">✅ Apply 3A: Micro Quiz (18s)</option>
+            <option value="apply_3b_scenario">🛤️ Apply 3B: Scenario Choice (28s)</option>
+            <option value="reflect_4a_takeaways">💡 Reflect 4A: Key Takeaways (22s)</option>
+            <option value="reflect_4d_forward">➡️ Reflect 4D: Forward Link (20s)</option>
+          </optgroup>
           <optgroup label="🗺️ Knodovia Video - Mapping the Land">
-            <option value="hook_1a_knodovia">🆕 Hook 1A: Question Burst - Rough.js (20s)</option>
             <option value="hook_knodovia">Hook: A Map Unlike Any Other (25s)</option>
             <option value="explain_knodovia">Explain: Four Regions Sequential (70s)</option>
             <option value="apply_knodovia">Apply: Region Quiz (30s)</option>
