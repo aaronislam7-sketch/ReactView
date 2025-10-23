@@ -1,386 +1,420 @@
 import React from 'react';
-import { useCurrentFrame, useVideoConfig, AbsoluteFill } from 'remotion';
+import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate, Easing } from 'remotion';
 import { THEME } from '../utils/theme';
-import {
-  breathe,
-  popIn,
-  slideSettle,
-  staggerDelay,
-  paperBackground,
-  sketchBox,
-  markerHighlight,
-} from '../utils/knodeAnimations';
 
 /**
- * APPLY Template - Knode Vision
- * 
- * Purpose: Shows how the idea works in context
- * Feel: Like demonstrating a real scenario step-by-step
- * Timing: 30-40 seconds
- * 
- * Beats:
- * 1. Scenario setup - here's the situation
- * 2. Actions - 3 progressive steps showing application
- * 3. Result/outcome - what happens when you apply it
+ * APPLY TEMPLATE - Cinematic Write-On Flow
  */
-export const ApplyTemplate = ({ scene }) => {
-  const frame = useCurrentFrame();
-  const { fps, durationInFrames } = useVideoConfig();
 
-  // Extract scene data with Knode defaults
+const ApplyTemplate = ({ scene }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
   const colors = scene.style_tokens?.colors || {
     bg: THEME.colors.canvas.cream,
     accent: THEME.colors.markers.green,
-    support: THEME.colors.markers.blue,
     ink: THEME.colors.text.primary,
-    highlight: THEME.colors.accents.lightGreen,
   };
 
-  const fonts = scene.style_tokens?.fonts || {
-    title: { family: THEME.fonts.marker.secondary, size: 58, weight: 700 },
-    subtitle: { family: THEME.fonts.structure.primary, size: 28, weight: 600 },
-    body: { family: THEME.fonts.marker.handwritten, size: 32, weight: 400 },
+  const texts = scene.fill?.texts || {};
+
+  const BEAT = 36;
+  const beats = {
+    prelude: 0,
+    scenario: BEAT * 1,
+    pause1: BEAT * 2.6,
+    action1: BEAT * 3.4,
+    action1Complete: BEAT * 5,
+    action2: BEAT * 5.8,
+    action2Complete: BEAT * 7.4,
+    action3: BEAT * 8.2,
+    action3Complete: BEAT * 9.8,
+    pause2: BEAT * 10.6,
+    result: BEAT * 11.4,
+    settle: BEAT * 13,
   };
 
-  // Pedagogical timing - scenario then progressive application
-  const timeline = {
-    scenario: { start: 10, duration: 20 },
-    actions: [
-      { start: 50, complete: 85, duration: 15 },
-      { start: 90, complete: 125, duration: 15 },
-      { start: 130, complete: 165, duration: 15 },
-    ],
-    result: { start: 180, duration: 25 },
+  const cameraZoom = interpolate(
+    frame,
+    [0, beats.action1, beats.result, beats.settle],
+    [1.0, 1.02, 1.04, 1.01],
+    { easing: Easing.bezier(0.4, 0, 0.2, 1), extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+  );
+
+  const cameraDriftX = Math.sin(frame * 0.008) * 2;
+  const cameraDriftY = Math.cos(frame * 0.006) * 1.5;
+
+  const getPulse = (pauseFrame, duration = 45) => {
+    if (frame < pauseFrame || frame > pauseFrame + duration) return 1;
+    const progress = (frame - pauseFrame) / duration;
+    return 1 + Math.sin(progress * Math.PI * 2.5) * 0.04;
   };
 
-  // Canvas breathing
-  const canvasBreath = breathe(frame, 0, 0.005);
+  const writeOnReveal = (startFrame, duration = 20) => {
+    if (frame < startFrame) return { opacity: 0, clipPath: 'inset(0 100% 0 0)', progress: 0 };
+    if (frame >= startFrame + duration) return { opacity: 1, clipPath: 'inset(0 0 0 0)', progress: 1 };
+
+    const progress = interpolate(
+      frame,
+      [startFrame, startFrame + duration],
+      [0, 1],
+      { easing: Easing.out(Easing.cubic), extrapolateRight: 'clamp' }
+    );
+
+    return {
+      opacity: interpolate(progress, [0, 0.2], [0, 1], { extrapolateRight: 'clamp' }),
+      clipPath: `inset(0 ${(1 - progress) * 100}% 0 0)`,
+      progress,
+    };
+  };
+
+  const buildIn = (startFrame, duration = 22) => {
+    if (frame < startFrame) return { opacity: 0, scale: 0 };
+    if (frame >= startFrame + duration) return { opacity: 1, scale: 1 };
+
+    const progress = interpolate(
+      frame,
+      [startFrame, startFrame + duration],
+      [0, 1],
+      { easing: Easing.out(Easing.cubic), extrapolateRight: 'clamp' }
+    );
+
+    return { opacity: progress, scale: progress };
+  };
+
+  const depthShadow = '0 2px 8px rgba(0, 0, 0, 0.06)';
 
   return (
-    <AbsoluteFill style={paperBackground(colors.bg)}>
-      <div
+    <AbsoluteFill
+      style={{
+        backgroundColor: colors.bg,
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E")`,
+      }}
+    >
+      <AbsoluteFill
         style={{
-          position: 'relative',
-          width: '100%',
-          height: '100%',
-          padding: '70px 90px',
-          ...canvasBreath,
+          transform: `scale(${cameraZoom}) translate(${cameraDriftX}px, ${cameraDriftY}px)`,
+          padding: '70px 100px',
         }}
       >
-        {/* Progress dots indicator */}
-        {frame >= timeline.scenario.start && (
-          <div
-            style={{
-              position: 'absolute',
-              top: 40,
-              right: 90,
-              display: 'flex',
-              gap: 12,
-              alignItems: 'center',
-            }}
-          >
-            {[0, 1, 2].map((i) => {
-              const actionTimeline = timeline.actions[i];
-              const isComplete = frame >= actionTimeline.complete;
-              const isActive =
-                frame >= actionTimeline.start &&
-                frame < actionTimeline.complete;
+        {/* Progress dots - top right */}
+        {frame >= beats.scenario && (
+          <div style={{ position: 'absolute', top: 60, right: 100, display: 'flex', gap: 14 }}>
+            {[1, 2, 3].map((i) => {
+              const actionComplete = frame >= beats[`action${i}Complete`];
+              const actionActive =
+                frame >= beats[`action${i}`] && frame < beats[`action${i}Complete`];
 
               return (
                 <div
                   key={i}
                   style={{
-                    width: isActive ? 40 : 30,
-                    height: isActive ? 40 : 30,
+                    width: actionActive ? 36 : 30,
+                    height: actionActive ? 36 : 30,
                     borderRadius: '50%',
-                    backgroundColor: isComplete
-                      ? colors.accent
-                      : isActive
-                      ? colors.support
-                      : 'rgba(0,0,0,0.1)',
-                    border: `3px solid ${
-                      isComplete || isActive ? colors.bg : 'transparent'
-                    }`,
+                    backgroundColor: actionComplete ? colors.accent : actionActive ? `${colors.accent}60` : '#ddd',
+                    border: `3px solid ${actionComplete || actionActive ? '#fff' : 'transparent'}`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    boxShadow: actionComplete ? `0 4px 14px ${colors.accent}70` : 'none',
+                    transform: `scale(${getPulse(beats[`action${i}`], 30)})`,
                     transition: 'all 0.3s ease',
-                    boxShadow: isComplete
-                      ? '0 4px 12px rgba(39, 174, 96, 0.3)'
-                      : 'none',
-                    ...breathe(frame, i * 67, isActive ? 0.025 : 0.01),
                   }}
                 >
-                  {isComplete && (
-                    <span style={{ fontSize: 20, color: '#FFFFFF' }}>✓</span>
-                  )}
+                  {actionComplete && <span style={{ fontSize: 18, color: '#fff' }}>✓</span>}
                 </div>
               );
             })}
           </div>
         )}
 
-        {/* BEAT 1: SCENARIO SETUP */}
-        {frame >= timeline.scenario.start && scene.fill?.texts?.scenario && (
-          <div
-            style={{
-              marginBottom: 50,
-              ...popIn(frame, fps, timeline.scenario.start),
-            }}
-          >
+        {/* SCENARIO */}
+        {frame >= beats.scenario && texts.scenario && (
+          <div style={{ position: 'absolute', top: 140, left: 100, right: 100 }}>
             <div
               style={{
-                padding: '30px 40px',
-                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                border: `4px solid ${colors.support}`,
-                borderRadius: '12px',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
-                position: 'relative',
-                ...breathe(frame, 45, 0.012),
+                opacity: buildIn(beats.scenario, 24).opacity,
+                transform: `scale(${buildIn(beats.scenario, 24).scale})`,
               }}
             >
-              {/* Label tag */}
               <div
                 style={{
-                  position: 'absolute',
-                  top: -18,
-                  left: 30,
-                  padding: '6px 20px',
-                  backgroundColor: colors.support,
-                  color: '#FFFFFF',
-                  fontFamily: THEME.fonts.structure.primary,
-                  fontSize: 18,
-                  fontWeight: 700,
-                  letterSpacing: '1px',
-                  borderRadius: '6px',
-                  textTransform: 'uppercase',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                  padding: '24px 35px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  border: `4px solid ${colors.accent}80`,
+                  borderRadius: 10,
+                  boxShadow: depthShadow,
+                  position: 'relative',
                 }}
               >
-                📋 Scenario
-              </div>
+                {/* Label */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: -16,
+                    left: 30,
+                    padding: '6px 18px',
+                    backgroundColor: colors.accent,
+                    color: '#fff',
+                    fontFamily: THEME.fonts.structure.primary,
+                    fontSize: 16,
+                    fontWeight: 700,
+                    letterSpacing: '1px',
+                    borderRadius: 6,
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  📋 Scenario
+                </div>
 
-              <p
-                style={{
-                  fontFamily: fonts.body.family,
-                  fontSize: fonts.body.size,
-                  color: colors.ink,
-                  margin: 0,
-                  lineHeight: 1.6,
-                  paddingTop: 10,
-                }}
-              >
-                {scene.fill.texts.scenario}
-              </p>
+                <div style={{ paddingTop: 8, position: 'relative' }}>
+                  <div style={writeOnReveal(beats.scenario + 12, 26)}>
+                    <span
+                      style={{
+                        fontFamily: THEME.fonts.marker.handwritten,
+                        fontSize: 28,
+                        color: colors.ink,
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      {texts.scenario}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
 
-        {/* BEAT 2: ACTIONS - Progressive Application */}
+        {/* ACTIONS - vertical stack, no overlaps */}
         <div
           style={{
+            position: 'absolute',
+            top: 320,
+            left: 100,
+            right: 100,
             display: 'flex',
             flexDirection: 'column',
-            gap: 30,
-            marginBottom: 50,
+            gap: 32,
           }}
         >
-          {['action1', 'action2', 'action3'].map((key, index) => {
-            const actionText = scene.fill?.texts?.[key];
-            if (!actionText) return null;
+          {[1, 2, 3].map((num) => {
+            const actionText = texts[`action${num}`];
+            if (!actionText || frame < beats[`action${num}`]) return null;
 
-            const actionTimeline = timeline.actions[index];
-            if (frame < actionTimeline.start) return null;
-
-            const isActive =
-              frame >= actionTimeline.start &&
-              frame < actionTimeline.complete;
-            const isComplete = frame >= actionTimeline.complete;
+            const isActive = frame >= beats[`action${num}`] && frame < beats[`action${num}Complete`];
+            const isComplete = frame >= beats[`action${num}Complete`];
 
             return (
               <div
-                key={key}
+                key={num}
                 style={{
-                  ...slideSettle(
-                    frame,
-                    fps,
-                    actionTimeline.start,
-                    index % 2 === 0 ? 'left' : 'right'
-                  ),
-                  ...breathe(frame, index * 89, isActive ? 0.015 : 0.008),
+                  opacity: buildIn(beats[`action${num}`], 22).opacity,
+                  transform: `translateY(${(1 - buildIn(beats[`action${num}`], 22).scale) * 30}px)`,
                 }}
               >
                 <div
                   style={{
                     display: 'flex',
-                    gap: 25,
+                    gap: 22,
                     alignItems: 'center',
-                    padding: '25px 35px',
-                    backgroundColor: isComplete
-                      ? colors.highlight
-                      : 'rgba(255, 255, 255, 0.9)',
-                    border: `3px solid ${
-                      isComplete ? colors.accent : colors.support
-                    }`,
-                    borderRadius: '10px',
-                    boxShadow: isActive
-                      ? '0 6px 20px rgba(0,0,0,0.12)'
-                      : '0 3px 12px rgba(0,0,0,0.08)',
-                    transform: isActive ? 'scale(1.02)' : 'scale(1)',
-                    transition: 'all 0.3s ease',
+                    padding: '22px 30px',
+                    backgroundColor: isComplete ? `${colors.accent}15` : 'rgba(255, 255, 255, 0.95)',
+                    border: `3px solid ${isComplete ? colors.accent : `${colors.accent}60`}`,
+                    borderRadius: 8,
+                    boxShadow: isActive ? '0 6px 20px rgba(0, 0, 0, 0.12)' : depthShadow,
+                    transform: isActive ? `scale(${getPulse(beats[`action${num}`])})` : 'scale(1)',
                   }}
                 >
-                  {/* Action indicator */}
+                  {/* Indicator */}
                   <div
                     style={{
                       flexShrink: 0,
-                      width: 70,
-                      height: 70,
+                      width: 64,
+                      height: 64,
                       borderRadius: '50%',
-                      backgroundColor: isComplete
-                        ? colors.accent
-                        : isActive
-                        ? colors.support
-                        : 'rgba(0,0,0,0.1)',
+                      backgroundColor: isComplete ? colors.accent : isActive ? `${colors.accent}80` : '#ddd',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontSize: 36,
+                      fontSize: 32,
                       fontWeight: 700,
-                      color: '#FFFFFF',
-                      border: '4px solid rgba(255, 255, 255, 0.5)',
-                      boxShadow: isComplete
-                        ? '0 4px 16px rgba(39, 174, 96, 0.4)'
-                        : isActive
-                        ? '0 4px 16px rgba(46, 127, 228, 0.3)'
-                        : 'none',
-                      fontFamily: fonts.title.family,
-                      ...breathe(frame, index * 123, 0.02),
+                      color: '#fff',
+                      boxShadow: isComplete ? `0 4px 16px ${colors.accent}60` : 'none',
+                      fontFamily: THEME.fonts.marker.secondary,
+                      transform: `scale(${buildIn(beats[`action${num}`] + 8, 14).scale})`,
                     }}
                   >
-                    {isComplete ? '✓' : index + 1}
+                    {isComplete ? '✓' : num}
                   </div>
 
-                  {/* Action content */}
+                  {/* Text */}
                   <div style={{ flex: 1 }}>
                     <div
                       style={{
                         fontFamily: THEME.fonts.structure.primary,
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: 700,
-                        color: isComplete ? colors.accent : colors.support,
+                        color: isComplete ? colors.accent : `${colors.accent}`,
                         textTransform: 'uppercase',
                         letterSpacing: '1px',
                         marginBottom: 8,
                       }}
                     >
-                      Action {index + 1}
-                      {isComplete && ' ✓ Complete'}
-                      {isActive && ' → In Progress'}
+                      Action {num} {isComplete && '✓ Complete'} {isActive && '→ In Progress'}
                     </div>
 
-                    <p
-                      style={{
-                        fontFamily: fonts.body.family,
-                        fontSize: fonts.body.size * 0.95,
-                        color: colors.ink,
-                        margin: 0,
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      {actionText}
-                    </p>
+                    <div style={{ position: 'relative' }}>
+                      <div style={writeOnReveal(beats[`action${num}`] + 12, 24)}>
+                        <span
+                          style={{
+                            fontFamily: THEME.fonts.marker.handwritten,
+                            fontSize: 26,
+                            color: colors.ink,
+                            lineHeight: 1.5,
+                          }}
+                        >
+                          {actionText}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-
-                  {/* Connector arrow */}
-                  {index < 2 && (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        left: 85,
-                        bottom: -25,
-                        fontSize: 28,
-                        color: colors.support,
-                        opacity: 0.5,
-                      }}
-                    >
-                      ↓
-                    </div>
-                  )}
                 </div>
+
+                {/* Arrow to next */}
+                {num < 3 && (
+                  <div
+                    style={{
+                      marginLeft: 70,
+                      marginTop: 8,
+                      fontSize: 32,
+                      color: `${colors.accent}40`,
+                    }}
+                  >
+                    ↓
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
 
-        {/* BEAT 3: RESULT - The Outcome */}
-        {frame >= timeline.result.start && scene.fill?.texts?.result && (
+        {/* Connecting flow line */}
+        {frame >= beats.action1 + 35 && (
+          <svg
+            style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+            viewBox="0 0 1920 1080"
+          >
+            <path
+              d="M 170 450 L 170 850"
+              stroke={colors.accent}
+              strokeWidth="4"
+              strokeDasharray="400"
+              strokeDashoffset={interpolate(
+                frame,
+                [beats.action1 + 35, beats.action3],
+                [400, 0],
+                { easing: Easing.out(Easing.ease), extrapolateRight: 'clamp' }
+              )}
+              opacity="0.2"
+              fill="none"
+            />
+          </svg>
+        )}
+
+        {/* PAUSE 2 */}
+        {frame >= beats.pause2 && frame < beats.result && (
+          <div style={{ transform: `scale(${getPulse(beats.pause2)})` }} />
+        )}
+
+        {/* RESULT */}
+        {frame >= beats.result && texts.result && (
           <div
             style={{
               position: 'absolute',
-              bottom: 60,
+              bottom: 70,
               left: '50%',
               transform: 'translateX(-50%)',
-              maxWidth: '85%',
-              ...popIn(frame, fps, timeline.result.start),
+              maxWidth: '80%',
             }}
           >
             <div
               style={{
-                position: 'relative',
-                padding: '35px 60px',
-                backgroundColor: colors.accent,
-                borderRadius: '16px',
-                boxShadow: '0 10px 30px rgba(39, 174, 96, 0.35)',
-                border: `5px solid ${colors.bg}`,
-                ...breathe(frame, 456, 0.02),
+                opacity: buildIn(beats.result, 28).opacity,
+                transform: `scale(${buildIn(beats.result, 28).scale})`,
               }}
             >
-              {/* Success badge */}
               <div
                 style={{
-                  position: 'absolute',
-                  top: -25,
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  padding: '8px 30px',
-                  backgroundColor: colors.bg,
-                  border: `4px solid ${colors.accent}`,
-                  borderRadius: '30px',
-                  fontFamily: THEME.fonts.structure.primary,
-                  fontSize: 20,
-                  fontWeight: 700,
-                  color: colors.accent,
-                  textTransform: 'uppercase',
-                  letterSpacing: '2px',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  position: 'relative',
+                  padding: '28px 50px',
+                  backgroundColor: colors.accent,
+                  borderRadius: 12,
+                  boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
                 }}
               >
-                ★ Result ★
-              </div>
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: -20,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    padding: '6px 24px',
+                    backgroundColor: colors.bg,
+                    border: `4px solid ${colors.accent}`,
+                    borderRadius: 30,
+                    fontFamily: THEME.fonts.structure.primary,
+                    fontSize: 18,
+                    fontWeight: 700,
+                    color: colors.accent,
+                    textTransform: 'uppercase',
+                    letterSpacing: '2px',
+                  }}
+                >
+                  ★ Result ★
+                </div>
 
-              <p
-                style={{
-                  fontFamily: fonts.subtitle.family,
-                  fontSize: fonts.subtitle.size * 1.25,
-                  fontWeight: 700,
-                  color: '#FFFFFF',
-                  margin: 0,
-                  textAlign: 'center',
-                  lineHeight: 1.4,
-                  paddingTop: 15,
-                }}
-              >
-                {scene.fill.texts.result}
-              </p>
+                <div style={{ paddingTop: 12, position: 'relative' }}>
+                  <div style={writeOnReveal(beats.result + 10, 26)}>
+                    <span
+                      style={{
+                        fontFamily: THEME.fonts.structure.primary,
+                        fontSize: 30,
+                        fontWeight: 700,
+                        color: '#FFFFFF',
+                        lineHeight: 1.4,
+                        textAlign: 'center',
+                        display: 'block',
+                      }}
+                    >
+                      {texts.result}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
-      </div>
+
+        {/* Settle */}
+        {frame >= beats.settle && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundColor: colors.bg,
+              opacity: interpolate(frame, [beats.settle, beats.settle + 40], [0, 0.25], {
+                extrapolateRight: 'clamp',
+              }),
+            }}
+          />
+        )}
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };
 
-// Knode standard: 30-40 second scenes
-export const APPLY_DURATION = 35 * 30; // 35 seconds at 30fps
-export const APPLY_EXIT_TRANSITION = 10;
+export { ApplyTemplate };
+export const APPLY_DURATION = 14 * 30;
+export const APPLY_EXIT_TRANSITION = 15;

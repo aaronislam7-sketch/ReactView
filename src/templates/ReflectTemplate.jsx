@@ -1,150 +1,201 @@
 import React from 'react';
-import { useCurrentFrame, useVideoConfig, AbsoluteFill } from 'remotion';
+import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate, Easing } from 'remotion';
 import { THEME } from '../utils/theme';
-import {
-  breathe,
-  popIn,
-  slideSettle,
-  waveReveal,
-  paperBackground,
-  sketchBox,
-} from '../utils/knodeAnimations';
 
 /**
- * REFLECT Template - Knode Vision
- * 
- * Purpose: Recaps, reinforces, and challenges learners
- * Feel: Thoughtful and calm, with space for metacognition
- * Timing: 30-40 seconds
- * 
- * Beats:
- * 1. Title - what we're reflecting on
- * 2. Key insights - 2-3 main takeaways
- * 3. Reflection question - prompts deeper thinking
- * 4. Next steps - call to action or challenge
+ * REFLECT TEMPLATE - Cinematic Write-On Flow
  */
-export const ReflectTemplate = ({ scene }) => {
-  const frame = useCurrentFrame();
-  const { fps, durationInFrames } = useVideoConfig();
 
-  // Extract scene data with Knode defaults
+const ReflectTemplate = ({ scene }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
   const colors = scene.style_tokens?.colors || {
     bg: THEME.colors.canvas.cream,
     accent: THEME.colors.markers.purple,
-    support: THEME.colors.markers.blue,
     ink: THEME.colors.text.primary,
-    highlight: THEME.colors.accents.lightPurple,
   };
 
-  const fonts = scene.style_tokens?.fonts || {
-    title: { family: THEME.fonts.marker.secondary, size: 64, weight: 700 },
-    subtitle: { family: THEME.fonts.structure.primary, size: 30, weight: 600 },
-    body: { family: THEME.fonts.marker.handwritten, size: 32, weight: 400 },
+  const texts = scene.fill?.texts || {};
+
+  const BEAT = 36;
+  const beats = {
+    prelude: 0,
+    title: BEAT * 1,
+    insight1: BEAT * 2.4,
+    insight2: BEAT * 4,
+    insight3: BEAT * 5.6,
+    pause1: BEAT * 7.2,
+    question: BEAT * 8,
+    pause2: BEAT * 10,
+    nextSteps: BEAT * 10.8,
+    settle: BEAT * 13,
   };
 
-  // Pedagogical timing - calm, thoughtful pace
-  const timeline = {
-    title: { start: 10, duration: 20 },
-    insights: [
-      { start: 45, duration: 15 },
-      { start: 70, duration: 15 },
-      { start: 95, duration: 15 },
-    ],
-    question: { start: 130, duration: 25 },
-    nextSteps: { start: 170, duration: 25 },
+  const cameraZoom = interpolate(
+    frame,
+    [0, beats.insight1, beats.nextSteps, beats.settle],
+    [1.0, 1.02, 1.04, 1.01],
+    { easing: Easing.bezier(0.4, 0, 0.2, 1), extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+  );
+
+  const cameraDriftX = Math.sin(frame * 0.008) * 2;
+  const cameraDriftY = Math.cos(frame * 0.006) * 1.5;
+
+  const getPulse = (pauseFrame, duration = 50) => {
+    if (frame < pauseFrame || frame > pauseFrame + duration) return 1;
+    const progress = (frame - pauseFrame) / duration;
+    return 1 + Math.sin(progress * Math.PI * 2) * 0.04;
   };
 
-  // Gentle breathing - more meditative
-  const canvasBreath = breathe(frame, 0, 0.006);
+  const writeOnReveal = (startFrame, duration = 20) => {
+    if (frame < startFrame) return { opacity: 0, clipPath: 'inset(0 100% 0 0)', progress: 0 };
+    if (frame >= startFrame + duration) return { opacity: 1, clipPath: 'inset(0 0 0 0)', progress: 1 };
+
+    const progress = interpolate(
+      frame,
+      [startFrame, startFrame + duration],
+      [0, 1],
+      { easing: Easing.out(Easing.cubic), extrapolateRight: 'clamp' }
+    );
+
+    return {
+      opacity: interpolate(progress, [0, 0.2], [0, 1], { extrapolateRight: 'clamp' }),
+      clipPath: `inset(0 ${(1 - progress) * 100}% 0 0)`,
+      progress,
+    };
+  };
+
+  const buildIn = (startFrame, duration = 22) => {
+    if (frame < startFrame) return { opacity: 0, scale: 0 };
+    if (frame >= startFrame + duration) return { opacity: 1, scale: 1 };
+
+    const progress = interpolate(
+      frame,
+      [startFrame, startFrame + duration],
+      [0, 1],
+      { easing: Easing.out(Easing.cubic), extrapolateRight: 'clamp' }
+    );
+
+    return { opacity: progress, scale: progress };
+  };
+
+  const depthShadow = '0 2px 8px rgba(0, 0, 0, 0.06)';
 
   return (
-    <AbsoluteFill style={paperBackground(colors.bg)}>
-      <div
+    <AbsoluteFill
+      style={{
+        backgroundColor: colors.bg,
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E")`,
+      }}
+    >
+      <AbsoluteFill
         style={{
-          position: 'relative',
-          width: '100%',
-          height: '100%',
+          transform: `scale(${cameraZoom}) translate(${cameraDriftX}px, ${cameraDriftY}px)`,
           padding: '70px 100px',
-          ...canvasBreath,
         }}
       >
-        {/* BEAT 1: TITLE - Reflection Header */}
-        {frame >= timeline.title.start && (
+        {/* TITLE with icon */}
+        {frame >= beats.title && (
           <div
             style={{
+              position: 'absolute',
+              top: 70,
+              left: '50%',
+              transform: 'translateX(-50%)',
               textAlign: 'center',
-              marginBottom: 50,
-              ...popIn(frame, fps, timeline.title.start),
             }}
           >
-            {/* Mirror/thought bubble icon */}
+            {/* Thought bubble icon builds */}
             <div
               style={{
                 display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 20,
                 marginBottom: 20,
+                transform: `scale(${buildIn(beats.title, 20).scale})`,
+                opacity: buildIn(beats.title, 20).opacity,
               }}
             >
               <div
                 style={{
-                  width: 80,
-                  height: 80,
+                  width: 90,
+                  height: 90,
                   borderRadius: '50%',
-                  backgroundColor: colors.highlight,
+                  backgroundColor: `${colors.accent}20`,
                   border: `5px solid ${colors.accent}`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: 48,
-                  boxShadow: '0 4px 16px rgba(142, 68, 173, 0.2)',
-                  ...breathe(frame, 67, 0.02),
+                  fontSize: 52,
+                  boxShadow: `0 4px 16px ${colors.accent}30`,
                 }}
               >
                 💭
               </div>
             </div>
 
-            <h1
-              style={{
-                fontFamily: fonts.title.family,
-                fontSize: fonts.title.size,
-                fontWeight: fonts.title.weight,
-                color: colors.accent,
-                margin: 0,
-                lineHeight: 1.2,
-              }}
-            >
-              {scene.fill?.texts?.title || '🤔 Time to Reflect'}
-            </h1>
+            <div style={{ position: 'relative' }}>
+              <div style={writeOnReveal(beats.title + 16, 26)}>
+                <span
+                  style={{
+                    fontFamily: THEME.fonts.marker.secondary,
+                    fontSize: 58,
+                    fontWeight: 700,
+                    color: colors.accent,
+                    lineHeight: 1.2,
+                    textShadow: depthShadow,
+                  }}
+                >
+                  {texts.title || '🤔 Time to Reflect'}
+                </span>
+              </div>
+
+              {/* Pen tip */}
+              {(() => {
+                const reveal = writeOnReveal(beats.title + 16, 26);
+                if (reveal.progress > 0 && reveal.progress < 1) {
+                  return (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        left: `${50 + reveal.progress * 25}%`,
+                        top: '50%',
+                        width: 20,
+                        height: 20,
+                        borderRadius: '50%',
+                        backgroundColor: colors.accent,
+                        transform: 'translateY(-50%)',
+                        boxShadow: `0 0 20px ${colors.accent}`,
+                      }}
+                    />
+                  );
+                }
+              })()}
+            </div>
           </div>
         )}
 
-        {/* BEAT 2: KEY INSIGHTS - Main Takeaways */}
+        {/* INSIGHTS - vertical stack */}
         <div
           style={{
-            marginBottom: 50,
+            position: 'absolute',
+            top: 260,
+            left: 100,
+            right: 100,
             display: 'flex',
             flexDirection: 'column',
-            gap: 25,
-            maxWidth: '900px',
-            margin: '0 auto 50px',
+            gap: 28,
           }}
         >
-          {['insight1', 'insight2', 'insight3'].map((key, index) => {
-            const insightText = scene.fill?.texts?.[key];
-            if (!insightText) return null;
-
-            const insightTimeline = timeline.insights[index];
-            if (frame < insightTimeline.start) return null;
+          {[1, 2, 3].map((num) => {
+            const insightText = texts[`insight${num}`];
+            if (!insightText || frame < beats[`insight${num}`]) return null;
 
             return (
               <div
-                key={key}
+                key={num}
                 style={{
-                  ...waveReveal(frame, fps, index, insightTimeline.start, 0),
-                  ...breathe(frame, index * 91, 0.01),
+                  opacity: buildIn(beats[`insight${num}`], 22).opacity,
+                  transform: `translateY(${(1 - buildIn(beats[`insight${num}`], 22).scale) * 25}px)`,
                 }}
               >
                 <div
@@ -152,172 +203,201 @@ export const ReflectTemplate = ({ scene }) => {
                     display: 'flex',
                     gap: 20,
                     alignItems: 'flex-start',
-                    padding: '25px 35px',
+                    padding: '22px 30px',
                     backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    border: `3px solid ${colors.support}`,
+                    border: `3px solid ${colors.accent}60`,
                     borderLeft: `10px solid ${colors.accent}`,
-                    borderRadius: '10px',
-                    boxShadow: '0 3px 12px rgba(0,0,0,0.08)',
+                    borderRadius: 8,
+                    boxShadow: depthShadow,
                   }}
                 >
-                  {/* Insight number badge */}
+                  {/* Badge builds */}
                   <div
                     style={{
                       flexShrink: 0,
-                      width: 45,
-                      height: 45,
+                      width: 48,
+                      height: 48,
                       borderRadius: '50%',
                       backgroundColor: colors.accent,
-                      color: '#FFFFFF',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontFamily: fonts.title.family,
-                      fontSize: 28,
+                      fontSize: 26,
                       fontWeight: 700,
-                      boxShadow: '0 2px 8px rgba(142, 68, 173, 0.3)',
+                      color: '#fff',
+                      fontFamily: THEME.fonts.marker.secondary,
+                      transform: `scale(${buildIn(beats[`insight${num}`] + 8, 12).scale})`,
+                      opacity: buildIn(beats[`insight${num}`] + 8, 12).opacity,
+                      boxShadow: `0 3px 10px ${colors.accent}50`,
                     }}
                   >
-                    {index + 1}
+                    {num}
                   </div>
 
-                  {/* Insight text */}
-                  <p
-                    style={{
-                      fontFamily: fonts.body.family,
-                      fontSize: fonts.body.size,
-                      color: colors.ink,
-                      margin: 0,
-                      lineHeight: 1.5,
-                      flex: 1,
-                    }}
-                  >
-                    {insightText}
-                  </p>
+                  {/* Text writes */}
+                  <div style={{ flex: 1, position: 'relative' }}>
+                    <div style={writeOnReveal(beats[`insight${num}`] + 12, 24)}>
+                      <span
+                        style={{
+                          fontFamily: THEME.fonts.marker.handwritten,
+                          fontSize: 27,
+                          color: colors.ink,
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        {insightText}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             );
           })}
         </div>
 
-        {/* BEAT 3: REFLECTION QUESTION - Deeper Thinking */}
-        {frame >= timeline.question.start && scene.fill?.texts?.question && (
+        {/* PAUSE 1 */}
+        {frame >= beats.pause1 && frame < beats.question && (
+          <div style={{ transform: `scale(${getPulse(beats.pause1)})` }} />
+        )}
+
+        {/* QUESTION - dashed box */}
+        {frame >= beats.question && texts.question && (
           <div
             style={{
-              marginBottom: 40,
-              ...slideSettle(frame, fps, timeline.question.start, 'up'),
+              position: 'absolute',
+              top: 600,
+              left: 100,
+              right: 100,
             }}
           >
             <div
               style={{
-                padding: '35px 50px',
-                backgroundColor: colors.highlight,
-                border: `4px dashed ${colors.accent}`,
-                borderRadius: '16px',
-                boxShadow: '0 4px 16px rgba(142, 68, 173, 0.15)',
-                position: 'relative',
-                maxWidth: '850px',
-                margin: '0 auto',
-                ...breathe(frame, 234, 0.015),
+                opacity: buildIn(beats.question, 26).opacity,
+                transform: `scale(${buildIn(beats.question, 26).scale})`,
               }}
             >
-              {/* Question mark icon */}
               <div
                 style={{
-                  position: 'absolute',
-                  top: -25,
-                  left: 40,
-                  width: 50,
-                  height: 50,
-                  borderRadius: '50%',
-                  backgroundColor: colors.accent,
-                  color: '#FFFFFF',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 32,
-                  fontWeight: 700,
-                  border: `4px solid ${colors.bg}`,
-                  boxShadow: '0 3px 12px rgba(0,0,0,0.2)',
-                  ...breathe(frame, 345, 0.025),
+                  position: 'relative',
+                  padding: '28px 40px',
+                  backgroundColor: `${colors.accent}10`,
+                  border: `4px dashed ${colors.accent}`,
+                  borderRadius: 12,
+                  boxShadow: depthShadow,
                 }}
               >
-                ?
-              </div>
+                {/* Question mark badge */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: -22,
+                    left: 40,
+                    width: 54,
+                    height: 54,
+                    borderRadius: '50%',
+                    backgroundColor: colors.accent,
+                    color: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 34,
+                    fontWeight: 700,
+                    border: `4px solid ${colors.bg}`,
+                    boxShadow: `0 4px 14px ${colors.accent}50`,
+                    transform: `scale(${buildIn(beats.question + 10, 14).scale})`,
+                  }}
+                >
+                  ?
+                </div>
 
-              <p
-                style={{
-                  fontFamily: fonts.subtitle.family,
-                  fontSize: fonts.subtitle.size,
-                  fontWeight: fonts.subtitle.weight,
-                  color: colors.accent,
-                  margin: 0,
-                  fontStyle: 'italic',
-                  lineHeight: 1.5,
-                  textAlign: 'center',
-                }}
-              >
-                {scene.fill.texts.question}
-              </p>
+                <div style={{ paddingTop: 8, position: 'relative' }}>
+                  <div style={writeOnReveal(beats.question + 12, 28)}>
+                    <span
+                      style={{
+                        fontFamily: THEME.fonts.structure.primary,
+                        fontSize: 26,
+                        fontWeight: 600,
+                        color: colors.accent,
+                        fontStyle: 'italic',
+                        lineHeight: 1.5,
+                        textAlign: 'center',
+                        display: 'block',
+                      }}
+                    >
+                      {texts.question}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
 
-        {/* BEAT 4: NEXT STEPS - Call to Action */}
-        {frame >= timeline.nextSteps.start && scene.fill?.texts?.nextSteps && (
+        {/* PAUSE 2 */}
+        {frame >= beats.pause2 && frame < beats.nextSteps && (
+          <div style={{ transform: `scale(${getPulse(beats.pause2, 40)})` }} />
+        )}
+
+        {/* NEXT STEPS */}
+        {frame >= beats.nextSteps && texts.nextSteps && (
           <div
             style={{
               position: 'absolute',
               bottom: 70,
               left: '50%',
               transform: 'translateX(-50%)',
-              maxWidth: '80%',
-              ...popIn(frame, fps, timeline.nextSteps.start),
+              maxWidth: '75%',
             }}
           >
             <div
               style={{
-                padding: '30px 60px',
-                backgroundColor: colors.accent,
-                borderRadius: '50px',
-                boxShadow: '0 8px 24px rgba(142, 68, 173, 0.35)',
-                border: `5px solid ${colors.bg}`,
-                ...breathe(frame, 567, 0.018),
+                opacity: buildIn(beats.nextSteps, 26).opacity,
+                transform: `scale(${buildIn(beats.nextSteps, 26).scale})`,
               }}
             >
-              <p
+              <div
                 style={{
-                  fontFamily: fonts.subtitle.family,
-                  fontSize: fonts.subtitle.size * 1.15,
-                  fontWeight: 700,
-                  color: '#FFFFFF',
-                  margin: 0,
-                  textAlign: 'center',
-                  lineHeight: 1.3,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 15,
+                  padding: '26px 55px',
+                  backgroundColor: colors.accent,
+                  borderRadius: 50,
+                  boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
+                  border: `5px solid ${colors.bg}`,
                 }}
               >
-                <span style={{ fontSize: 42 }}>🚀</span>
-                {scene.fill.texts.nextSteps}
-              </p>
+                <div style={writeOnReveal(beats.nextSteps + 10, 26)}>
+                  <span
+                    style={{
+                      fontFamily: THEME.fonts.structure.primary,
+                      fontSize: 30,
+                      fontWeight: 700,
+                      color: '#FFFFFF',
+                      lineHeight: 1.3,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 14,
+                    }}
+                  >
+                    <span style={{ fontSize: 38 }}>🚀</span>
+                    {texts.nextSteps}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Decorative thoughtful elements */}
-        {frame >= 20 && (
+        {/* Sparkles decoration */}
+        {frame >= beats.title + 20 && (
           <>
             <div
               style={{
                 position: 'absolute',
-                top: 60,
-                right: 100,
-                fontSize: 32,
-                opacity: 0.3,
-                ...breathe(frame, 678, 0.03),
+                top: 70,
+                right: 120,
+                fontSize: 36,
+                opacity: 0.25,
+                transform: `scale(${getPulse(beats.title + 20, 100)})`,
               }}
             >
               ✨
@@ -325,22 +405,36 @@ export const ReflectTemplate = ({ scene }) => {
             <div
               style={{
                 position: 'absolute',
-                bottom: 55,
-                left: 80,
-                fontSize: 28,
-                opacity: 0.3,
-                ...breathe(frame, 789, 0.025),
+                bottom: 65,
+                left: 100,
+                fontSize: 32,
+                opacity: 0.25,
+                transform: `scale(${getPulse(beats.title + 50, 100)})`,
               }}
             >
               ✨
             </div>
           </>
         )}
-      </div>
+
+        {/* Settle */}
+        {frame >= beats.settle && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundColor: colors.bg,
+              opacity: interpolate(frame, [beats.settle, beats.settle + 40], [0, 0.25], {
+                extrapolateRight: 'clamp',
+              }),
+            }}
+          />
+        )}
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };
 
-// Knode standard: 30-40 second scenes
-export const REFLECT_DURATION = 35 * 30; // 35 seconds at 30fps
-export const REFLECT_EXIT_TRANSITION = 10;
+export { ReflectTemplate };
+export const REFLECT_DURATION = 14 * 30;
+export const REFLECT_EXIT_TRANSITION = 15;

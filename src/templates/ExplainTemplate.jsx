@@ -1,325 +1,439 @@
 import React from 'react';
-import { useCurrentFrame, useVideoConfig, AbsoluteFill } from 'remotion';
+import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate, Easing } from 'remotion';
 import { THEME } from '../utils/theme';
-import {
-  breathe,
-  popIn,
-  slideSettle,
-  drawOn,
-  staggerDelay,
-  paperBackground,
-  sketchBox,
-  markerStroke,
-} from '../utils/knodeAnimations';
 
 /**
- * EXPLAIN Template - Knode Vision
+ * EXPLAIN TEMPLATE - Cinematic Write-On Flow
  * 
- * Purpose: Builds understanding step by step
- * Feel: Like a teacher sketching out a concept progressively
- * Timing: 30-40 seconds
- * 
- * Beats:
- * 1. Title - what we're explaining
- * 2. Core concept - the main idea in one line
- * 3. Visual build - 3-4 steps appear progressively
- * 4. Insight/summary - the "aha" recap
+ * Same system as Hook:
+ * - Proper spacing (no overlaps)
+ * - Visible pen tips (20px)
+ * - Pulse during pauses
+ * - Visuals build on
+ * - Sequential timing
+ * - Connecting lines guide attention
  */
-export const ExplainTemplate = ({ scene }) => {
-  const frame = useCurrentFrame();
-  const { fps, durationInFrames } = useVideoConfig();
 
-  // Extract scene data with Knode defaults
+const ExplainTemplate = ({ scene }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
   const colors = scene.style_tokens?.colors || {
     bg: THEME.colors.canvas.primary,
     accent: THEME.colors.markers.blue,
-    support: THEME.colors.markers.green,
     ink: THEME.colors.text.primary,
-    highlight: THEME.colors.accents.lightBlue,
   };
 
-  const fonts = scene.style_tokens?.fonts || {
-    title: { family: THEME.fonts.marker.secondary, size: 64, weight: 700 },
-    subtitle: { family: THEME.fonts.structure.primary, size: 32, weight: 500 },
-    body: { family: THEME.fonts.marker.handwritten, size: 32, weight: 400 },
+  const texts = scene.fill?.texts || {};
+
+  const BEAT = 36;
+  const beats = {
+    prelude: 0,
+    title: BEAT * 1,
+    concept: BEAT * 2.4,
+    pause1: BEAT * 3.8,
+    step1: BEAT * 4.6,
+    step2: BEAT * 6,
+    step3: BEAT * 7.4,
+    step4: BEAT * 8.8,
+    pause2: BEAT * 10.2,
+    summary: BEAT * 11,
+    settle: BEAT * 13,
   };
 
-  // Pedagogical timing - clear progressive reveal
-  const timeline = {
-    title: { start: 5, duration: 18 },
-    concept: { start: 30, duration: 18 },
-    steps: [
-      { start: 60, duration: 15 },
-      { start: 85, duration: 15 },
-      { start: 110, duration: 15 },
-      { start: 135, duration: 15 },
-    ],
-    summary: { start: 170, duration: 20 },
+  const cameraZoom = interpolate(
+    frame,
+    [0, beats.step1, beats.summary, beats.settle],
+    [1.0, 1.02, 1.04, 1.01],
+    { easing: Easing.bezier(0.4, 0, 0.2, 1), extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+  );
+
+  const cameraDriftX = Math.sin(frame * 0.008) * 2;
+  const cameraDriftY = Math.cos(frame * 0.006) * 1.5;
+
+  const getPulse = (pauseFrame, duration = 50) => {
+    if (frame < pauseFrame || frame > pauseFrame + duration) return 1;
+    const progress = (frame - pauseFrame) / duration;
+    return 1 + Math.sin(progress * Math.PI * 2.5) * 0.04;
   };
 
-  // Canvas breathing
-  const canvasBreath = breathe(frame, 0, 0.005);
+  const writeOnReveal = (startFrame, duration = 20) => {
+    if (frame < startFrame) return { opacity: 0, clipPath: 'inset(0 100% 0 0)', progress: 0 };
+    if (frame >= startFrame + duration) return { opacity: 1, clipPath: 'inset(0 0 0 0)', progress: 1 };
+
+    const progress = interpolate(
+      frame,
+      [startFrame, startFrame + duration],
+      [0, 1],
+      { easing: Easing.out(Easing.cubic), extrapolateRight: 'clamp' }
+    );
+
+    return {
+      opacity: interpolate(progress, [0, 0.2], [0, 1], { extrapolateRight: 'clamp' }),
+      clipPath: `inset(0 ${(1 - progress) * 100}% 0 0)`,
+      progress,
+    };
+  };
+
+  const buildIn = (startFrame, duration = 22) => {
+    if (frame < startFrame) return { opacity: 0, strokeDashoffset: 1, scale: 0 };
+    if (frame >= startFrame + duration) return { opacity: 1, strokeDashoffset: 0, scale: 1 };
+
+    const progress = interpolate(
+      frame,
+      [startFrame, startFrame + duration],
+      [0, 1],
+      { easing: Easing.out(Easing.cubic), extrapolateRight: 'clamp' }
+    );
+
+    return { opacity: progress, strokeDashoffset: 1 - progress, scale: progress };
+  };
+
+  const depthShadow = '0 2px 8px rgba(0, 0, 0, 0.06)';
 
   return (
-    <AbsoluteFill style={paperBackground(colors.bg)}>
-      <div
+    <AbsoluteFill
+      style={{
+        backgroundColor: colors.bg,
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E")`,
+      }}
+    >
+      <AbsoluteFill
         style={{
-          position: 'relative',
-          width: '100%',
-          height: '100%',
+          transform: `scale(${cameraZoom}) translate(${cameraDriftX}px, ${cameraDriftY}px)`,
           padding: '70px 90px',
-          ...canvasBreath,
         }}
       >
-        {/* BEAT 1: TITLE */}
-        {frame >= timeline.title.start && (
+        {/* TITLE - Top, with underline */}
+        {frame >= beats.title && (
+          <div style={{ position: 'absolute', top: 70, left: 90, right: 90 }}>
+            <div style={{ position: 'relative' }}>
+              <div style={writeOnReveal(beats.title, 26)}>
+                <span
+                  style={{
+                    fontFamily: THEME.fonts.marker.secondary,
+                    fontSize: 58,
+                    fontWeight: 700,
+                    color: colors.ink,
+                    lineHeight: 1.2,
+                    textShadow: depthShadow,
+                  }}
+                >
+                  {texts.title || '📚 Understanding the Concept'}
+                </span>
+              </div>
+
+              {/* Pen tip */}
+              {(() => {
+                const reveal = writeOnReveal(beats.title, 26);
+                if (reveal.progress > 0 && reveal.progress < 1) {
+                  return (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        left: `${reveal.progress * 100}%`,
+                        top: '50%',
+                        width: 20,
+                        height: 20,
+                        borderRadius: '50%',
+                        backgroundColor: colors.accent,
+                        transform: 'translateY(-50%)',
+                        boxShadow: `0 0 20px ${colors.accent}`,
+                      }}
+                    />
+                  );
+                }
+              })()}
+            </div>
+
+            {/* Underline draws */}
+            {frame >= beats.title + 22 && (
+              <svg width="500" height="6" viewBox="0 0 500 6" style={{ marginTop: 12 }}>
+                <line
+                  x1="0"
+                  y1="3"
+                  x2="500"
+                  y2="3"
+                  stroke={colors.accent}
+                  strokeWidth="5"
+                  strokeLinecap="round"
+                  strokeDasharray="500"
+                  strokeDashoffset={interpolate(
+                    frame,
+                    [beats.title + 22, beats.title + 44],
+                    [500, 0],
+                    { easing: Easing.out(Easing.ease), extrapolateRight: 'clamp' }
+                  )}
+                />
+              </svg>
+            )}
+          </div>
+        )}
+
+        {/* CONCEPT - Key idea bar */}
+        {frame >= beats.concept && texts.concept && (
           <div
             style={{
-              textAlign: 'center',
-              marginBottom: 40,
-              ...popIn(frame, fps, timeline.title.start),
+              position: 'absolute',
+              top: 180,
+              left: 90,
+              right: 90,
             }}
           >
             <div
               style={{
-                display: 'inline-block',
-                padding: '15px 40px',
-                borderBottom: `5px solid ${colors.accent}`,
-                ...breathe(frame, 15, 0.012),
+                opacity: buildIn(beats.concept, 24).opacity,
+                transform: `scale(${buildIn(beats.concept, 24).scale})`,
               }}
             >
-              <h1
+              <div
                 style={{
-                  fontFamily: fonts.title.family,
-                  fontSize: fonts.title.size,
-                  fontWeight: fonts.title.weight,
-                  color: colors.ink,
-                  margin: 0,
-                  lineHeight: 1.2,
+                  padding: '20px 35px',
+                  backgroundColor: `${colors.accent}15`,
+                  border: `3px solid ${colors.accent}`,
+                  borderRadius: 8,
+                  boxShadow: depthShadow,
                 }}
               >
-                {scene.fill?.texts?.title || '📚 Understanding the Concept'}
-              </h1>
+                <div style={writeOnReveal(beats.concept + 12, 24)}>
+                  <span
+                    style={{
+                      fontFamily: THEME.fonts.structure.primary,
+                      fontSize: 28,
+                      fontWeight: 600,
+                      color: colors.accent,
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {texts.concept}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         )}
 
-        {/* BEAT 2: CORE CONCEPT */}
-        {frame >= timeline.concept.start && scene.fill?.texts?.concept && (
-          <div
-            style={{
-              textAlign: 'center',
-              marginBottom: 50,
-              padding: '0 120px',
-              ...slideSettle(frame, fps, timeline.concept.start, 'down'),
-            }}
-          >
-            <p
-              style={{
-                fontFamily: fonts.subtitle.family,
-                fontSize: fonts.subtitle.size,
-                fontWeight: fonts.subtitle.weight,
-                color: colors.accent,
-                margin: 0,
-                lineHeight: 1.5,
-                padding: '20px 30px',
-                backgroundColor: colors.highlight,
-                borderRadius: '8px',
-                border: `2px solid ${colors.accent}`,
-              }}
-            >
-              {scene.fill.texts.concept}
-            </p>
-          </div>
+        {/* PAUSE 1 */}
+        {frame >= beats.pause1 && frame < beats.step1 && (
+          <div style={{ transform: `scale(${getPulse(beats.pause1)})` }} />
         )}
 
-        {/* BEAT 3: VISUAL BUILD - Progressive Steps */}
+        {/* 4 STEPS - 2x2 grid, no overlaps */}
         <div
           style={{
+            position: 'absolute',
+            top: 320,
+            left: 90,
+            right: 90,
+            bottom: 180,
             display: 'grid',
             gridTemplateColumns: '1fr 1fr',
-            gap: 35,
-            marginBottom: 40,
-            maxWidth: '1200px',
-            margin: '0 auto',
+            gridTemplateRows: '1fr 1fr',
+            gap: 30,
           }}
         >
-          {['step1', 'step2', 'step3', 'step4'].map((key, index) => {
-            const stepText = scene.fill?.texts?.[key];
-            if (!stepText) return null;
-
-            const stepTimeline = timeline.steps[index];
-            if (frame < stepTimeline.start) return null;
+          {[
+            { key: 'step1', beat: beats.step1, num: 1 },
+            { key: 'step2', beat: beats.step2, num: 2 },
+            { key: 'step3', beat: beats.step3, num: 3 },
+            { key: 'step4', beat: beats.step4, num: 4 },
+          ].map(({ key, beat, num }) => {
+            const stepText = texts[key];
+            if (!stepText || frame < beat) return null;
 
             return (
               <div
                 key={key}
                 style={{
-                  ...slideSettle(
-                    frame,
-                    fps,
-                    stepTimeline.start,
-                    index % 2 === 0 ? 'left' : 'right'
-                  ),
-                  ...breathe(frame, index * 50, 0.01),
+                  opacity: buildIn(beat, 22).opacity,
+                  transform: `translateY(${(1 - buildIn(beat, 22).scale) * 25}px)`,
                 }}
               >
                 <div
                   style={{
-                    position: 'relative',
-                    ...sketchBox(colors.accent, frame + index * 100),
-                    minHeight: '140px',
+                    padding: 24,
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    border: `3px solid ${colors.accent}`,
+                    borderRadius: 8,
+                    boxShadow: depthShadow,
+                    height: '100%',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: 15,
+                    gap: 16,
                   }}
                 >
-                  {/* Step number circle */}
+                  {/* Badge builds */}
                   <div
                     style={{
-                      position: 'absolute',
-                      top: -20,
-                      left: -20,
-                      width: 55,
-                      height: 55,
+                      width: 50,
+                      height: 50,
                       borderRadius: '50%',
                       backgroundColor: colors.accent,
-                      color: '#FFFFFF',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontFamily: fonts.title.family,
-                      fontSize: 32,
+                      fontSize: 28,
                       fontWeight: 700,
-                      border: `4px solid ${colors.bg}`,
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                      ...breathe(frame, index * 73, 0.02),
+                      color: '#fff',
+                      transform: `scale(${buildIn(beat + 10, 12).scale})`,
+                      opacity: buildIn(beat + 10, 12).opacity,
+                      boxShadow: `0 4px 12px ${colors.accent}50`,
                     }}
                   >
-                    {index + 1}
+                    {num}
                   </div>
 
-                  {/* Step content */}
-                  <div style={{ paddingTop: 20 }}>
-                    <p
-                      style={{
-                        fontFamily: fonts.body.family,
-                        fontSize: fonts.body.size,
-                        color: colors.ink,
-                        margin: 0,
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      {stepText}
-                    </p>
+                  {/* Text writes on */}
+                  <div style={{ position: 'relative', flex: 1 }}>
+                    <div style={writeOnReveal(beat + 14, 22)}>
+                      <span
+                        style={{
+                          fontFamily: THEME.fonts.marker.handwritten,
+                          fontSize: 26,
+                          color: colors.ink,
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        {stepText}
+                      </span>
+                    </div>
                   </div>
-
-                  {/* Visual connector arrow for progression */}
-                  {index < 3 && (
-                    <svg
-                      style={{
-                        position: 'absolute',
-                        [index % 2 === 0 ? 'right' : 'left']: -25,
-                        bottom: '50%',
-                        width: 30,
-                        height: 30,
-                        opacity: 0.4,
-                        transform: index % 2 === 0 ? 'rotate(-90deg)' : 'rotate(90deg)',
-                      }}
-                      viewBox="0 0 24 24"
-                      fill="none"
-                    >
-                      <path
-                        d="M5 12h14m-7-7l7 7-7 7"
-                        {...markerStroke(colors.accent, 2)}
-                      />
-                    </svg>
-                  )}
                 </div>
               </div>
             );
           })}
         </div>
 
-        {/* BEAT 4: SUMMARY - The "Aha" Moment */}
-        {frame >= timeline.summary.start && scene.fill?.texts?.summary && (
+        {/* Connecting lines - flow between steps */}
+        {frame >= beats.step1 + 35 && (
+          <svg
+            style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+            viewBox="0 0 1920 1080"
+          >
+            {/* 1 to 2 */}
+            <path
+              d="M 850 600 L 1070 600"
+              stroke={colors.accent}
+              strokeWidth="3"
+              strokeDasharray="220"
+              strokeDashoffset={interpolate(
+                frame,
+                [beats.step2 + 20, beats.step2 + 38],
+                [220, 0],
+                { easing: Easing.out(Easing.ease), extrapolateRight: 'clamp' }
+              )}
+              opacity="0.25"
+              fill="none"
+            />
+            
+            {/* 2 to 3 (diagonal) */}
+            {frame >= beats.step3 + 20 && (
+              <path
+                d="M 1300 700 L 650 850"
+                stroke={colors.accent}
+                strokeWidth="3"
+                strokeDasharray="680"
+                strokeDashoffset={interpolate(
+                  frame,
+                  [beats.step3 + 20, beats.step3 + 42],
+                  [680, 0],
+                  { easing: Easing.out(Easing.ease), extrapolateRight: 'clamp' }
+                )}
+                opacity="0.25"
+                fill="none"
+              />
+            )}
+            
+            {/* 3 to 4 */}
+            {frame >= beats.step4 + 20 && (
+              <path
+                d="M 850 900 L 1070 900"
+                stroke={colors.accent}
+                strokeWidth="3"
+                strokeDasharray="220"
+                strokeDashoffset={interpolate(
+                  frame,
+                  [beats.step4 + 20, beats.step4 + 38],
+                  [220, 0],
+                  { easing: Easing.out(Easing.ease), extrapolateRight: 'clamp' }
+                )}
+                opacity="0.25"
+                fill="none"
+              />
+            )}
+          </svg>
+        )}
+
+        {/* PAUSE 2 */}
+        {frame >= beats.pause2 && frame < beats.summary && (
+          <div style={{ transform: `scale(${getPulse(beats.pause2, 40)})` }} />
+        )}
+
+        {/* SUMMARY - Bottom */}
+        {frame >= beats.summary && texts.summary && (
           <div
             style={{
               position: 'absolute',
-              bottom: 60,
+              bottom: 70,
               left: '50%',
               transform: 'translateX(-50%)',
-              maxWidth: '80%',
-              ...popIn(frame, fps, timeline.summary.start),
+              maxWidth: '75%',
             }}
           >
             <div
               style={{
-                position: 'relative',
-                padding: '25px 50px',
-                backgroundColor: colors.support,
-                borderRadius: '50px',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-                border: `4px solid ${colors.bg}`,
-                ...breathe(frame, 283, 0.018),
+                opacity: buildIn(beats.summary, 26).opacity,
+                transform: `scale(${buildIn(beats.summary, 26).scale})`,
               }}
             >
-              <p
+              <div
                 style={{
-                  fontFamily: fonts.subtitle.family,
-                  fontSize: fonts.subtitle.size * 1.15,
-                  fontWeight: 700,
-                  color: '#FFFFFF',
-                  margin: 0,
-                  textAlign: 'center',
-                  lineHeight: 1.3,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 12,
+                  padding: '24px 45px',
+                  backgroundColor: colors.accent,
+                  borderRadius: 50,
+                  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.18)',
                 }}
               >
-                <span style={{ fontSize: 40 }}>💡</span>
-                {scene.fill.texts.summary}
-              </p>
+                <div style={writeOnReveal(beats.summary + 10, 24)}>
+                  <span
+                    style={{
+                      fontFamily: THEME.fonts.structure.primary,
+                      fontSize: 32,
+                      fontWeight: 700,
+                      color: '#FFFFFF',
+                      lineHeight: 1.3,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 12,
+                    }}
+                  >
+                    <span style={{ fontSize: 38 }}>💡</span>
+                    {texts.summary}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Central flow arrow - subtle visual guide */}
-        {frame >= timeline.steps[1]?.start && (
-          <svg
+        {/* Settle fade */}
+        {frame >= beats.settle && (
+          <div
             style={{
               position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: 60,
-              height: 60,
-              opacity: 0.15,
-              pointerEvents: 'none',
-              ...breathe(frame, 456, 0.03),
+              inset: 0,
+              backgroundColor: colors.bg,
+              opacity: interpolate(frame, [beats.settle, beats.settle + 40], [0, 0.25], {
+                extrapolateRight: 'clamp',
+              }),
             }}
-            viewBox="0 0 24 24"
-            fill="none"
-          >
-            <circle
-              cx="12"
-              cy="12"
-              r="10"
-              {...markerStroke(colors.accent, 3)}
-            />
-            <path
-              d="M12 8v8m-4-4l4 4 4-4"
-              {...markerStroke(colors.accent, 2)}
-            />
-          </svg>
+          />
         )}
-      </div>
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };
 
-// Knode standard: 30-40 second scenes
-export const EXPLAIN_DURATION = 35 * 30; // 35 seconds at 30fps
-export const EXPLAIN_EXIT_TRANSITION = 10;
+export { ExplainTemplate };
+export const EXPLAIN_DURATION = 14 * 30;
+export const EXPLAIN_EXIT_TRANSITION = 15;
