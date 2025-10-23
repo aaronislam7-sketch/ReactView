@@ -15,6 +15,7 @@ import { ReflectTemplate } from './templates/ReflectTemplate';
 import { ReflectMindMapTemplate } from './templates/ReflectMindMapTemplate';
 import { ExplainSequentialTemplate } from './templates/ExplainSequentialTemplate';
 import { ApplyQuizTemplate } from './templates/ApplyQuizTemplate';
+import { Hook1AQuestionBurst } from './templates/Hook1AQuestionBurst';
 import {StyleTokensProvider} from './sdk/StyleTokensProvider';
 
 // Import sample scenes (legacy mode)
@@ -35,6 +36,7 @@ import reflectMindMapLearningScene from './scenes/reflect_mindmap_learning.json'
 
 // Knodovia video scenes
 import hookKnodoviaMapScene from './scenes/hook_knodovia_map.json';
+import hook1AKnodoviaScene from './scenes/hook_1a_knodovia_map.json';
 import explainFourRegionsScene from './scenes/explain_four_regions.json';
 import applyRegionQuizScene from './scenes/apply_region_quiz.json';
 import reflectKnodoviaJourneyScene from './scenes/reflect_knodovia_journey.json';
@@ -48,6 +50,7 @@ const templateMap = {
   
   // New pillar templates
   'hook': HookTemplate,
+  'hook_1a': Hook1AQuestionBurst,
   'hook_story': HookStoryTemplate,
   'explain': ExplainTemplate,
   'explain_sequential': ExplainSequentialTemplate,
@@ -80,6 +83,7 @@ const sampleScenes = {
   
   // Knodovia video scenes
   'hook_knodovia': hookKnodoviaMapScene,
+  'hook_1a_knodovia': hook1AKnodoviaScene,
   'explain_knodovia': explainFourRegionsScene,
   'apply_knodovia': applyRegionQuizScene,
   'reflect_knodovia': reflectKnodoviaJourneyScene
@@ -319,6 +323,7 @@ export default function App() {
           }}
         >
           <optgroup label="🗺️ Knodovia Video - Mapping the Land">
+            <option value="hook_1a_knodovia">🆕 Hook 1A: Question Burst - Rough.js (20s)</option>
             <option value="hook_knodovia">Hook: A Map Unlike Any Other (25s)</option>
             <option value="explain_knodovia">Explain: Four Regions Sequential (70s)</option>
             <option value="apply_knodovia">Apply: Region Quiz (30s)</option>
