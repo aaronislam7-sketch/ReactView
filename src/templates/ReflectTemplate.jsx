@@ -1,304 +1,346 @@
 import React from 'react';
-import { useCurrentFrame, useVideoConfig, spring, interpolate } from 'remotion';
-import { resolveSceneImages } from '../utils/imageLibrary';
-import { paperTexture, handDrawnWobble, pulse } from '../sdk/motion';
+import { useCurrentFrame, useVideoConfig, AbsoluteFill } from 'remotion';
+import { THEME } from '../utils/theme';
+import {
+  breathe,
+  popIn,
+  slideSettle,
+  waveReveal,
+  paperBackground,
+  sketchBox,
+} from '../utils/knodeAnimations';
 
 /**
- * REFLECT Template
- * Purpose: Consolidate learning, metacognition, personal connection
- * Style: Thoughtful, calm, introspective with space for thinking
- * Pedagogy: Self-assessment, synthesis, future application
+ * REFLECT Template - Knode Vision
+ * 
+ * Purpose: Recaps, reinforces, and challenges learners
+ * Feel: Thoughtful and calm, with space for metacognition
+ * Timing: 30-40 seconds
+ * 
+ * Beats:
+ * 1. Title - what we're reflecting on
+ * 2. Key insights - 2-3 main takeaways
+ * 3. Reflection question - prompts deeper thinking
+ * 4. Next steps - call to action or challenge
  */
 export const ReflectTemplate = ({ scene }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, durationInFrames } = useVideoConfig();
 
-  // Extract scene data
+  // Extract scene data with Knode defaults
   const colors = scene.style_tokens?.colors || {
-    bg: 'var(--kn-bg, #f8f9fa)',
-    accent: 'var(--kn-accent, #732282)',
-    support: '#9b59b6',
-    ink: 'var(--kn-ink, #2d3436)',
-    highlight: '#e8daef'
+    bg: THEME.colors.canvas.cream,
+    accent: THEME.colors.markers.purple,
+    support: THEME.colors.markers.blue,
+    ink: THEME.colors.text.primary,
+    highlight: THEME.colors.accents.lightPurple,
   };
 
   const fonts = scene.style_tokens?.fonts || {
-    title: { family: 'Cabin Sketch, cursive', size: 70, weight: 700 },
-    body: { family: 'Patrick Hand, cursive', size: 32, weight: 400 },
-    emphasis: { family: 'Cabin Sketch, cursive', size: 42, weight: 600 }
+    title: { family: THEME.fonts.marker.secondary, size: 64, weight: 700 },
+    subtitle: { family: THEME.fonts.structure.primary, size: 30, weight: 600 },
+    body: { family: THEME.fonts.marker.handwritten, size: 32, weight: 400 },
   };
 
-  // Resolve images from library
-  const images = resolveSceneImages(scene.fill?.images);
+  // Pedagogical timing - calm, thoughtful pace
+  const timeline = {
+    title: { start: 10, duration: 20 },
+    insights: [
+      { start: 45, duration: 15 },
+      { start: 70, duration: 15 },
+      { start: 95, duration: 15 },
+    ],
+    question: { start: 130, duration: 25 },
+    nextSteps: { start: 170, duration: 25 },
+  };
 
-  // Animation timing - gentle, contemplative pace
-  const titleStart = 0;
-  const mirrorStart = 60;
-  const questionsStart = 120;
-  const insightStart = 360;
-  const nextStepsStart = 450;
-
-  // Title animation
-  const titleProgress = spring({
-    frame: frame - titleStart,
-    fps,
-    config: { damping: 20, mass: 1, stiffness: 80 }
-  });
-
-  // Mirror/reflection icon
-  const mirrorProgress = spring({
-    frame: frame - mirrorStart,
-    fps,
-    config: { damping: 15, mass: 1, stiffness: 90 }
-  });
-
-  // Reflection questions (up to 3)
-  const questionProgresses = [0, 1, 2].map(i => 
-    spring({
-      frame: frame - (questionsStart + i * 75),
-      fps,
-      config: { damping: 18, mass: 1, stiffness: 85 }
-    })
-  );
-
-  // Key insight
-  const insightProgress = spring({
-    frame: frame - insightStart,
-    fps,
-    config: { damping: 15, mass: 1, stiffness: 100 }
-  });
-
-  // Next steps/call to action
-  const nextStepsProgress = spring({
-    frame: frame - nextStepsStart,
-    fps,
-    config: { damping: 12, mass: 1, stiffness: 100 }
-  });
-
-  // Gentle breathing animation for mirror icon
-  const breathe = mirrorProgress > 0 ? 1 + Math.sin(frame * 0.04) * 0.04 : 1;
+  // Gentle breathing - more meditative
+  const canvasBreath = breathe(frame, 0, 0.006);
 
   return (
-    <div style={{
-      width: '100%',
-      height: '100%',
-      backgroundColor: colors.bg,
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
-      {/* Soft paper texture */}
-      <div style={paperTexture(0.2)} />
+    <AbsoluteFill style={paperBackground(colors.bg)}>
+      <div
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '100%',
+          padding: '70px 100px',
+          ...canvasBreath,
+        }}
+      >
+        {/* BEAT 1: TITLE - Reflection Header */}
+        {frame >= timeline.title.start && (
+          <div
+            style={{
+              textAlign: 'center',
+              marginBottom: 50,
+              ...popIn(frame, fps, timeline.title.start),
+            }}
+          >
+            {/* Mirror/thought bubble icon */}
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 20,
+                marginBottom: 20,
+              }}
+            >
+              <div
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: '50%',
+                  backgroundColor: colors.highlight,
+                  border: `5px solid ${colors.accent}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 48,
+                  boxShadow: '0 4px 16px rgba(142, 68, 173, 0.2)',
+                  ...breathe(frame, 67, 0.02),
+                }}
+              >
+                💭
+              </div>
+            </div>
 
-      <div style={{
-        position: 'relative',
-        width: '100%',
-        height: '100%',
-        padding: '60px 100px'
-      }}>
-        
-        {/* Title */}
-        {titleProgress > 0 && (
-          <div style={{
-            textAlign: 'center',
-            marginBottom: 40,
-            opacity: titleProgress,
-            transform: `translateY(${(1 - titleProgress) * -20}px)`
-          }}>
-            <h1 style={{
-              fontFamily: fonts.title.family,
-              fontSize: fonts.title.size,
-              fontWeight: fonts.title.weight,
-              color: colors.accent,
-              margin: 0,
-              textShadow: '2px 2px 4px rgba(0,0,0,0.08)'
-            }}>
-              {scene.fill.texts.title || '🤔 Time to Reflect'}
+            <h1
+              style={{
+                fontFamily: fonts.title.family,
+                fontSize: fonts.title.size,
+                fontWeight: fonts.title.weight,
+                color: colors.accent,
+                margin: 0,
+                lineHeight: 1.2,
+              }}
+            >
+              {scene.fill?.texts?.title || '🤔 Time to Reflect'}
             </h1>
           </div>
         )}
 
-        {/* Central Mirror/Reflection Symbol */}
-        {mirrorProgress > 0 && (
-          <div style={{
-            position: 'absolute',
-            top: 180,
-            left: '50%',
-            transform: `translateX(-50%) scale(${mirrorProgress * breathe})`,
-            opacity: Math.min(mirrorProgress, 0.9)
-          }}>
-            {images.reflectionIcon ? (
-              <img
-                src={images.reflectionIcon}
-                alt="Reflection"
-                style={{
-                  width: 120,
-                  height: 120,
-                  borderRadius: '50%',
-                  boxShadow: '0 8px 24px rgba(115, 34, 130, 0.2)'
-                }}
-              />
-            ) : (
-              <div style={{
-                width: 120,
-                height: 120,
-                borderRadius: '50%',
-                backgroundColor: colors.highlight,
-                border: `4px solid ${colors.accent}`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 60,
-                boxShadow: '0 8px 24px rgba(115, 34, 130, 0.2)'
-              }}>
-                💭
-              </div>
-            )}
-          </div>
-        )}
+        {/* BEAT 2: KEY INSIGHTS - Main Takeaways */}
+        <div
+          style={{
+            marginBottom: 50,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 25,
+            maxWidth: '900px',
+            margin: '0 auto 50px',
+          }}
+        >
+          {['insight1', 'insight2', 'insight3'].map((key, index) => {
+            const insightText = scene.fill?.texts?.[key];
+            if (!insightText) return null;
 
-        {/* Reflection Questions */}
-        <div style={{
-          position: 'absolute',
-          top: 340,
-          left: 100,
-          right: 100,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 30
-        }}>
-          {['question1', 'question2', 'question3'].map((key, i) => (
-            scene.fill.texts[key] && questionProgresses[i] > 0 && (
+            const insightTimeline = timeline.insights[index];
+            if (frame < insightTimeline.start) return null;
+
+            return (
               <div
                 key={key}
                 style={{
-                  opacity: questionProgresses[i],
-                  transform: `translateX(${(1 - questionProgresses[i]) * (i % 2 === 0 ? -40 : 40)}px)`
+                  ...waveReveal(frame, fps, index, insightTimeline.start, 0),
+                  ...breathe(frame, index * 91, 0.01),
                 }}
               >
-                <div style={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                  border: `3px solid ${colors.support}`,
-                  borderLeft: `12px solid ${colors.accent}`,
-                  borderRadius: 12,
-                  padding: '25px 40px',
-                  boxShadow: '0 4px 14px rgba(0,0,0,0.08)',
-                  position: 'relative'
-                }}>
-                  {/* Question mark icon */}
-                  <div style={{
-                    position: 'absolute',
-                    left: -35,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    width: 40,
-                    height: 40,
-                    borderRadius: '50%',
-                    backgroundColor: colors.accent,
-                    color: '#ffffff',
+                <div
+                  style={{
                     display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 24,
-                    fontWeight: 700,
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
-                  }}>
-                    ?
+                    gap: 20,
+                    alignItems: 'flex-start',
+                    padding: '25px 35px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    border: `3px solid ${colors.support}`,
+                    borderLeft: `10px solid ${colors.accent}`,
+                    borderRadius: '10px',
+                    boxShadow: '0 3px 12px rgba(0,0,0,0.08)',
+                  }}
+                >
+                  {/* Insight number badge */}
+                  <div
+                    style={{
+                      flexShrink: 0,
+                      width: 45,
+                      height: 45,
+                      borderRadius: '50%',
+                      backgroundColor: colors.accent,
+                      color: '#FFFFFF',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontFamily: fonts.title.family,
+                      fontSize: 28,
+                      fontWeight: 700,
+                      boxShadow: '0 2px 8px rgba(142, 68, 173, 0.3)',
+                    }}
+                  >
+                    {index + 1}
                   </div>
 
-                  <p style={{
-                    fontFamily: fonts.body.family,
-                    fontSize: fonts.body.size,
-                    color: colors.ink,
-                    margin: 0,
-                    lineHeight: 1.5,
-                    fontStyle: 'italic'
-                  }}>
-                    {scene.fill.texts[key]}
+                  {/* Insight text */}
+                  <p
+                    style={{
+                      fontFamily: fonts.body.family,
+                      fontSize: fonts.body.size,
+                      color: colors.ink,
+                      margin: 0,
+                      lineHeight: 1.5,
+                      flex: 1,
+                    }}
+                  >
+                    {insightText}
                   </p>
                 </div>
               </div>
-            )
-          ))}
+            );
+          })}
         </div>
 
-        {/* Key Insight */}
-        {insightProgress > 0 && scene.fill.texts.insight && (
-          <div style={{
-            position: 'absolute',
-            bottom: 160,
-            left: '50%',
-            transform: `translateX(-50%)`,
-            opacity: insightProgress,
-            maxWidth: '75%'
-          }}>
-            <div style={{
-              backgroundColor: colors.highlight,
-              border: `4px solid ${colors.accent}`,
-              borderRadius: 20,
-              padding: '25px 50px',
-              textAlign: 'center',
-              boxShadow: '0 6px 20px rgba(115, 34, 130, 0.15)'
-            }}>
-              <p style={{
-                fontFamily: fonts.emphasis.family,
-                fontSize: fonts.emphasis.size,
-                color: colors.accent,
-                margin: 0,
-                fontWeight: 600
-              }}>
-                💡 {scene.fill.texts.insight}
+        {/* BEAT 3: REFLECTION QUESTION - Deeper Thinking */}
+        {frame >= timeline.question.start && scene.fill?.texts?.question && (
+          <div
+            style={{
+              marginBottom: 40,
+              ...slideSettle(frame, fps, timeline.question.start, 'up'),
+            }}
+          >
+            <div
+              style={{
+                padding: '35px 50px',
+                backgroundColor: colors.highlight,
+                border: `4px dashed ${colors.accent}`,
+                borderRadius: '16px',
+                boxShadow: '0 4px 16px rgba(142, 68, 173, 0.15)',
+                position: 'relative',
+                maxWidth: '850px',
+                margin: '0 auto',
+                ...breathe(frame, 234, 0.015),
+              }}
+            >
+              {/* Question mark icon */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: -25,
+                  left: 40,
+                  width: 50,
+                  height: 50,
+                  borderRadius: '50%',
+                  backgroundColor: colors.accent,
+                  color: '#FFFFFF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 32,
+                  fontWeight: 700,
+                  border: `4px solid ${colors.bg}`,
+                  boxShadow: '0 3px 12px rgba(0,0,0,0.2)',
+                  ...breathe(frame, 345, 0.025),
+                }}
+              >
+                ?
+              </div>
+
+              <p
+                style={{
+                  fontFamily: fonts.subtitle.family,
+                  fontSize: fonts.subtitle.size,
+                  fontWeight: fonts.subtitle.weight,
+                  color: colors.accent,
+                  margin: 0,
+                  fontStyle: 'italic',
+                  lineHeight: 1.5,
+                  textAlign: 'center',
+                }}
+              >
+                {scene.fill.texts.question}
               </p>
             </div>
           </div>
         )}
 
-        {/* Next Steps */}
-        {nextStepsProgress > 0 && scene.fill.texts.nextSteps && (
-          <div style={{
-            position: 'absolute',
-            bottom: 60,
-            left: '50%',
-            transform: `translateX(-50%) scale(${Math.min(nextStepsProgress, 1)})`,
-            opacity: nextStepsProgress,
-            maxWidth: '80%'
-          }}>
-            <div style={{
-              backgroundColor: colors.accent,
-              color: '#ffffff',
-              padding: '25px 60px',
-              borderRadius: 50,
-              fontFamily: fonts.body.family,
-              fontSize: 36,
-              fontWeight: 600,
-              textAlign: 'center',
-              boxShadow: '0 8px 24px rgba(115, 34, 130, 0.3)',
-              border: '4px solid #ffffff'
-            }}>
-              🚀 {scene.fill.texts.nextSteps}
+        {/* BEAT 4: NEXT STEPS - Call to Action */}
+        {frame >= timeline.nextSteps.start && scene.fill?.texts?.nextSteps && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 70,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              maxWidth: '80%',
+              ...popIn(frame, fps, timeline.nextSteps.start),
+            }}
+          >
+            <div
+              style={{
+                padding: '30px 60px',
+                backgroundColor: colors.accent,
+                borderRadius: '50px',
+                boxShadow: '0 8px 24px rgba(142, 68, 173, 0.35)',
+                border: `5px solid ${colors.bg}`,
+                ...breathe(frame, 567, 0.018),
+              }}
+            >
+              <p
+                style={{
+                  fontFamily: fonts.subtitle.family,
+                  fontSize: fonts.subtitle.size * 1.15,
+                  fontWeight: 700,
+                  color: '#FFFFFF',
+                  margin: 0,
+                  textAlign: 'center',
+                  lineHeight: 1.3,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 15,
+                }}
+              >
+                <span style={{ fontSize: 42 }}>🚀</span>
+                {scene.fill.texts.nextSteps}
+              </p>
             </div>
           </div>
         )}
 
-        {/* Decorative corner elements */}
-        <div style={{
-          position: 'absolute',
-          top: 20,
-          right: 40,
-          fontSize: 40,
-          opacity: titleProgress * 0.4
-        }}>
-          ✨
-        </div>
-        <div style={{
-          position: 'absolute',
-          bottom: 20,
-          left: 40,
-          fontSize: 40,
-          opacity: titleProgress * 0.4
-        }}>
-          ✨
-        </div>
+        {/* Decorative thoughtful elements */}
+        {frame >= 20 && (
+          <>
+            <div
+              style={{
+                position: 'absolute',
+                top: 60,
+                right: 100,
+                fontSize: 32,
+                opacity: 0.3,
+                ...breathe(frame, 678, 0.03),
+              }}
+            >
+              ✨
+            </div>
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 55,
+                left: 80,
+                fontSize: 28,
+                opacity: 0.3,
+                ...breathe(frame, 789, 0.025),
+              }}
+            >
+              ✨
+            </div>
+          </>
+        )}
       </div>
-    </div>
+    </AbsoluteFill>
   );
 };
+
+// Knode standard: 30-40 second scenes
+export const REFLECT_DURATION = 35 * 30; // 35 seconds at 30fps
+export const REFLECT_EXIT_TRANSITION = 10;

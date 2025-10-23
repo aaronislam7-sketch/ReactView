@@ -2,32 +2,32 @@
   "schema_version": "3.0",
   "template_id": "hook",
   "pillar": "hook",
-  "duration_s": 30,
+  "duration_s": 35,
   "fps": 30,
   "meta": {
     "title": "Growth Mindset Hook",
-    "description": "Engage learners with a compelling question about intelligence and learning",
+    "description": "Grab attention with an intriguing question about intelligence",
     "tags": ["module:psychology", "pedagogy:hook", "topic:growth-mindset"],
     "difficulty": "beginner",
-    "tone": "engaging"
+    "tone": "curious"
   },
   "style_tokens": {
     "colors": {
-      "bg": "#fafafa",
-      "accent": "#e74c3c",
-      "support": "#f39c12",
-      "ink": "#2d3436",
-      "highlight": "#ff6b6b"
+      "bg": "#FAFBFC",
+      "accent": "#E74C3C",
+      "support": "#E67E22",
+      "ink": "#1A1A1A",
+      "highlight": "#F39C12"
     },
     "fonts": {
       "title": {
         "family": "Cabin Sketch, cursive",
-        "size": 80,
+        "size": 72,
         "weight": 700
       },
       "body": {
         "family": "Patrick Hand, cursive",
-        "size": 36,
+        "size": 38,
         "weight": 400
       },
       "question": {
@@ -46,16 +46,11 @@
   "fill": {
     "texts": {
       "question": "Can You Actually Get Smarter?",
-      "fact1": "Your brain has 86 billion neurons",
-      "fact2": "New connections form when you learn",
-      "fact3": "Mistakes strengthen your brain",
-      "challenge": "What if intelligence isn't fixed? 🧠"
-    },
-    "images": {
-      "mainImage": "img_brain",
-      "icon1": "img_network",
-      "icon2": "img_lightbulb",
-      "icon3": "img_rocket"
+      "emoji": "🧠",
+      "fact1": "Your brain has 86 billion neurons ready to connect",
+      "fact2": "New neural pathways form every time you learn",
+      "fact3": "Mistakes literally strengthen your brain",
+      "challenge": "What if intelligence isn't fixed... but flexible? 🤔"
     }
   },
   "timeline": []
