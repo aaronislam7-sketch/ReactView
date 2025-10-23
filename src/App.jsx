@@ -13,6 +13,8 @@ import { ApplyTemplate } from './templates/ApplyTemplate';
 import { ApplyCompareTemplate } from './templates/ApplyCompareTemplate';
 import { ReflectTemplate } from './templates/ReflectTemplate';
 import { ReflectMindMapTemplate } from './templates/ReflectMindMapTemplate';
+import { ExplainSequentialTemplate } from './templates/ExplainSequentialTemplate';
+import { ApplyQuizTemplate } from './templates/ApplyQuizTemplate';
 import {StyleTokensProvider} from './sdk/StyleTokensProvider';
 
 // Import sample scenes (legacy mode)
@@ -31,6 +33,12 @@ import applyCompareStudyScene from './scenes/apply_compare_study.json';
 import reflectGrowthMindsetScene from './scenes/reflect_growth_mindset.json';
 import reflectMindMapLearningScene from './scenes/reflect_mindmap_learning.json';
 
+// Knodovia video scenes
+import hookKnodoviaMapScene from './scenes/hook_knodovia_map.json';
+import explainFourRegionsScene from './scenes/explain_four_regions.json';
+import applyRegionQuizScene from './scenes/apply_region_quiz.json';
+import reflectKnodoviaJourneyScene from './scenes/reflect_knodovia_journey.json';
+
 const templateMap = {
   // Legacy templates
   'whiteboard_ted_v2': WhiteboardTEDv2,
@@ -42,8 +50,10 @@ const templateMap = {
   'hook': HookTemplate,
   'hook_story': HookStoryTemplate,
   'explain': ExplainTemplate,
+  'explain_sequential': ExplainSequentialTemplate,
   'explain_timeline': ExplainTimelineTemplate,
   'apply': ApplyTemplate,
+  'apply_quiz': ApplyQuizTemplate,
   'apply_compare': ApplyCompareTemplate,
   'reflect': ReflectTemplate,
   'reflect_mindmap': ReflectMindMapTemplate
@@ -60,11 +70,19 @@ const sampleScenes = {
   'hook': hookSleepScienceScene,
   'hook_story': hookStoryResilienceScene,
   'explain': explainGrowthMindsetScene,
+  'explain_sequential': explainFourRegionsScene,
   'explain_timeline': explainTimelinePhotosynthesisScene,
   'apply': applyGrowthMindsetScene,
+  'apply_quiz': applyRegionQuizScene,
   'apply_compare': applyCompareStudyScene,
   'reflect': reflectGrowthMindsetScene,
-  'reflect_mindmap': reflectMindMapLearningScene
+  'reflect_mindmap': reflectMindMapLearningScene,
+  
+  // Knodovia video scenes
+  'hook_knodovia': hookKnodoviaMapScene,
+  'explain_knodovia': explainFourRegionsScene,
+  'apply_knodovia': applyRegionQuizScene,
+  'reflect_knodovia': reflectKnodoviaJourneyScene
 };
 
 // Validation function
@@ -300,16 +318,24 @@ export default function App() {
             outline: 'none'
           }}
         >
+          <optgroup label="🗺️ Knodovia Video - Mapping the Land">
+            <option value="hook_knodovia">Hook: A Map Unlike Any Other (25s)</option>
+            <option value="explain_knodovia">Explain: Four Regions Sequential (70s)</option>
+            <option value="apply_knodovia">Apply: Region Quiz (30s)</option>
+            <option value="reflect_knodovia">Reflect: Your Journey (35s)</option>
+          </optgroup>
           <optgroup label="🎯 Hook Templates">
             <option value="hook">Cinematic Write-On Hook (Sleep Science)</option>
             <option value="hook_story">Story-Driven Hook (Resilience)</option>
           </optgroup>
           <optgroup label="📚 Explain Templates">
             <option value="explain">4-Step Breakdown (Growth Mindset)</option>
+            <option value="explain_sequential">Sequential Regions (Knodovia)</option>
             <option value="explain_timeline">Timeline Process (Photosynthesis)</option>
           </optgroup>
           <optgroup label="🛠️ Apply Templates">
             <option value="apply">Scenario-Based (Growth Mindset)</option>
+            <option value="apply_quiz">Multiple Choice Quiz (Knodovia)</option>
             <option value="apply_compare">Before/After Compare (Study Habits)</option>
           </optgroup>
           <optgroup label="🤔 Reflect Templates">

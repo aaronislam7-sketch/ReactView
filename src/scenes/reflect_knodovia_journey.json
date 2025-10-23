@@ -1,0 +1,38 @@
+{
+  "schema_version": "3.0",
+  "template_id": "reflect",
+  "pillar": "reflect",
+  "duration_s": 35,
+  "fps": 30,
+  "meta": {
+    "title": "Where Would You Start?",
+    "description": "Reflection on the four regions and personal journey",
+    "tags": ["module:welcome-knodovia", "pedagogy:reflect", "topic:four-regions"],
+    "difficulty": "beginner",
+    "tone": "inspirational"
+  },
+  "style_tokens": {
+    "colors": {
+      "bg": "#FFF9F0",
+      "accent": "#8B7355",
+      "ink": "#1A1A1A"
+    }
+  },
+  "layout": {
+    "canvas": {
+      "w": 1920,
+      "h": 1080
+    }
+  },
+  "fill": {
+    "texts": {
+      "title": "Your Learning Journey",
+      "insight1": "Every explorer travels Knodovia in their own order",
+      "insight2": "Some crave the spark of Learnville, others the calm of Reviseton",
+      "insight3": "What matters isn't where you start — it's that you keep moving",
+      "question": "Which region calls to you first? Where does your learning journey begin?",
+      "nextSteps": "The map of learning is never finished. Keep exploring! 🗺️"
+    }
+  },
+  "timeline": []
+}
