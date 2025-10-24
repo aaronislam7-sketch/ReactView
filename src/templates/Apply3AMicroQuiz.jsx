@@ -1,7 +1,15 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate, Easing } from 'remotion';
 import { THEME } from '../utils/theme';
 import rough from 'roughjs/bundled/rough.esm.js';
+import gsap from 'gsap';
+import {
+  cascadeReveal,
+  flipReveal,
+  pulseEmphasis,
+  drawSVGPath,
+  gracefulMove,
+} from '../utils/gsapAnimations';
 
 /**
  * APPLY 3A: MICRO QUIZ
@@ -19,6 +27,18 @@ const Apply3AMicroQuiz = ({ scene }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
   const svgRef = useRef(null);
+  const questionRef = useRef(null);
+  const optionsRefs = useRef([]);
+  const correctAnswerRef = useRef(null);
+  const celebrationRef = useRef(null);
+  
+  const [triggeredAnimations, setTriggeredAnimations] = useState({
+    question: false,
+    options: false,
+    reveal: false,
+    celebrate: false,
+    flip: false,
+  });
 
   const colors = scene.style_tokens?.colors || {
     bg: THEME.colors.canvas.primary,
