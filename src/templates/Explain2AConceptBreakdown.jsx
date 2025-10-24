@@ -1,16 +1,27 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate, Easing } from 'remotion';
-import { THEME } from '../utils/theme';
 import rough from 'roughjs/bundled/rough.esm.js';
+import gsap from 'gsap';
+import {
+  staggeredBullets,
+  gracefulMove,
+  pulseEmphasis,
+  cascadeReveal,
+} from '../utils/gsapAnimations';
 
 /**
- * EXPLAIN 2A: CONCEPT BREAKDOWN
+ * EXPLAIN 2A: CONCEPT BREAKDOWN (GSAP V2)
  * 
  * Intent: Break complex concept into clear, digestible parts
  * Pattern: "X is made of Y, Z, A..."
  * Visual: Branching structure, labeled nodes, connecting paths
  * Tone: Clear, Structured
  * Duration: 20-40s
+ * 
+ * GSAP Features:
+ * - Staggered bullet reveals for parts
+ * - Mid-scene: Title moves to top, parts expand
+ * - Pulse emphasis on connections
  * 
  * NO BOXES - Rough sketched frames + organic connector lines
  */
@@ -19,13 +30,34 @@ const Explain2AConceptBreakdown = ({ scene }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
   const svgRef = useRef(null);
+  const titleRef = useRef(null);
+  const centerConceptRef = useRef(null);
+  const partsRefs = useRef([]);
+  
+  const [triggeredAnimations, setTriggeredAnimations] = useState({
+    title: false,
+    centerConcept: false,
+    parts: false,
+    connections: false,
+    moveTitle: false,
+    expandParts: false,
+  });
 
   const colors = scene.style_tokens?.colors || {
-    bg: THEME.colors.canvas.cream,
-    accent: THEME.colors.markers.blue,
-    accent2: THEME.colors.markers.green,
-    accent3: THEME.colors.markers.purple,
-    ink: THEME.colors.text.primary,
+    bg: '#FFF9F0',
+    accent: '#3498DB',
+    accent2: '#2ECC71',
+    accent3: '#9B59B6',
+    ink: '#1A1A1A',
+  };
+  
+  const fonts = scene.style_tokens?.fonts || {
+    primary: "'Cabin Sketch', cursive",
+    secondary: "'Patrick Hand', cursive",
+    size_title: 52,
+    size_concept: 46,
+    size_part_label: 28,
+    size_part_desc: 20,
   };
 
   const data = scene.fill?.concept || {};
@@ -39,6 +71,8 @@ const Explain2AConceptBreakdown = ({ scene }) => {
     centerConcept: BEAT * 2,
     parts: BEAT * 3.5,
     connections: BEAT * (3.5 + parts.length * 0.8),
+    moveTitle: BEAT * (4 + parts.length * 0.9),     // NEW: Mid-scene
+    expandParts: BEAT * (4.5 + parts.length * 0.9), // NEW: Emphasis
     settle: BEAT * (5 + parts.length),
   };
 
@@ -50,7 +84,96 @@ const Explain2AConceptBreakdown = ({ scene }) => {
     { easing: Easing.bezier(0.4, 0, 0.2, 1), extrapolateRight: 'clamp' }
   );
 
-  // Generate rough.js breakdown structure
+  // ========================================
+  // GSAP ANIMATION TRIGGERS
+  // ========================================
+  
+  // Title appears
+  useEffect(() => {
+    if (frame >= beats.title && !triggeredAnimations.title && titleRef.current) {
+      gsap.fromTo(titleRef.current,
+        { opacity: 0, y: -20, scale: 0.92 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.9, ease: "back.out(1.5)" }
+      );
+      setTriggeredAnimations(prev => ({ ...prev, title: true }));
+    }
+  }, [frame, beats.title, triggeredAnimations.title]);
+
+  // Center concept appears
+  useEffect(() => {
+    if (frame >= beats.centerConcept + 10 && !triggeredAnimations.centerConcept && centerConceptRef.current) {
+      gsap.fromTo(centerConceptRef.current,
+        { opacity: 0, y: -30, scale: 0.9 },
+        { opacity: 1, y: 0, scale: 1, duration: 1.0, ease: "back.out(1.5)" }
+      );
+      setTriggeredAnimations(prev => ({ ...prev, centerConcept: true }));
+    }
+  }, [frame, beats.centerConcept, triggeredAnimations.centerConcept]);
+
+  // Parts stagger in
+  useEffect(() => {
+    if (frame >= beats.parts + 10 && !triggeredAnimations.parts) {
+      const validRefs = partsRefs.current.filter(Boolean);
+      if (validRefs.length > 0) {
+        staggeredBullets(validRefs, {
+          duration: 0.7,
+          stagger: 0.2,
+          direction: "up",
+          distance: 40,
+          ease: "back.out(1.5)",
+        });
+        setTriggeredAnimations(prev => ({ ...prev, parts: true }));
+      }
+    }
+  }, [frame, beats.parts, triggeredAnimations.parts]);
+
+  // Pulse connections
+  useEffect(() => {
+    if (frame >= beats.connections + 15 && !triggeredAnimations.connections && svgRef.current) {
+      pulseEmphasis(svgRef.current, {
+        scale: 1.02,
+        duration: 0.5,
+        repeat: 1,
+        yoyo: true,
+      });
+      setTriggeredAnimations(prev => ({ ...prev, connections: true }));
+    }
+  }, [frame, beats.connections, triggeredAnimations.connections]);
+
+  // MID-SCENE: Move title to top
+  useEffect(() => {
+    if (frame >= beats.moveTitle && !triggeredAnimations.moveTitle && titleRef.current) {
+      gracefulMove(titleRef.current, {
+        y: -100,
+        scale: 0.75,
+        duration: 1.2,
+        ease: "power3.inOut",
+      });
+      setTriggeredAnimations(prev => ({ ...prev, moveTitle: true }));
+    }
+  }, [frame, beats.moveTitle, triggeredAnimations.moveTitle]);
+
+  // Expand parts slightly for emphasis
+  useEffect(() => {
+    if (frame >= beats.expandParts && !triggeredAnimations.expandParts) {
+      const validRefs = partsRefs.current.filter(Boolean);
+      if (validRefs.length > 0) {
+        validRefs.forEach((ref, i) => {
+          setTimeout(() => {
+            pulseEmphasis(ref, {
+              scale: 1.05,
+              duration: 0.4,
+              repeat: 1,
+              yoyo: true,
+            });
+          }, i * 100);
+        });
+        setTriggeredAnimations(prev => ({ ...prev, expandParts: true }));
+      }
+    }
+  }, [frame, beats.expandParts, triggeredAnimations.expandParts]);
+
+  // Generate rough.js breakdown structure - ZERO WOBBLE
   useEffect(() => {
     if (!svgRef.current) return;
 
@@ -62,15 +185,15 @@ const Explain2AConceptBreakdown = ({ scene }) => {
       svg.removeChild(svg.firstChild);
     }
 
-    // Center concept frame (main node)
+    // Center concept frame (main node) - ZERO WOBBLE
     if (frame >= beats.centerConcept) {
       const progress = Math.min((frame - beats.centerConcept) / 35, 1);
       
       const centerFrame = rc.rectangle(760, 420, 400, 140, {
         stroke: colors.accent,
         strokeWidth: 5,
-        roughness: 0.9,
-        bowing: 2,
+        roughness: 0,  // ZERO WOBBLE
+        bowing: 0,     // ZERO WOBBLE
         fill: `${colors.accent}10`,
         fillStyle: 'hachure',
         hachureGap: 10,
@@ -87,13 +210,13 @@ const Explain2AConceptBreakdown = ({ scene }) => {
       svg.appendChild(centerFrame);
     }
 
-    // Part frames (breakdown nodes)
+    // Part frames (breakdown nodes) - ZERO WOBBLE
     if (frame >= beats.parts) {
       const positions = parts.length === 3 
         ? [{ x: 260, y: 720 }, { x: 760, y: 720 }, { x: 1260, y: 720 }]
         : parts.length === 4
         ? [{ x: 160, y: 720 }, { x: 560, y: 720 }, { x: 960, y: 720 }, { x: 1360, y: 720 }]
-        : [{ x: 460, y: 720 }, { x: 1060, y: 720 }]; // fallback for 2
+        : [{ x: 460, y: 720 }, { x: 1060, y: 720 }];
 
       parts.forEach((part, i) => {
         const startFrame = beats.parts + i * BEAT * 0.8;
@@ -105,8 +228,8 @@ const Explain2AConceptBreakdown = ({ scene }) => {
         const partFrame = rc.rectangle(pos.x, pos.y, 380, 180, {
           stroke: i === 0 ? colors.accent2 : i === 1 ? colors.accent3 : colors.accent,
           strokeWidth: 4,
-          roughness: 0.8,
-          bowing: 2,
+          roughness: 0,  // ZERO WOBBLE
+          bowing: 0,     // ZERO WOBBLE
           fill: `${i === 0 ? colors.accent2 : i === 1 ? colors.accent3 : colors.accent}08`,
           fillStyle: 'hachure',
           hachureGap: 12,
@@ -124,10 +247,10 @@ const Explain2AConceptBreakdown = ({ scene }) => {
       });
     }
 
-    // Connecting lines (center to parts)
+    // Connecting lines (center to parts) - ZERO WOBBLE
     if (frame >= beats.connections) {
       const centerX = 960;
-      const centerY = 560; // Bottom of center frame
+      const centerY = 560;
 
       parts.forEach((part, i) => {
         const startFrame = beats.connections + i * 10;
@@ -135,7 +258,6 @@ const Explain2AConceptBreakdown = ({ scene }) => {
 
         const progress = Math.min((frame - startFrame) / 25, 1);
 
-        // Calculate target position
         const positions = parts.length === 3 
           ? [{ x: 450, y: 720 }, { x: 950, y: 720 }, { x: 1450, y: 720 }]
           : parts.length === 4
@@ -144,15 +266,14 @@ const Explain2AConceptBreakdown = ({ scene }) => {
 
         const target = positions[i] || positions[0];
 
-        // Bezier curve path
         const midY = centerY + (target.y - centerY) * 0.5;
         const pathData = `M ${centerX} ${centerY} Q ${centerX} ${midY} ${centerX + (target.x - centerX) * progress} ${centerY + (target.y - centerY) * progress}`;
 
         const connector = rc.path(pathData, {
           stroke: `${colors.ink}40`,
           strokeWidth: 3,
-          roughness: 0.7,
-          bowing: 2,
+          roughness: 0,  // ZERO WOBBLE
+          bowing: 0,     // ZERO WOBBLE
         });
 
         svg.appendChild(connector);
@@ -161,41 +282,12 @@ const Explain2AConceptBreakdown = ({ scene }) => {
 
   }, [frame, beats, colors, parts]);
 
-  // Build-in animation
-  const buildIn = (startFrame, duration = 30) => {
-    if (frame < startFrame) {
-      return {
-        opacity: 0,
-        transform: 'translateY(-20px) scale(0.92)',
-      };
-    }
-    if (frame >= startFrame + duration) {
-      return {
-        opacity: 1,
-        transform: 'translateY(0) scale(1)',
-      };
-    }
-
-    const progress = interpolate(
-      frame,
-      [startFrame, startFrame + duration],
-      [0, 1],
-      { easing: Easing.out(Easing.back(1.5)), extrapolateRight: 'clamp' }
-    );
-
-    return {
-      opacity: progress,
-      transform: `translateY(${-20 * (1 - progress)}px) scale(${0.92 + progress * 0.08})`,
-    };
-  };
-
   return (
     <AbsoluteFill
       style={{
         backgroundColor: colors.bg,
         backgroundImage: `
-          radial-gradient(circle at 30% 40%, ${colors.accent}04 0%, transparent 60%),
-          url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulance baseFrequency='0.7' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E")
+          radial-gradient(circle at 30% 40%, ${colors.accent}04 0%, transparent 60%)
         `,
       }}
     >
@@ -226,11 +318,11 @@ const Explain2AConceptBreakdown = ({ scene }) => {
         >
           {/* Title */}
           {frame >= beats.title && (
-            <div style={{ ...buildIn(beats.title, 28) }}>
+            <div ref={titleRef} style={{ opacity: 0 }}>
               <h2
                 style={{
-                  fontFamily: THEME.fonts.marker.secondary,
-                  fontSize: 52,
+                  fontFamily: fonts.primary,
+                  fontSize: fonts.size_title,
                   fontWeight: 700,
                   color: colors.ink,
                   margin: 0,
@@ -245,6 +337,7 @@ const Explain2AConceptBreakdown = ({ scene }) => {
           {/* Center concept */}
           {frame >= beats.centerConcept + 10 && (
             <div
+              ref={centerConceptRef}
               style={{
                 position: 'absolute',
                 top: 440,
@@ -252,14 +345,14 @@ const Explain2AConceptBreakdown = ({ scene }) => {
                 transform: 'translateX(-50%)',
                 width: 380,
                 textAlign: 'center',
-                ...buildIn(beats.centerConcept + 10, 35),
+                opacity: 0,
               }}
             >
               <h3
                 style={{
-                  fontFamily: THEME.fonts.structure.primary,
-                  fontSize: 46,
-                  fontWeight: 600,
+                  fontFamily: fonts.primary,
+                  fontSize: fonts.size_concept,
+                  fontWeight: 700,
                   color: colors.accent,
                   margin: 0,
                   lineHeight: 1.3,
@@ -287,13 +380,14 @@ const Explain2AConceptBreakdown = ({ scene }) => {
             return (
               <div
                 key={i}
+                ref={el => partsRefs.current[i] = el}
                 style={{
                   position: 'absolute',
                   top: pos.y,
                   left: pos.x,
                   width: 360,
                   padding: '20px',
-                  ...buildIn(startFrame, 35),
+                  opacity: 0,
                 }}
               >
                 <div
@@ -305,8 +399,8 @@ const Explain2AConceptBreakdown = ({ scene }) => {
                 >
                   <h4
                     style={{
-                      fontFamily: THEME.fonts.structure.primary,
-                      fontSize: 28,
+                      fontFamily: fonts.primary,
+                      fontSize: fonts.size_part_label,
                       fontWeight: 700,
                       color: partColor,
                       margin: 0,
@@ -316,8 +410,8 @@ const Explain2AConceptBreakdown = ({ scene }) => {
                   </h4>
                   <p
                     style={{
-                      fontFamily: THEME.fonts.structure.secondary,
-                      fontSize: 20,
+                      fontFamily: fonts.secondary,
+                      fontSize: fonts.size_part_desc,
                       color: colors.ink,
                       margin: 0,
                       lineHeight: 1.4,
