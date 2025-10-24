@@ -62,6 +62,20 @@ const Explain2AConceptBreakdown = ({ scene }) => {
 
   const data = scene.fill?.concept || {};
   const parts = data.parts || [];
+  
+  // Adaptive layout helper - works for 2-7+ parts
+  const getAdaptivePositions = (count) => {
+    const boxWidth = 380;
+    const totalWidth = 1920;
+    const margin = 100;
+    const availableWidth = totalWidth - (margin * 2);
+    const spacing = (availableWidth - (boxWidth * count)) / Math.max(count - 1, 1);
+    
+    return Array.from({ length: count }, (_, i) => ({
+      x: margin + (boxWidth + spacing) * i,
+      y: 720
+    }));
+  };
 
   // Beat timing - methodical reveal
   const BEAT = 36; // 1.2s
@@ -125,7 +139,7 @@ const Explain2AConceptBreakdown = ({ scene }) => {
         setTriggeredAnimations(prev => ({ ...prev, parts: true }));
       }
     }
-  }, [frame, beats.parts, triggeredAnimations.parts]);
+  }, [frame, beats.parts, triggeredAnimations.parts, parts.length]);
 
   // Pulse connections
   useEffect(() => {
@@ -210,27 +224,27 @@ const Explain2AConceptBreakdown = ({ scene }) => {
       svg.appendChild(centerFrame);
     }
 
-    // Part frames (breakdown nodes) - ZERO WOBBLE
+    // Part frames (breakdown nodes) - ZERO WOBBLE - ADAPTIVE LAYOUT
     if (frame >= beats.parts) {
-      const positions = parts.length === 3 
-        ? [{ x: 260, y: 720 }, { x: 760, y: 720 }, { x: 1260, y: 720 }]
-        : parts.length === 4
-        ? [{ x: 160, y: 720 }, { x: 560, y: 720 }, { x: 960, y: 720 }, { x: 1360, y: 720 }]
-        : [{ x: 460, y: 720 }, { x: 1060, y: 720 }];
+      const positions = getAdaptivePositions(parts.length);
 
       parts.forEach((part, i) => {
         const startFrame = beats.parts + i * BEAT * 0.8;
         if (frame < startFrame) return;
 
         const progress = Math.min((frame - startFrame) / 30, 1);
-        const pos = positions[i] || positions[0];
+        const pos = positions[i];
+
+        // Cycle through colors
+        const colorIndex = i % 3;
+        const partColor = colorIndex === 0 ? colors.accent2 : colorIndex === 1 ? colors.accent3 : colors.accent;
 
         const partFrame = rc.rectangle(pos.x, pos.y, 380, 180, {
-          stroke: i === 0 ? colors.accent2 : i === 1 ? colors.accent3 : colors.accent,
+          stroke: partColor,
           strokeWidth: 4,
           roughness: 0,  // ZERO WOBBLE
           bowing: 0,     // ZERO WOBBLE
-          fill: `${i === 0 ? colors.accent2 : i === 1 ? colors.accent3 : colors.accent}08`,
+          fill: `${partColor}08`,
           fillStyle: 'hachure',
           hachureGap: 12,
         });
@@ -247,24 +261,33 @@ const Explain2AConceptBreakdown = ({ scene }) => {
       });
     }
 
-    // Connecting lines (center to parts) - ZERO WOBBLE
+    // Connecting lines (center to parts) - ZERO WOBBLE - ADAPTIVE
     if (frame >= beats.connections) {
       const centerX = 960;
       const centerY = 560;
+
+      // Calculate adaptive positions (matching boxes above)
+      const getAdaptivePositions = (count) => {
+        const boxWidth = 380;
+        const totalWidth = 1920;
+        const margin = 100;
+        const availableWidth = totalWidth - (margin * 2);
+        const spacing = (availableWidth - (boxWidth * count)) / Math.max(count - 1, 1);
+        
+        return Array.from({ length: count }, (_, i) => ({
+          x: margin + (boxWidth + spacing) * i + (boxWidth / 2), // Center of box
+          y: 720
+        }));
+      };
+
+      const positions = getAdaptivePositions(parts.length);
 
       parts.forEach((part, i) => {
         const startFrame = beats.connections + i * 10;
         if (frame < startFrame) return;
 
         const progress = Math.min((frame - startFrame) / 25, 1);
-
-        const positions = parts.length === 3 
-          ? [{ x: 450, y: 720 }, { x: 950, y: 720 }, { x: 1450, y: 720 }]
-          : parts.length === 4
-          ? [{ x: 350, y: 720 }, { x: 750, y: 720 }, { x: 1150, y: 720 }, { x: 1550, y: 720 }]
-          : [{ x: 650, y: 720 }, { x: 1250, y: 720 }];
-
-        const target = positions[i] || positions[0];
+        const target = positions[i];
 
         const midY = centerY + (target.y - centerY) * 0.5;
         const pathData = `M ${centerX} ${centerY} Q ${centerX} ${midY} ${centerX + (target.x - centerX) * progress} ${centerY + (target.y - centerY) * progress}`;
@@ -363,19 +386,17 @@ const Explain2AConceptBreakdown = ({ scene }) => {
             </div>
           )}
 
-          {/* Part cards */}
+          {/* Part cards - ADAPTIVE LAYOUT (works for 2-7+ parts) */}
           {parts.map((part, i) => {
             const startFrame = beats.parts + i * BEAT * 0.8 + 10;
             if (frame < startFrame) return null;
 
-            const positions = parts.length === 3 
-              ? [{ x: 270, y: 740 }, { x: 770, y: 740 }, { x: 1270, y: 740 }]
-              : parts.length === 4
-              ? [{ x: 170, y: 740 }, { x: 570, y: 740 }, { x: 970, y: 740 }, { x: 1370, y: 740 }]
-              : [{ x: 470, y: 740 }, { x: 1070, y: 740 }];
-
-            const pos = positions[i] || positions[0];
-            const partColor = i === 0 ? colors.accent2 : i === 1 ? colors.accent3 : colors.accent;
+            const positions = getAdaptivePositions(parts.length);
+            const pos = positions[i];
+            
+            // Cycle through colors for visual variety
+            const colorIndex = i % 3;
+            const partColor = colorIndex === 0 ? colors.accent2 : colorIndex === 1 ? colors.accent3 : colors.accent;
 
             return (
               <div
@@ -387,7 +408,7 @@ const Explain2AConceptBreakdown = ({ scene }) => {
                   left: pos.x,
                   width: 360,
                   padding: '20px',
-                  opacity: 0,
+                  opacity: 0, // GSAP animates to 1 - text IS here, just invisible until animated
                 }}
               >
                 <div
