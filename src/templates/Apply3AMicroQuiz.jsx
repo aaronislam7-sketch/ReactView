@@ -1,7 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate, Easing } from 'remotion';
 import { THEME } from '../utils/theme';
 import rough from 'roughjs/bundled/rough.esm.js';
+import gsap from 'gsap';
+import { cascadeReveal, flipReveal, pulseEmphasis, createTimeline } from '../utils/gsapAnimations';
 
 /**
  * APPLY 3A: MICRO QUIZ
@@ -19,6 +21,9 @@ const Apply3AMicroQuiz = ({ scene }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
   const svgRef = useRef(null);
+  const questionRef = useRef(null);
+  const optionRefs = useRef([]);
+  const [triggered, setTriggered] = useState({ questionIn: false, optionsIn: false, reveal: false, celebrate: false });
 
   const colors = scene.style_tokens?.colors || {
     bg: THEME.colors.canvas.primary,
@@ -48,6 +53,48 @@ const Apply3AMicroQuiz = ({ scene }) => {
     [1.03, 1.0, 1.05, 1.0],
     { easing: Easing.bezier(0.4, 0, 0.2, 1), extrapolateRight: 'clamp' }
   );
+
+  // GSAP entrances and interactions
+  useEffect(() => {
+    // Question entrance
+    if (frame >= beats.question && !triggered.questionIn && questionRef.current) {
+      gsap.fromTo(questionRef.current,
+        { opacity: 0, y: -30, scale: 0.95 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: 'back.out(1.6)' }
+      );
+      setTriggered(p => ({ ...p, questionIn: true }));
+    }
+
+    // Options cascade
+    if (frame >= beats.options + 8 && !triggered.optionsIn) {
+      const refs = optionRefs.current.filter(Boolean);
+      if (refs.length) {
+        cascadeReveal(refs, { duration: 0.6, stagger: 0.15, ease: 'back.out(1.5)' });
+        setTriggered(p => ({ ...p, optionsIn: true }));
+      }
+    }
+
+    // Reveal correct answer via flip
+    if (frame >= beats.reveal && !triggered.reveal) {
+      const refs = optionRefs.current.filter(Boolean);
+      if (refs[correctIndex]) {
+        flipReveal(refs[correctIndex], { duration: 0.6, rotationY: 180, ease: 'power2.inOut' });
+        // Pulse emphasis after flip
+        setTimeout(() => pulseEmphasis(refs[correctIndex], { scale: 1.12, duration: 0.4, repeat: 1, yoyo: true }), 620);
+      }
+      setTriggered(p => ({ ...p, reveal: true }));
+    }
+
+    // Celebration timeline (subtle, no jitter)
+    if (frame >= beats.celebrate && !triggered.celebrate) {
+      const tl = createTimeline();
+      const refs = optionRefs.current.filter(Boolean);
+      if (refs[correctIndex]) {
+        tl.to(refs[correctIndex], { scale: 1.06, duration: 0.22, yoyo: true, repeat: 1, ease: 'power2.inOut' });
+      }
+      setTriggered(p => ({ ...p, celebrate: true }));
+    }
+  }, [frame, beats, triggered, correctIndex]);
 
   useEffect(() => {
     if (!svgRef.current) return;
@@ -85,8 +132,8 @@ const Apply3AMicroQuiz = ({ scene }) => {
         const circle = rc.circle(pos.x, pos.y, 120 * progress, {
           stroke: circleColor,
           strokeWidth: isRevealing && isCorrect ? 7 : 5,
-          roughness: 0.7,
-          bowing: 1,
+          roughness: 0,
+          bowing: 0,
           fill: isRevealing && isCorrect ? `${colors.accent}15` : 'none',
           fillStyle: 'hachure',
           hachureGap: 10,
@@ -102,8 +149,8 @@ const Apply3AMicroQuiz = ({ scene }) => {
           const check = rc.path(checkPath, {
             stroke: colors.accent,
             strokeWidth: 8,
-            roughness: 0.9,
-            bowing: 2,
+            roughness: 0,
+            bowing: 0,
           });
 
           svg.appendChild(check);
@@ -134,7 +181,7 @@ const Apply3AMicroQuiz = ({ scene }) => {
           const star = rc.path(starPath, {
             stroke: colors.accent,
             strokeWidth: 2,
-            roughness: 0.8,
+            roughness: 0,
             fill: `${colors.accent}40`,
             fillStyle: 'solid',
           });

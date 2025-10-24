@@ -1,7 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate, Easing } from 'remotion';
 import { THEME } from '../utils/theme';
 import rough from 'roughjs/bundled/rough.esm.js';
+import gsap from 'gsap';
+import { gracefulMove, shrinkToCorner, expandToCenter, cascadeReveal } from '../utils/gsapAnimations';
 
 /**
  * REFLECT 4D: FORWARD LINK
@@ -19,6 +21,12 @@ const Reflect4DForwardLink = ({ scene }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
   const svgRef = useRef(null);
+  const titleRef = useRef(null);
+  const currentRef = useRef(null);
+  const nextRef = useRef(null);
+  const ctaRef = useRef(null);
+  const bridgeLabelRef = useRef(null);
+  const [triggered, setTriggered] = useState({ titleIn: false, currentIn: false, nextIn: false, shrinkCurrent: false, expandNext: false, ctaIn: false, bridgeIn: false });
 
   const colors = scene.style_tokens?.colors || {
     bg: THEME.colors.canvas.cream,
@@ -48,6 +56,46 @@ const Reflect4DForwardLink = ({ scene }) => {
     { easing: Easing.bezier(0.4, 0, 0.2, 1), extrapolateRight: 'clamp' }
   );
 
+  // GSAP entrances + mid-scene link motion
+  useEffect(() => {
+    if (frame >= BEAT * 0.3 && !triggered.titleIn && titleRef.current) {
+      gsap.fromTo(titleRef.current, { opacity: 0, y: -18 }, { opacity: 1, y: 0, duration: 0.8, ease: 'back.out(1.5)' });
+      setTriggered(p => ({ ...p, titleIn: true }));
+    }
+
+    if (frame >= beats.currentSummary + 10 && !triggered.currentIn && currentRef.current) {
+      gsap.fromTo(currentRef.current, { opacity: 0, y: -16 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' });
+      setTriggered(p => ({ ...p, currentIn: true }));
+    }
+
+    if (frame >= beats.nextTeaser + 12 && !triggered.nextIn && nextRef.current) {
+      gsap.fromTo(nextRef.current, { opacity: 0, y: -16 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' });
+      setTriggered(p => ({ ...p, nextIn: true }));
+    }
+
+    // Mid-scene: shrink current to corner, expand next to center
+    if (frame >= beats.bridge && !triggered.shrinkCurrent) {
+      if (currentRef.current) shrinkToCorner(currentRef.current, { corner: 'topLeft', scale: 0.6, duration: 1.0 });
+      setTriggered(p => ({ ...p, shrinkCurrent: true }));
+    }
+
+    if (frame >= beats.nextTeaser && !triggered.expandNext) {
+      if (nextRef.current) gracefulMove(nextRef.current, { x: -220, duration: 1.0, ease: 'power3.inOut' });
+      setTimeout(() => nextRef.current && expandToCenter(nextRef.current, { scale: 1.1, duration: 0.9 }), 1000);
+      setTriggered(p => ({ ...p, expandNext: true }));
+    }
+
+    if (frame >= beats.pathForward + 15 && !triggered.ctaIn && ctaRef.current) {
+      cascadeReveal([ctaRef.current], { duration: 0.5 });
+      setTriggered(p => ({ ...p, ctaIn: true }));
+    }
+
+    if (frame >= beats.bridge + 25 && !triggered.bridgeIn && bridgeLabelRef.current) {
+      cascadeReveal([bridgeLabelRef.current], { duration: 0.4 });
+      setTriggered(p => ({ ...p, bridgeIn: true }));
+    }
+  }, [frame, beats, triggered]);
+
   useEffect(() => {
     if (!svgRef.current) return;
 
@@ -65,8 +113,8 @@ const Reflect4DForwardLink = ({ scene }) => {
       const currentFrame = rc.rectangle(180, 380, 620, 280, {
         stroke: colors.accent,
         strokeWidth: 5,
-        roughness: 0.8,
-        bowing: 2,
+        roughness: 0,
+        bowing: 0,
         fill: `${colors.accent}10`,
         fillStyle: 'hachure',
         hachureGap: 12,
@@ -91,8 +139,8 @@ const Reflect4DForwardLink = ({ scene }) => {
       const bridge = rc.path(bridgePath, {
         stroke: colors.path,
         strokeWidth: 7,
-        roughness: 0.9,
-        bowing: 2,
+        roughness: 0,
+        bowing: 0,
       });
       svg.appendChild(bridge);
 
@@ -104,8 +152,8 @@ const Reflect4DForwardLink = ({ scene }) => {
         const arrow = rc.path(arrowPath, {
           stroke: colors.path,
           strokeWidth: 7,
-          roughness: 0.8,
-          bowing: 1,
+          roughness: 0,
+          bowing: 0,
         });
         svg.appendChild(arrow);
       }
@@ -118,8 +166,8 @@ const Reflect4DForwardLink = ({ scene }) => {
       const nextFrame = rc.rectangle(1120, 380, 620, 280, {
         stroke: colors.accent2,
         strokeWidth: 5,
-        roughness: 0.8,
-        bowing: 2,
+        roughness: 0,
+        bowing: 0,
         fill: `${colors.accent2}10`,
         fillStyle: 'hachure',
         hachureGap: 12,
@@ -144,8 +192,8 @@ const Reflect4DForwardLink = ({ scene }) => {
         {
           stroke: colors.path,
           strokeWidth: 5,
-          roughness: 0.8,
-          bowing: 2,
+          roughness: 0,
+          bowing: 0,
         }
       );
       svg.appendChild(pathArrow);
@@ -157,8 +205,8 @@ const Reflect4DForwardLink = ({ scene }) => {
         const head = rc.path(headPath, {
           stroke: colors.path,
           strokeWidth: 5,
-          roughness: 0.8,
-          bowing: 1,
+          roughness: 0,
+          bowing: 0,
         });
         svg.appendChild(head);
       }
@@ -178,7 +226,7 @@ const Reflect4DForwardLink = ({ scene }) => {
           stroke: 'none',
           fill: colors.path,
           fillStyle: 'solid',
-          roughness: 0.6,
+          roughness: 0,
         });
 
         dot.style.opacity = 0.5;

@@ -1,7 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate, Easing } from 'remotion';
 import { THEME } from '../utils/theme';
 import rough from 'roughjs/bundled/rough.esm.js';
+import gsap from 'gsap';
+import { cascadeReveal, gracefulMove, highlightReveal } from '../utils/gsapAnimations';
 
 /**
  * REFLECT 4A: KEY TAKEAWAYS
@@ -19,6 +21,9 @@ const Reflect4AKeyTakeaways = ({ scene }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
   const svgRef = useRef(null);
+  const titleRef = useRef(null);
+  const takeawayRefs = useRef([]);
+  const [triggered, setTriggered] = useState({ titleIn: false, moveTitle: false, takeawaysIn: false });
 
   const colors = scene.style_tokens?.colors || {
     bg: THEME.colors.canvas.primary,
@@ -47,6 +52,33 @@ const Reflect4AKeyTakeaways = ({ scene }) => {
     { easing: Easing.bezier(0.4, 0, 0.2, 1), extrapolateRight: 'clamp' }
   );
 
+  // GSAP entrances + mid-scene title shrink
+  useEffect(() => {
+    if (frame >= beats.title && !triggered.titleIn && titleRef.current) {
+      gsap.fromTo(titleRef.current, { opacity: 0, y: -18, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 0.9, ease: 'back.out(1.5)' });
+      setTriggered(p => ({ ...p, titleIn: true }));
+    }
+
+    // Mid-scene: title shrinks to top to make space
+    if (frame >= beats.takeaways && !triggered.moveTitle && titleRef.current) {
+      gracefulMove(titleRef.current, { y: -120, scale: 0.8, duration: 1.0, ease: 'power3.inOut' });
+      setTriggered(p => ({ ...p, moveTitle: true }));
+    }
+
+    // Cascade reveal of takeaways
+    if (frame >= beats.takeaways + 10 && !triggered.takeawaysIn) {
+      const refs = takeawayRefs.current.filter(Boolean);
+      if (refs.length) {
+        cascadeReveal(refs, { duration: 0.6, stagger: 0.18, ease: 'back.out(1.5)' });
+        // Highlight sweep on each item
+        setTimeout(() => {
+          refs.forEach((el, i) => setTimeout(() => highlightReveal(el, { color: '#FFF59D', duration: 0.5 }), i * 80));
+        }, 600);
+        setTriggered(p => ({ ...p, takeawaysIn: true }));
+      }
+    }
+  }, [frame, beats, triggered]);
+
   useEffect(() => {
     if (!svgRef.current) return;
 
@@ -69,8 +101,8 @@ const Reflect4AKeyTakeaways = ({ scene }) => {
         const takeawayBox = rc.rectangle(180, yPos, 1560 * progress, 140, {
           stroke: i % 2 === 0 ? colors.accent : colors.accent2,
           strokeWidth: 4,
-          roughness: 0.8,
-          bowing: 2,
+          roughness: 0,
+          bowing: 0,
           fill: `${i % 2 === 0 ? colors.accent : colors.accent2}06`,
           fillStyle: 'hachure',
           hachureGap: 14,
@@ -100,8 +132,8 @@ const Reflect4AKeyTakeaways = ({ scene }) => {
         const check = rc.path(checkPath, {
           stroke: i % 2 === 0 ? colors.accent : colors.accent2,
           strokeWidth: 6,
-          roughness: 0.9,
-          bowing: 2,
+          roughness: 0,
+          bowing: 0,
         });
 
         svg.appendChild(check);
@@ -115,8 +147,8 @@ const Reflect4AKeyTakeaways = ({ scene }) => {
       const underline = rc.line(600, 200, 600 + 720 * progress, 205, {
         stroke: colors.accent,
         strokeWidth: 5,
-        roughness: 0.8,
-        bowing: 2,
+        roughness: 0,
+        bowing: 0,
       });
 
       svg.appendChild(underline);

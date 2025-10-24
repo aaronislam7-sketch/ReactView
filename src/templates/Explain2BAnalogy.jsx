@@ -1,7 +1,13 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate, Easing } from 'remotion';
 import { THEME } from '../utils/theme';
 import rough from 'roughjs/bundled/rough.esm.js';
+import gsap from 'gsap';
+import {
+  cascadeReveal,
+  gracefulMove,
+  pulseEmphasis,
+} from '../utils/gsapAnimations';
 
 /**
  * EXPLAIN 2B: ANALOGY
@@ -19,6 +25,17 @@ const Explain2BAnalogy = ({ scene }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
   const svgRef = useRef(null);
+  const leftRef = useRef(null);
+  const rightRef = useRef(null);
+  const bridgeLabelRef = useRef(null);
+
+  const [triggered, setTriggered] = useState({
+    leftIn: false,
+    rightIn: false,
+    breathe: false,
+    swapSides: false,
+    bridgeLabel: false,
+  });
 
   const colors = scene.style_tokens?.colors || {
     bg: THEME.colors.canvas.cream,
@@ -48,6 +65,61 @@ const Explain2BAnalogy = ({ scene }) => {
     { easing: Easing.bezier(0.4, 0, 0.2, 1), extrapolateRight: 'clamp' }
   );
 
+  // GSAP entrances and mid-scene transitions
+  useEffect(() => {
+    // Left content entrance + breathe
+    if (frame >= beats.familiar + 10 && !triggered.leftIn && leftRef.current) {
+      gsap.fromTo(leftRef.current,
+        { opacity: 0, y: -20, scale: 0.95 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: 'back.out(1.6)' }
+      );
+      setTriggered(prev => ({ ...prev, leftIn: true }));
+    }
+
+    // Right content entrance + breathe
+    if (frame >= beats.newConcept + 10 && !triggered.rightIn && rightRef.current) {
+      gsap.fromTo(rightRef.current,
+        { opacity: 0, y: -20, scale: 0.95 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: 'back.out(1.6)' }
+      );
+      setTriggered(prev => ({ ...prev, rightIn: true }));
+    }
+
+    // Gentle breathe on both sides (no jitter, pure scale)
+    if (triggered.leftIn && triggered.rightIn && !triggered.breathe) {
+      const targets = [leftRef.current, rightRef.current].filter(Boolean);
+      if (targets.length) {
+        gsap.to(targets, {
+          scale: 1.03,
+          duration: 2,
+          ease: 'sine.inOut',
+          yoyo: true,
+          repeat: -1,
+        });
+      }
+      setTriggered(prev => ({ ...prev, breathe: true }));
+    }
+
+    // Mid-scene: swap sides gracefully
+    if (frame >= beats.explanation && !triggered.swapSides) {
+      if (leftRef.current && rightRef.current) {
+        gracefulMove(leftRef.current, { x: 820, duration: 1.2, ease: 'power3.inOut' });
+        gracefulMove(rightRef.current, { x: -820, duration: 1.2, ease: 'power3.inOut' });
+        // Small emphasis after swap
+        setTimeout(() => {
+          pulseEmphasis([leftRef.current, rightRef.current], { scale: 1.05, duration: 0.3, repeat: 1, yoyo: true });
+        }, 1200);
+      }
+      setTriggered(prev => ({ ...prev, swapSides: true }));
+    }
+
+    // Bridge label entrance (center caption)
+    if (frame >= beats.bridge + 20 && !triggered.bridgeLabel && bridgeLabelRef.current) {
+      cascadeReveal([bridgeLabelRef.current], { duration: 0.6 });
+      setTriggered(prev => ({ ...prev, bridgeLabel: true }));
+    }
+  }, [frame, beats, triggered]);
+
   useEffect(() => {
     if (!svgRef.current) return;
 
@@ -58,15 +130,15 @@ const Explain2BAnalogy = ({ scene }) => {
       svg.removeChild(svg.firstChild);
     }
 
-    // Familiar concept frame (left)
+    // Familiar concept frame (left) - ZERO WOBBLE
     if (frame >= beats.familiar) {
       const progress = Math.min((frame - beats.familiar) / 32, 1);
       
       const leftFrame = rc.rectangle(180, 350, 680, 420, {
         stroke: colors.accent,
         strokeWidth: 5,
-        roughness: 0.8,
-        bowing: 2,
+        roughness: 0,
+        bowing: 0,
         fill: `${colors.accent}08`,
         fillStyle: 'hachure',
         hachureGap: 12,
@@ -82,15 +154,15 @@ const Explain2BAnalogy = ({ scene }) => {
       svg.appendChild(leftFrame);
     }
 
-    // New concept frame (right)
+    // New concept frame (right) - ZERO WOBBLE
     if (frame >= beats.newConcept) {
       const progress = Math.min((frame - beats.newConcept) / 32, 1);
       
       const rightFrame = rc.rectangle(1060, 350, 680, 420, {
         stroke: colors.accent2,
         strokeWidth: 5,
-        roughness: 0.8,
-        bowing: 2,
+        roughness: 0,
+        bowing: 0,
         fill: `${colors.accent2}08`,
         fillStyle: 'hachure',
         hachureGap: 12,
@@ -106,7 +178,7 @@ const Explain2BAnalogy = ({ scene }) => {
       svg.appendChild(rightFrame);
     }
 
-    // Bridge arrow (connecting)
+    // Bridge arrow (connecting) - ZERO WOBBLE
     if (frame >= beats.bridge) {
       const progress = Math.min((frame - beats.bridge) / 35, 1);
       
@@ -115,8 +187,8 @@ const Explain2BAnalogy = ({ scene }) => {
       const arrow = rc.path(arrowPath, {
         stroke: colors.ink,
         strokeWidth: 6,
-        roughness: 0.9,
-        bowing: 2,
+        roughness: 0,
+        bowing: 0,
       });
       svg.appendChild(arrow);
 
@@ -127,14 +199,14 @@ const Explain2BAnalogy = ({ scene }) => {
         const arrowhead = rc.path(headPath, {
           stroke: colors.ink,
           strokeWidth: 6,
-          roughness: 0.8,
-          bowing: 1,
+          roughness: 0,
+          bowing: 0,
         });
         svg.appendChild(arrowhead);
       }
     }
 
-    // Decorative brackets
+    // Decorative brackets - ZERO WOBBLE
     if (frame >= beats.explanation) {
       const progress = Math.min((frame - beats.explanation) / 28, 1);
 
@@ -143,8 +215,8 @@ const Explain2BAnalogy = ({ scene }) => {
         {
           stroke: `${colors.accent}60`,
           strokeWidth: 4,
-          roughness: 0.7,
-          bowing: 2,
+          roughness: 0,
+          bowing: 0,
         }
       );
       svg.appendChild(leftBracket);
@@ -154,8 +226,8 @@ const Explain2BAnalogy = ({ scene }) => {
         {
           stroke: `${colors.accent2}60`,
           strokeWidth: 4,
-          roughness: 0.7,
-          bowing: 2,
+          roughness: 0,
+          bowing: 0,
         }
       );
       svg.appendChild(rightBracket);
@@ -219,7 +291,7 @@ const Explain2BAnalogy = ({ scene }) => {
             </div>
           )}
 
-          {/* Familiar concept */}
+          {/* Familiar concept (GSAP-controlled) */}
           {frame >= beats.familiar + 10 && (
             <div
               style={{
@@ -227,35 +299,36 @@ const Explain2BAnalogy = ({ scene }) => {
                 top: 400,
                 left: 220,
                 width: 600,
-                ...buildIn(beats.familiar + 10, 35),
               }}
             >
-              <h3
-                style={{
-                  fontFamily: THEME.fonts.structure.primary,
-                  fontSize: 38,
-                  fontWeight: 700,
-                  color: colors.accent,
-                  margin: '0 0 20px 0',
-                }}
-              >
-                {data.familiar?.label || 'Familiar Thing'}
-              </h3>
-              <p
-                style={{
-                  fontFamily: THEME.fonts.structure.secondary,
-                  fontSize: 24,
-                  color: colors.ink,
-                  margin: 0,
-                  lineHeight: 1.5,
-                }}
-              >
-                {data.familiar?.description || 'Description of familiar concept...'}
-              </p>
+              <div ref={leftRef} style={{ opacity: 0 }}>
+                <h3
+                  style={{
+                    fontFamily: THEME.fonts.structure.primary,
+                    fontSize: 38,
+                    fontWeight: 700,
+                    color: colors.accent,
+                    margin: '0 0 20px 0',
+                  }}
+                >
+                  {data.familiar?.label || 'Familiar Thing'}
+                </h3>
+                <p
+                  style={{
+                    fontFamily: THEME.fonts.structure.secondary,
+                    fontSize: 24,
+                    color: colors.ink,
+                    margin: 0,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {data.familiar?.description || 'Description of familiar concept...'}
+                </p>
+              </div>
             </div>
           )}
 
-          {/* New concept */}
+          {/* New concept (GSAP-controlled) */}
           {frame >= beats.newConcept + 10 && (
             <div
               style={{
@@ -263,31 +336,32 @@ const Explain2BAnalogy = ({ scene }) => {
                 top: 400,
                 left: 1100,
                 width: 600,
-                ...buildIn(beats.newConcept + 10, 35),
               }}
             >
-              <h3
-                style={{
-                  fontFamily: THEME.fonts.structure.primary,
-                  fontSize: 38,
-                  fontWeight: 700,
-                  color: colors.accent2,
-                  margin: '0 0 20px 0',
-                }}
-              >
-                {data.newConcept?.label || 'New Concept'}
-              </h3>
-              <p
-                style={{
-                  fontFamily: THEME.fonts.structure.secondary,
-                  fontSize: 24,
-                  color: colors.ink,
-                  margin: 0,
-                  lineHeight: 1.5,
-                }}
-              >
-                {data.newConcept?.description || 'Description of new concept...'}
-              </p>
+              <div ref={rightRef} style={{ opacity: 0 }}>
+                <h3
+                  style={{
+                    fontFamily: THEME.fonts.structure.primary,
+                    fontSize: 38,
+                    fontWeight: 700,
+                    color: colors.accent2,
+                    margin: '0 0 20px 0',
+                  }}
+                >
+                  {data.newConcept?.label || 'New Concept'}
+                </h3>
+                <p
+                  style={{
+                    fontFamily: THEME.fonts.structure.secondary,
+                    fontSize: 24,
+                    color: colors.ink,
+                    margin: 0,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {data.newConcept?.description || 'Description of new concept...'}
+                </p>
+              </div>
             </div>
           )}
 
@@ -299,10 +373,10 @@ const Explain2BAnalogy = ({ scene }) => {
                 top: 500,
                 left: '50%',
                 transform: 'translateX(-50%)',
-                ...buildIn(beats.bridge + 20, 28),
               }}
             >
               <p
+                ref={bridgeLabelRef}
                 style={{
                   fontFamily: THEME.fonts.marker.handwritten,
                   fontSize: 32,

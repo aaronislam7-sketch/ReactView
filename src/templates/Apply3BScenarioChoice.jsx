@@ -1,7 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate, Easing } from 'remotion';
 import { THEME } from '../utils/theme';
 import rough from 'roughjs/bundled/rough.esm.js';
+import gsap from 'gsap';
+import { cascadeReveal, gracefulMove, pulseEmphasis } from '../utils/gsapAnimations';
 
 /**
  * APPLY 3B: SCENARIO CHOICE
@@ -19,6 +21,11 @@ const Apply3BScenarioChoice = ({ scene }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
   const svgRef = useRef(null);
+  const scenarioRef = useRef(null);
+  const promptRef = useRef(null);
+  const choiceRefs = useRef([]);
+  const outcomeRefs = useRef([]);
+  const [triggered, setTriggered] = useState({ scenarioIn: false, promptIn: false, choicesIn: false, expandChoice: false, outcomesIn: false });
 
   const colors = scene.style_tokens?.colors || {
     bg: THEME.colors.canvas.cream,
@@ -50,6 +57,45 @@ const Apply3BScenarioChoice = ({ scene }) => {
     { easing: Easing.bezier(0.4, 0, 0.2, 1), extrapolateRight: 'clamp' }
   );
 
+  // GSAP entrances and mid-scene spotlight
+  useEffect(() => {
+    if (frame >= beats.scenario + 10 && !triggered.scenarioIn && scenarioRef.current) {
+      gsap.fromTo(scenarioRef.current, { opacity: 0, y: -24, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 0.9, ease: 'back.out(1.5)' });
+      setTriggered(p => ({ ...p, scenarioIn: true }));
+    }
+
+    if (frame >= beats.prompt && !triggered.promptIn && promptRef.current) {
+      gsap.fromTo(promptRef.current, { opacity: 0, y: -18 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' });
+      setTriggered(p => ({ ...p, promptIn: true }));
+    }
+
+    if (frame >= beats.choices + 12 && !triggered.choicesIn) {
+      const refs = choiceRefs.current.filter(Boolean);
+      if (refs.length) {
+        cascadeReveal(refs, { duration: 0.6, stagger: 0.18, ease: 'back.out(1.5)' });
+        setTriggered(p => ({ ...p, choicesIn: true }));
+      }
+    }
+
+    // Mid-scene: spotlight first choice by expanding slightly
+    if (frame >= beats.outcomes - 10 && !triggered.expandChoice) {
+      const first = choiceRefs.current[0];
+      if (first) {
+        gracefulMove(first, { scale: 1.08, duration: 0.8, ease: 'power2.inOut' });
+        setTimeout(() => pulseEmphasis(first, { scale: 1.06, duration: 0.3, repeat: 1, yoyo: true }), 820);
+      }
+      setTriggered(p => ({ ...p, expandChoice: true }));
+    }
+
+    if (frame >= beats.outcomes && !triggered.outcomesIn) {
+      const refs = outcomeRefs.current.filter(Boolean);
+      if (refs.length) {
+        cascadeReveal(refs, { duration: 0.5, stagger: 0.15 });
+        setTriggered(p => ({ ...p, outcomesIn: true }));
+      }
+    }
+  }, [frame, beats, triggered]);
+
   useEffect(() => {
     if (!svgRef.current) return;
 
@@ -67,8 +113,8 @@ const Apply3BScenarioChoice = ({ scene }) => {
       const scenarioCircle = rc.circle(960, 380, 220 * progress, {
         stroke: colors.accent,
         strokeWidth: 6,
-        roughness: 0.7,
-        bowing: 1,
+        roughness: 0,
+        bowing: 0,
         fill: `${colors.accent}12`,
         fillStyle: 'hachure',
         hachureGap: 10,
@@ -93,8 +139,8 @@ const Apply3BScenarioChoice = ({ scene }) => {
       const leftLine = rc.path(leftPath, {
         stroke: colors.path1,
         strokeWidth: 5,
-        roughness: 0.8,
-        bowing: 2,
+        roughness: 0,
+        bowing: 0,
       });
       svg.appendChild(leftLine);
 
@@ -103,8 +149,8 @@ const Apply3BScenarioChoice = ({ scene }) => {
       const rightLine = rc.path(rightPath, {
         stroke: colors.path2,
         strokeWidth: 5,
-        roughness: 0.8,
-        bowing: 2,
+        roughness: 0,
+        bowing: 0,
       });
       svg.appendChild(rightLine);
     }
@@ -128,8 +174,8 @@ const Apply3BScenarioChoice = ({ scene }) => {
         const choiceBubble = rc.ellipse(pos.x, pos.y, 320 * progress, 160 * progress, {
           stroke: pos.color,
           strokeWidth: 5,
-          roughness: 0.7,
-          bowing: 2,
+          roughness: 0,
+          bowing: 0,
           fill: `${pos.color}10`,
           fillStyle: 'hachure',
           hachureGap: 12,
@@ -147,8 +193,8 @@ const Apply3BScenarioChoice = ({ scene }) => {
       const marker = rc.path(markerPath, {
         stroke: colors.accent,
         strokeWidth: 4,
-        roughness: 0.9,
-        bowing: 1,
+        roughness: 0,
+        bowing: 0,
       });
       svg.appendChild(marker);
     }
