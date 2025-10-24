@@ -258,6 +258,12 @@ export default function App() {
   console.log('Remotion debug — Component:', Component);
   
   const [debugRender, setDebugRender] = useState(false);
+  const [playerKey, setPlayerKey] = useState(0); // For forcing player re-render
+  
+  // Reload player (fixes GSAP scrubbing issues)
+  const handleReloadPlayer = () => {
+    setPlayerKey(prev => prev + 1);
+  };
 
   // Render wizard mode by default
   if (mode === 'wizard') {
@@ -550,6 +556,37 @@ export default function App() {
           justifyContent: 'center',
           padding: 40
         }}>
+          {/* Reload Button - for GSAP scrubbing issues */}
+          <button
+            onClick={handleReloadPlayer}
+            style={{
+              marginBottom: 16,
+              padding: '10px 20px',
+              fontSize: 14,
+              fontWeight: 600,
+              backgroundColor: '#E74C3C',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 6,
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(231, 76, 60, 0.3)',
+              transition: 'all 0.2s'
+            }}
+            onMouseOver={(e) => {
+              e.target.style.backgroundColor = '#C0392B';
+              e.target.style.transform = 'translateY(-1px)';
+              e.target.style.boxShadow = '0 4px 12px rgba(231, 76, 60, 0.4)';
+            }}
+            onMouseOut={(e) => {
+              e.target.style.backgroundColor = '#E74C3C';
+              e.target.style.transform = 'translateY(0)';
+              e.target.style.boxShadow = '0 2px 8px rgba(231, 76, 60, 0.3)';
+            }}
+            title="Reload player to reset GSAP animations after scrubbing"
+          >
+            🔄 Reload Player
+          </button>
+          
           <div style={{
             backgroundColor: '#fff',
             borderRadius: 8,
@@ -558,6 +595,7 @@ export default function App() {
           }}>
             {/* Main Player */}
             <Player
+              key={playerKey}
               component={Component}
               inputProps={{ scene: currentScene }}
               durationInFrames={currentScene.duration_s * currentScene.fps}

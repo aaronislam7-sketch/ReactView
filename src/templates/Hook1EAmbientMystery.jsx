@@ -1,16 +1,28 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate, Easing } from 'remotion';
-import { THEME } from '../utils/theme';
 import rough from 'roughjs/bundled/rough.esm.js';
+import gsap from 'gsap';
+import {
+  scrambleText,
+  glowPulse,
+  gracefulMove,
+  cascadeReveal,
+} from '../utils/gsapAnimations';
 
 /**
- * HOOK 1E: AMBIENT MYSTERY
+ * HOOK 1E: AMBIENT MYSTERY (GSAP V2)
  * 
  * Intent: Build intrigue through subtle atmospheric question
  * Pattern: "In the shadows of..." / "Hidden beneath..."
  * Visual: Fog particles, whisper text, dim spotlight, mysterious
  * Tone: Mysterious, Intriguing
  * Duration: 12-18s
+ * 
+ * GSAP Features:
+ * - Scramble text reveal for question
+ * - Glow pulse on mysterious elements
+ * - Mid-scene: Whisper text moves to corner
+ * - Hint cascades in late
  * 
  * NO BOXES - Fog layers, wispy sketches, atmospheric depth
  */
@@ -19,6 +31,20 @@ const Hook1EAmbientMystery = ({ scene }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
   const svgRef = useRef(null);
+  const whisperRef = useRef(null);
+  const questionRef = useRef(null);
+  const hintRef = useRef(null);
+  const glowRef1 = useRef(null);
+  const glowRef2 = useRef(null);
+  
+  const [triggeredAnimations, setTriggeredAnimations] = useState({
+    whisper: false,
+    question: false,
+    glow1: false,
+    glow2: false,
+    moveWhisper: false,
+    hintCascade: false,
+  });
 
   const colors = scene.style_tokens?.colors || {
     bg: '#1A1F2E',
@@ -27,6 +53,14 @@ const Hook1EAmbientMystery = ({ scene }) => {
     accent2: '#6C7A89',
     ink: '#E8F4FD',
     spotlight: '#F39C12',
+  };
+  
+  const fonts = scene.style_tokens?.fonts || {
+    primary: "'Cabin Sketch', cursive",
+    secondary: "'Patrick Hand', cursive",
+    size_whisper: 42,
+    size_question: 78,
+    size_hint: 32,
   };
 
   const texts = scene.fill?.texts || {};
@@ -39,7 +73,11 @@ const Hook1EAmbientMystery = ({ scene }) => {
     spotlight: BEAT * 1.5,
     whisperText: BEAT * 2.5,
     questionReveal: BEAT * 4,
+    glow1: BEAT * 5,
+    glow2: BEAT * 5.5,
     wisps: BEAT * 5.5,
+    moveWhisper: BEAT * 7,      // NEW: Mid-scene
+    hintCascade: BEAT * 8,       // NEW: Late reveal
     accentGlow: BEAT * 7,
     settle: BEAT * 9,
   };
@@ -60,6 +98,100 @@ const Hook1EAmbientMystery = ({ scene }) => {
     { extrapolateRight: 'clamp' }
   );
 
+  // ========================================
+  // GSAP ANIMATION TRIGGERS
+  // ========================================
+  
+  // Whisper text - fade in
+  useEffect(() => {
+    if (frame >= beats.whisperText && !triggeredAnimations.whisper && whisperRef.current) {
+      gsap.fromTo(whisperRef.current,
+        { opacity: 0, y: 30, scale: 0.95 },
+        { opacity: 0.95, y: 0, scale: 1, duration: 1.4, ease: "power2.out" }
+      );
+      setTriggeredAnimations(prev => ({ ...prev, whisper: true }));
+    }
+  }, [frame, beats.whisperText, triggeredAnimations.whisper]);
+
+  // Question scramble reveal
+  useEffect(() => {
+    if (frame >= beats.questionReveal && !triggeredAnimations.question && questionRef.current) {
+      // First fade in container
+      gsap.fromTo(questionRef.current,
+        { opacity: 0, y: 30, scale: 0.95 },
+        { opacity: 1, y: 0, scale: 1, duration: 1.2, ease: "power2.out" }
+      );
+      
+      // Then scramble the text
+      const h1 = questionRef.current.querySelector('h1');
+      if (h1) {
+        const finalText = texts.question || 'What lies beneath the surface?';
+        h1.textContent = finalText.split('').map(() => '?').join('');
+        
+        setTimeout(() => {
+          scrambleText(h1, finalText, {
+            duration: 1.5,
+            chars: "?!@#$%&*~",
+          });
+        }, 400);
+      }
+      
+      setTriggeredAnimations(prev => ({ ...prev, question: true }));
+    }
+  }, [frame, beats.questionReveal, triggeredAnimations.question, texts.question]);
+
+  // Glow pulse 1
+  useEffect(() => {
+    if (frame >= beats.glow1 && !triggeredAnimations.glow1 && glowRef1.current) {
+      glowPulse(glowRef1.current, {
+        color: colors.accent,
+        intensity: 30,
+        duration: 1.5,
+        repeat: -1,
+        yoyo: true,
+      });
+      setTriggeredAnimations(prev => ({ ...prev, glow1: true }));
+    }
+  }, [frame, beats.glow1, triggeredAnimations.glow1, colors.accent]);
+
+  // Glow pulse 2
+  useEffect(() => {
+    if (frame >= beats.glow2 && !triggeredAnimations.glow2 && glowRef2.current) {
+      glowPulse(glowRef2.current, {
+        color: colors.spotlight,
+        intensity: 25,
+        duration: 1.8,
+        repeat: -1,
+        yoyo: true,
+      });
+      setTriggeredAnimations(prev => ({ ...prev, glow2: true }));
+    }
+  }, [frame, beats.glow2, triggeredAnimations.glow2, colors.spotlight]);
+
+  // MID-SCENE: Move whisper to corner
+  useEffect(() => {
+    if (frame >= beats.moveWhisper && !triggeredAnimations.moveWhisper && whisperRef.current) {
+      gracefulMove(whisperRef.current, {
+        y: -180,
+        scale: 0.6,
+        duration: 1.5,
+        ease: "power3.inOut",
+      });
+      setTriggeredAnimations(prev => ({ ...prev, moveWhisper: true }));
+    }
+  }, [frame, beats.moveWhisper, triggeredAnimations.moveWhisper]);
+
+  // Hint cascade
+  useEffect(() => {
+    if (frame >= beats.hintCascade && !triggeredAnimations.hintCascade && hintRef.current) {
+      cascadeReveal([hintRef.current], {
+        duration: 0.8,
+        ease: "power2.out",
+      });
+      setTriggeredAnimations(prev => ({ ...prev, hintCascade: true }));
+    }
+  }, [frame, beats.hintCascade, triggeredAnimations.hintCascade]);
+
   // Generate rough.js fog wisps and mysterious elements
   useEffect(() => {
     if (!svgRef.current) return;
@@ -72,7 +204,7 @@ const Hook1EAmbientMystery = ({ scene }) => {
       svg.removeChild(svg.firstChild);
     }
 
-    // Wispy fog clouds (sketchy, organic)
+    // Wispy fog clouds (sketchy, organic) - ZERO WOBBLE
     if (frame >= beats.fogIn) {
       const fogClouds = [
         { x: 300, y: 200, w: 400, h: 180, delay: 0, opacity: 0.15 },
@@ -96,8 +228,8 @@ const Hook1EAmbientMystery = ({ scene }) => {
             stroke: 'none',
             fill: `${colors.fog}`,
             fillStyle: 'solid',
-            roughness: 0.7,
-            bowing: 1,
+            roughness: 0,  // ZERO WOBBLE
+            bowing: 0,     // ZERO WOBBLE
           }
         );
         
@@ -107,15 +239,15 @@ const Hook1EAmbientMystery = ({ scene }) => {
       });
     }
 
-    // Spotlight circle (rough sketch, subtle)
+    // Spotlight circle (rough sketch, subtle) - ZERO WOBBLE
     if (frame >= beats.spotlight) {
       const progress = Math.min((frame - beats.spotlight) / 60, 1);
       
       const spotlight = rc.circle(960, 540, 650 * progress, {
         stroke: `${colors.spotlight}40`,
         strokeWidth: 4,
-        roughness: 0.6,
-        bowing: 1,
+        roughness: 0,  // ZERO WOBBLE
+        bowing: 0,     // ZERO WOBBLE
         fill: 'none',
       });
       
@@ -124,7 +256,7 @@ const Hook1EAmbientMystery = ({ scene }) => {
       svg.appendChild(spotlight);
     }
 
-    // Mysterious wispy lines (floating)
+    // Mysterious wispy lines (floating) - ZERO WOBBLE
     if (frame >= beats.wisps) {
       const wisps = [
         { x1: 400, y1: 350, x2: 550, y2: 320, delay: 0 },
@@ -147,8 +279,8 @@ const Hook1EAmbientMystery = ({ scene }) => {
           {
             stroke: `${colors.accent}60`,
             strokeWidth: 3,
-            roughness: 0.8,
-            bowing: 2,
+            roughness: 0,  // ZERO WOBBLE
+            bowing: 0,     // ZERO WOBBLE
           }
         );
         
@@ -157,7 +289,7 @@ const Hook1EAmbientMystery = ({ scene }) => {
       });
     }
 
-    // Accent glow circles (mysterious depth)
+    // Accent glow circles (mysterious depth) - ZERO WOBBLE
     if (frame >= beats.accentGlow) {
       const glows = [
         { x: 480, y: 540, r: 120, delay: 0 },
@@ -174,8 +306,8 @@ const Hook1EAmbientMystery = ({ scene }) => {
           stroke: 'none',
           fill: `${colors.accent}`,
           fillStyle: 'solid',
-          roughness: 0.6,
-          bowing: 1,
+          roughness: 0,  // ZERO WOBBLE
+          bowing: 0,     // ZERO WOBBLE
         });
         
         glowCircle.style.opacity = 0.15 * progress;
@@ -185,34 +317,6 @@ const Hook1EAmbientMystery = ({ scene }) => {
     }
 
   }, [frame, beats, colors]);
-
-  // Text reveal - whisper-like, slow fade
-  const whisperReveal = (startFrame, duration = 60) => {
-    if (frame < startFrame) {
-      return {
-        opacity: 0,
-        transform: 'translateY(30px) scale(0.95)',
-      };
-    }
-    if (frame >= startFrame + duration) {
-      return {
-        opacity: 1,
-        transform: 'translateY(0) scale(1)',
-      };
-    }
-
-    const progress = interpolate(
-      frame,
-      [startFrame, startFrame + duration],
-      [0, 1],
-      { easing: Easing.out(Easing.cubic), extrapolateRight: 'clamp' }
-    );
-
-    return {
-      opacity: progress * 0.95,
-      transform: `translateY(${30 * (1 - progress)}px) scale(${0.95 + progress * 0.05})`,
-    };
-  };
 
   return (
     <AbsoluteFill
@@ -270,15 +374,16 @@ const Hook1EAmbientMystery = ({ scene }) => {
           {/* Whisper text (above question) */}
           {frame >= beats.whisperText && texts.whisper && (
             <div
+              ref={whisperRef}
               style={{
                 marginBottom: 60,
-                ...whisperReveal(beats.whisperText, 70),
+                opacity: 0, // Will be animated by GSAP
               }}
             >
               <p
                 style={{
-                  fontFamily: THEME.fonts.marker.handwritten,
-                  fontSize: 42,
+                  fontFamily: fonts.primary,
+                  fontSize: fonts.size_whisper,
                   color: `${colors.ink}50`,
                   margin: 0,
                   fontStyle: 'italic',
@@ -291,20 +396,21 @@ const Hook1EAmbientMystery = ({ scene }) => {
             </div>
           )}
 
-          {/* Main question - mysterious reveal */}
+          {/* Main question - mysterious scramble reveal */}
           {frame >= beats.questionReveal && (
             <div
+              ref={questionRef}
               style={{
                 position: 'relative',
                 textAlign: 'center',
-                ...whisperReveal(beats.questionReveal, 80),
+                opacity: 0, // Will be animated by GSAP
               }}
             >
               <h1
                 style={{
-                  fontFamily: THEME.fonts.structure.primary,
-                  fontSize: 78,
-                  fontWeight: 600,
+                  fontFamily: fonts.primary,
+                  fontSize: fonts.size_question,
+                  fontWeight: 700,
                   color: colors.ink,
                   lineHeight: 1.2,
                   margin: 0,
@@ -343,7 +449,7 @@ const Hook1EAmbientMystery = ({ scene }) => {
             </div>
           )}
 
-          {/* Floating mystery particles */}
+          {/* Floating mystery particles with glow */}
           {frame >= beats.prelude && (
             <>
               {[...Array(24)].map((_, i) => {
@@ -361,10 +467,13 @@ const Hook1EAmbientMystery = ({ scene }) => {
                   [0, 0.25],
                   { extrapolateRight: 'clamp' }
                 );
+                
+                const isGlowParticle = (i === 8 || i === 15);
 
                 return (
                   <div
                     key={i}
+                    ref={i === 8 ? glowRef1 : i === 15 ? glowRef2 : null}
                     style={{
                       position: 'absolute',
                       left: baseX + driftX,
@@ -383,24 +492,20 @@ const Hook1EAmbientMystery = ({ scene }) => {
             </>
           )}
 
-          {/* Hint text - late reveal */}
-          {frame >= beats.accentGlow + 30 && texts.hint && (
+          {/* Hint text - late cascade reveal */}
+          {frame >= beats.hintCascade && texts.hint && (
             <div
+              ref={hintRef}
               style={{
                 position: 'absolute',
                 bottom: 120,
-                opacity: interpolate(
-                  frame,
-                  [beats.accentGlow + 30, beats.accentGlow + 70],
-                  [0, 0.7],
-                  { extrapolateRight: 'clamp' }
-                ),
+                opacity: 0, // Will be animated by GSAP
               }}
             >
               <p
                 style={{
-                  fontFamily: THEME.fonts.marker.handwritten,
-                  fontSize: 32,
+                  fontFamily: fonts.primary,
+                  fontSize: fonts.size_hint,
                   color: `${colors.ink}60`,
                   margin: 0,
                   fontStyle: 'italic',
