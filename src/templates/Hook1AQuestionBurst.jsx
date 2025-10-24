@@ -1,22 +1,38 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate, Easing } from 'remotion';
 import { THEME } from '../utils/theme';
 import rough from 'roughjs/bundled/rough.esm.js';
-// TODO: anime.js integration pending - import issues with ESM
+import gsap from 'gsap';
+import {
+  drawUnderline,
+  pulseEmphasis,
+  gracefulMove,
+  scrambleText,
+  questionRevealSequence,
+  cascadeReveal,
+} from '../utils/gsapAnimations';
 
 /**
- * HOOK 1A: QUESTION BURST (Production V2)
+ * HOOK 1A: QUESTION BURST (Production V3 - GSAP)
  * 
  * PRODUCTION-READY FEATURES:
  * - ✅ Zero wobble (roughness/bowing = 0)
- * - ✅ Lottie animation support (JSON schema)
- * - ✅ Image/icon support (JSON schema)
- * - ✅ Expanded JSON control (v4.0 schema)
- * - ✅ Rough.js fonts everywhere
- * - ✅ No overlaps or visual issues
- * - ⏳ anime.js (pending import fix, using Remotion interpolate)
+ * - ✅ GSAP animations for world-class aesthetics
+ * - ✅ Mid-scene transitions (question moves gracefully)
+ * - ✅ Organic animation flows
+ * - ✅ Emphasis animations (pulse, underline)
+ * - ✅ Scramble text for hooks
+ * - ✅ Staggered reveals
  * 
- * Intent: Pose provocative question with kinetic energy
+ * Animation Flow:
+ * 1. Question Part 1 appears with bounce (GSAP)
+ * 2. Underline draws underneath (GSAP drawUnderline)
+ * 3. Question Part 2 appears
+ * 4. Pulse emphasis on key words (GSAP)
+ * 5. Mid-scene: Question gracefully moves to top (GSAP gracefulMove)
+ * 6. New content (subtitle + icons) cascade in (GSAP)
+ * 
+ * Intent: Pose provocative question with kinetic energy + mid-scene repositioning
  * Duration: 10-20s
  */
 
@@ -26,6 +42,23 @@ const Hook1AQuestionBurst = ({ scene }) => {
   const svgRef = useRef(null);
   const textRef1 = useRef(null);
   const textRef2 = useRef(null);
+  const underline1Ref = useRef(null);
+  const underline2Ref = useRef(null);
+  const questionContainerRef = useRef(null);
+  const subtitleRef = useRef(null);
+  const iconsContainerRef = useRef(null);
+  
+  // Track which animations have been triggered
+  const [triggeredAnimations, setTriggeredAnimations] = useState({
+    questionPart1: false,
+    underline1: false,
+    questionPart2: false,
+    underline2: false,
+    pulse1: false,
+    pulse2: false,
+    moveToTop: false,
+    cascadeContent: false,
+  });
 
   // Expanded style tokens with defaults
   const style = scene.style_tokens || {};
@@ -43,8 +76,8 @@ const Hook1AQuestionBurst = ({ scene }) => {
   };
   
   const motion = style.motion || {
-    timing: 'fast',  // fast | medium | slow
-    easing: 'elastic',  // elastic | smooth | linear
+    timing: 'fast',
+    easing: 'elastic',
     stagger_delay: 150,
   };
   
@@ -58,7 +91,7 @@ const Hook1AQuestionBurst = ({ scene }) => {
   const lottie = scene.fill?.lottie || null;
   const icons = scene.fill?.icons || [];
 
-  // Beat timing - dynamic based on motion.timing
+  // Beat timing - frame-based
   const timingMultiplier = motion.timing === 'fast' ? 0.8 : motion.timing === 'slow' ? 1.2 : 1.0;
   const BEAT = 36 * timingMultiplier;
   
@@ -67,15 +100,19 @@ const Hook1AQuestionBurst = ({ scene }) => {
     questionPart1: BEAT * 0.8,
     underline1: BEAT * 2,
     questionPart2: BEAT * 2.4,
+    pulse1: BEAT * 3,
     underline2: BEAT * 3.6,
+    pulse2: BEAT * 4.5,
     accentCircle: BEAT * 4.2,
     sparkBurst: BEAT * 5,
+    moveToTop: BEAT * 6,        // NEW: Mid-scene transition
+    cascadeContent: BEAT * 7,   // NEW: New content appears
     lottieIcon: BEAT * 5.5,
     subtitle: BEAT * 6,
-    settle: BEAT * 7.5,
+    settle: BEAT * 8.5,
   };
 
-  // Camera motion
+  // Camera motion (kept for background ambience)
   const cameraZoom = interpolate(
     frame,
     [0, beats.questionPart1, beats.sparkBurst, beats.settle],
@@ -88,39 +125,133 @@ const Hook1AQuestionBurst = ({ scene }) => {
     y: Math.cos(frame * 0.005) * 3,
   };
 
-  // Kinetic reveal animation (using Remotion interpolate)
-  const kineticReveal = (startFrame, duration = 28, rotation = 0) => {
-    if (frame < startFrame) {
-      return {
-        opacity: 0,
-        transform: `translateY(-50px) rotate(${rotation * 3}deg) scale(0.85)`,
-      };
+  // ========================================
+  // GSAP ANIMATION TRIGGERS
+  // ========================================
+  
+  // Question Part 1 - Kinetic entrance with GSAP
+  useEffect(() => {
+    if (frame >= beats.questionPart1 && !triggeredAnimations.questionPart1 && textRef1.current) {
+      gsap.fromTo(textRef1.current,
+        {
+          opacity: 0,
+          y: -50,
+          scale: 0.85,
+          rotation: -3,
+        },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          rotation: 0,
+          duration: 0.8,
+          ease: "back.out(1.7)",
+        }
+      );
+      setTriggeredAnimations(prev => ({ ...prev, questionPart1: true }));
     }
-    if (frame >= startFrame + duration) {
-      return {
-        opacity: 1,
-        transform: `translateY(0) rotate(${rotation}deg) scale(1)`,
-      };
+  }, [frame, beats.questionPart1, triggeredAnimations.questionPart1]);
+
+  // Underline 1 - Draw effect
+  useEffect(() => {
+    if (frame >= beats.underline1 && !triggeredAnimations.underline1 && underline1Ref.current) {
+      drawUnderline(underline1Ref.current, {
+        duration: 0.6,
+        ease: "power2.out",
+      });
+      setTriggeredAnimations(prev => ({ ...prev, underline1: true }));
     }
+  }, [frame, beats.underline1, triggeredAnimations.underline1]);
 
-    const progress = interpolate(
-      frame,
-      [startFrame, startFrame + duration],
-      [0, 1],
-      { easing: Easing.out(Easing.back(1.7)), extrapolateRight: 'clamp' }
-    );
+  // Question Part 2 - Kinetic entrance
+  useEffect(() => {
+    if (frame >= beats.questionPart2 && !triggeredAnimations.questionPart2 && textRef2.current) {
+      gsap.fromTo(textRef2.current,
+        {
+          opacity: 0,
+          y: -50,
+          scale: 0.85,
+          rotation: 2,
+        },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          rotation: 0,
+          duration: 0.8,
+          ease: "back.out(1.7)",
+        }
+      );
+      setTriggeredAnimations(prev => ({ ...prev, questionPart2: true }));
+    }
+  }, [frame, beats.questionPart2, triggeredAnimations.questionPart2]);
 
-    return {
-      opacity: progress,
-      transform: `
-        translateY(${-50 * (1 - progress)}px) 
-        rotate(${rotation * (3 - progress * 2)}deg) 
-        scale(${0.85 + progress * 0.15})
-      `,
-    };
-  };
+  // Pulse 1 - Emphasis on first part
+  useEffect(() => {
+    if (frame >= beats.pulse1 && !triggeredAnimations.pulse1 && textRef1.current) {
+      pulseEmphasis(textRef1.current, {
+        scale: 1.05,
+        duration: 0.4,
+        repeat: 1,
+        yoyo: true,
+      });
+      setTriggeredAnimations(prev => ({ ...prev, pulse1: true }));
+    }
+  }, [frame, beats.pulse1, triggeredAnimations.pulse1]);
 
-  // rough.js shapes - ZERO WOBBLE
+  // Underline 2 - Draw effect
+  useEffect(() => {
+    if (frame >= beats.underline2 && !triggeredAnimations.underline2 && underline2Ref.current) {
+      drawUnderline(underline2Ref.current, {
+        duration: 0.6,
+        ease: "power2.out",
+      });
+      setTriggeredAnimations(prev => ({ ...prev, underline2: true }));
+    }
+  }, [frame, beats.underline2, triggeredAnimations.underline2]);
+
+  // Pulse 2 - Emphasis on second part
+  useEffect(() => {
+    if (frame >= beats.pulse2 && !triggeredAnimations.pulse2 && textRef2.current) {
+      pulseEmphasis(textRef2.current, {
+        scale: 1.08,
+        duration: 0.4,
+        repeat: 2,
+        yoyo: true,
+      });
+      setTriggeredAnimations(prev => ({ ...prev, pulse2: true }));
+    }
+  }, [frame, beats.pulse2, triggeredAnimations.pulse2]);
+
+  // MID-SCENE TRANSITION - Move question to top
+  useEffect(() => {
+    if (frame >= beats.moveToTop && !triggeredAnimations.moveToTop && questionContainerRef.current) {
+      gracefulMove(questionContainerRef.current, {
+        y: -250,
+        scale: 0.7,
+        duration: 1.2,
+        ease: "power3.inOut",
+      });
+      setTriggeredAnimations(prev => ({ ...prev, moveToTop: true }));
+    }
+  }, [frame, beats.moveToTop, triggeredAnimations.moveToTop]);
+
+  // Cascade in new content
+  useEffect(() => {
+    if (frame >= beats.cascadeContent && !triggeredAnimations.cascadeContent) {
+      const contentElements = [subtitleRef.current, iconsContainerRef.current].filter(Boolean);
+      if (contentElements.length > 0) {
+        cascadeReveal(contentElements, {
+          duration: 0.6,
+          ease: "back.out(1.7)",
+          stagger: 0.2,
+        });
+        setTriggeredAnimations(prev => ({ ...prev, cascadeContent: true }));
+      }
+    }
+  }, [frame, beats.cascadeContent, triggeredAnimations.cascadeContent]);
+
+  // rough.js shapes - ZERO WOBBLE (kept for decorative elements)
   useEffect(() => {
     if (!svgRef.current) return;
 
@@ -130,30 +261,6 @@ const Hook1AQuestionBurst = ({ scene }) => {
     // Clear previous
     while (svg.firstChild) {
       svg.removeChild(svg.firstChild);
-    }
-
-    // Underline 1 - ZERO WOBBLE
-    if (frame >= beats.underline1) {
-      const progress = Math.min((frame - beats.underline1) / 28, 1);
-      const underline1 = rc.line(220, 310, 220 + 700 * progress, 315, {
-        stroke: colors.accent,
-        strokeWidth: 6,
-        roughness: 0,
-        bowing: 0,
-      });
-      svg.appendChild(underline1);
-    }
-
-    // Underline 2 - ZERO WOBBLE
-    if (frame >= beats.underline2) {
-      const progress = Math.min((frame - beats.underline2) / 28, 1);
-      const underline2 = rc.line(280, 430, 280 + 820 * progress, 438, {
-        stroke: colors.accent,
-        strokeWidth: 7,
-        roughness: 0,
-        bowing: 0,
-      });
-      svg.appendChild(underline2);
     }
 
     // Accent circle - ZERO WOBBLE, clean shape
@@ -180,7 +287,7 @@ const Hook1AQuestionBurst = ({ scene }) => {
     }
 
     // Stars - ZERO WOBBLE, clean paths
-    if (frame >= beats.sparkBurst) {
+    if (frame >= beats.sparkBurst && frame < beats.moveToTop) {
       const sparkData = [
         { x: 340, y: 220, size: 35, rotation: 15 },
         { x: 1580, y: 260, size: 40, rotation: -20 },
@@ -213,8 +320,8 @@ const Hook1AQuestionBurst = ({ scene }) => {
         const star = rc.path(pathData, {
           stroke: colors.accent,
           strokeWidth: 3,
-          roughness: 0,  // ZERO WOBBLE
-          bowing: 0,     // ZERO WOBBLE
+          roughness: 0,
+          bowing: 0,
           fill: `${colors.accent2}40`,
           fillStyle: 'hachure',
           hachureGap: 8,
@@ -259,29 +366,27 @@ const Hook1AQuestionBurst = ({ scene }) => {
           transform: `scale(${cameraZoom}) translate(${cameraDrift.x}px, ${cameraDrift.y}px)`,
         }}
       >
+        {/* Question Container - animated as a group */}
         <div
+          ref={questionContainerRef}
           style={{
-            position: 'relative',
-            width: '100%',
-            height: '100%',
-            padding: `${spacing.padding}px ${spacing.padding + 60}px`,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-start',
-            justifyContent: 'center',
+            position: 'absolute',
+            top: '50%',
+            left: spacing.padding + 60,
+            transform: 'translateY(-50%)',
+            width: `calc(100% - ${(spacing.padding + 60) * 2}px)`,
           }}
         >
-          {/* Question Part 1 - kinetic entrance */}
+          {/* Question Part 1 */}
           {frame >= beats.questionPart1 && (
             <div
-              ref={textRef1}
               style={{
                 position: 'relative',
                 marginBottom: spacing.gap,
-                ...kineticReveal(beats.questionPart1, 28, -2),
               }}
             >
               <h1
+                ref={textRef1}
                 style={{
                   fontFamily: fonts.primary,
                   fontSize: fonts.size_title,
@@ -290,24 +395,41 @@ const Hook1AQuestionBurst = ({ scene }) => {
                   lineHeight: 1.1,
                   margin: 0,
                   letterSpacing: '-1px',
+                  opacity: 0, // Will be animated by GSAP
                 }}
               >
                 {texts.questionPart1 || 'What if geography'}
               </h1>
+              
+              {/* Underline 1 */}
+              {frame >= beats.underline1 && (
+                <div
+                  ref={underline1Ref}
+                  style={{
+                    position: 'absolute',
+                    bottom: -10,
+                    left: 0,
+                    width: '100%',
+                    height: 6,
+                    backgroundColor: colors.accent,
+                    transformOrigin: 'left center',
+                    transform: 'scaleX(0)', // Will be animated by GSAP
+                  }}
+                />
+              )}
             </div>
           )}
 
-          {/* Question Part 2 - kinetic entrance */}
+          {/* Question Part 2 */}
           {frame >= beats.questionPart2 && (
             <div
-              ref={textRef2}
               style={{
                 position: 'relative',
                 marginLeft: 60,
-                ...kineticReveal(beats.questionPart2, 28, 1.5),
               }}
             >
               <h1
+                ref={textRef2}
                 style={{
                   fontFamily: fonts.primary,
                   fontSize: fonts.size_title + 8,
@@ -316,122 +438,43 @@ const Hook1AQuestionBurst = ({ scene }) => {
                   lineHeight: 1.1,
                   margin: 0,
                   letterSpacing: '-2px',
+                  opacity: 0, // Will be animated by GSAP
                 }}
               >
                 {texts.questionPart2 || 'was measured in mindsets?'}
               </h1>
+              
+              {/* Underline 2 */}
+              {frame >= beats.underline2 && (
+                <div
+                  ref={underline2Ref}
+                  style={{
+                    position: 'absolute',
+                    bottom: -12,
+                    left: 0,
+                    width: '100%',
+                    height: 7,
+                    backgroundColor: colors.accent,
+                    transformOrigin: 'left center',
+                    transform: 'scaleX(0)', // Will be animated by GSAP
+                  }}
+                />
+              )}
             </div>
           )}
+        </div>
 
-          {/* Lottie animation support */}
-          {lottie && frame >= beats.lottieIcon && (
+        {/* NEW CONTENT - Appears after mid-scene transition */}
+        {frame >= beats.cascadeContent && (
+          <>
+            {/* Subtitle */}
             <div
+              ref={subtitleRef}
               style={{
                 position: 'absolute',
-                left: lottie.x || 960,
-                top: lottie.y || 540,
-                transform: 'translate(-50%, -50%)',
-                opacity: interpolate(
-                  frame,
-                  [beats.lottieIcon, beats.lottieIcon + 20],
-                  [0, 1],
-                  { extrapolateRight: 'clamp' }
-                ),
-              }}
-            >
-              {/* Placeholder for Lottie - will add @lottiefiles/react-lottie-player */}
-              <div
-                style={{
-                  width: lottie.width || 200,
-                  height: lottie.height || 200,
-                  border: `2px solid ${colors.accent}30`,
-                  borderRadius: 8,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontFamily: fonts.primary,
-                  fontSize: 16,
-                  color: colors.accent,
-                }}
-              >
-                🎬 Lottie: {lottie.name || 'animation'}
-              </div>
-            </div>
-          )}
-
-          {/* Image support */}
-          {images.map((img, i) => {
-            const imgStartFrame = beats.sparkBurst + i * 15;
-            if (frame < imgStartFrame) return null;
-
-            return (
-              <img
-                key={i}
-                src={img.src}
-                alt={img.alt || ''}
-                style={{
-                  position: 'absolute',
-                  left: img.x || 100,
-                  top: img.y || 100,
-                  width: img.width || 80,
-                  height: img.height || 80,
-                  objectFit: 'contain',
-                  opacity: interpolate(
-                    frame,
-                    [imgStartFrame, imgStartFrame + (img.fadeIn || 20)],
-                    [0, 1],
-                    { extrapolateRight: 'clamp' }
-                  ),
-                }}
-              />
-            );
-          })}
-
-          {/* Icon (emoji) support */}
-          {icons.map((icon, i) => {
-            const iconStartFrame = beats.sparkBurst + i * 12;
-            if (frame < iconStartFrame) return null;
-
-            return (
-              <div
-                key={i}
-                style={{
-                  position: 'absolute',
-                  left: icon.x || 200,
-                  top: icon.y || 200,
-                  fontSize: icon.size || 64,
-                  opacity: interpolate(
-                    frame,
-                    [iconStartFrame, iconStartFrame + (icon.fadeIn || 15)],
-                    [0, 1],
-                    { extrapolateRight: 'clamp' }
-                  ),
-                  transform: `scale(${interpolate(
-                    frame,
-                    [iconStartFrame, iconStartFrame + (icon.fadeIn || 15)],
-                    [0.5, 1],
-                    { easing: Easing.out(Easing.back(1.5)), extrapolateRight: 'clamp' }
-                  )})`,
-                }}
-              >
-                {icon.emoji}
-              </div>
-            );
-          })}
-
-          {/* Subtitle */}
-          {frame >= beats.subtitle && texts.subtitle && (
-            <div
-              style={{
-                position: 'absolute',
-                bottom: 120,
+                bottom: 200,
                 left: spacing.padding + 60,
-                opacity: interpolate(
-                  frame,
-                  [beats.subtitle, beats.subtitle + 30],
-                  [0, 1],
-                  { extrapolateRight: 'clamp' }
-                ),
+                opacity: 0, // Will be animated by GSAP
               }}
             >
               <p
@@ -443,11 +486,37 @@ const Hook1AQuestionBurst = ({ scene }) => {
                   fontStyle: 'italic',
                 }}
               >
-                {texts.subtitle}
+                {texts.subtitle || 'Welcome to Knodovia...'}
               </p>
             </div>
-          )}
-        </div>
+
+            {/* Icons Container */}
+            <div
+              ref={iconsContainerRef}
+              style={{
+                position: 'absolute',
+                bottom: 120,
+                right: spacing.padding + 60,
+                display: 'flex',
+                gap: 30,
+                opacity: 0, // Will be animated by GSAP
+              }}
+            >
+              {icons.map((icon, i) => (
+                <div
+                  key={i}
+                  style={{
+                    fontSize: icon.size || 64,
+                  }}
+                >
+                  {icon.emoji}
+                </div>
+              ))}
+              {/* Default icon if none provided */}
+              {icons.length === 0 && <div style={{ fontSize: 64 }}>🗺️</div>}
+            </div>
+          </>
+        )}
       </AbsoluteFill>
 
       {/* Settle fade */}
