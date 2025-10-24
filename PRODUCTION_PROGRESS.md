@@ -57,10 +57,15 @@ Need to update every rough.js call in templates to use roughness: 0, bowing: 0
 
 ## 📋 TODO (Phase 2 - Features)
 
-- [ ] Actually integrate anime.js (replace Remotion interpolate for complex animations)
-- [ ] Add Lottie support (JSON schema + component integration)
-- [ ] Add imagery/icon support (images + emoji)
-- [ ] Expand JSON schema to v4.0 (more user control)
+- [✅] ~~Actually integrate anime.js~~ **REPLACED WITH GSAP** (world-class animations)
+  - ✅ GSAP installed and configured
+  - ✅ Modular animation utilities created (800+ lines)
+  - ✅ Mid-scene transitions implemented
+  - ✅ Hook1a complete with GSAP
+  - ⏳ Extend to remaining 7 templates
+- [✅] Add Lottie support (JSON schema + component integration)
+- [✅] Add imagery/icon support (images + emoji)
+- [✅] Expand JSON schema to v4.0 (more user control)
 
 ---
 
@@ -120,5 +125,51 @@ Before marking ANY template as complete, validate:
 
 ---
 
-**Status:** Making good progress, foundations in place
-**Next:** Continue systematic template updates to eliminate wobbles
+**Status:** 🚀 Major milestone - GSAP animation system complete!
+**Next:** Extend GSAP animations to remaining 7 templates
+
+---
+
+## 🎬 NEW: GSAP Animation System (COMPLETED)
+
+### ✅ What's Done
+- ✅ GSAP core library installed
+- ✅ anime.js removed (outdated)
+- ✅ Comprehensive animation utilities (`/src/utils/gsapAnimations.js`)
+- ✅ Hook1AQuestionBurst.jsx updated with GSAP
+- ✅ **Mid-scene transitions** working perfectly
+- ✅ Build verified successful
+
+### 🎯 Key Features Implemented
+1. **DrawSVG** - Natural writing/drawing effects
+2. **Shape Morphing** - Organic transformations (basic implementation)
+3. **Flip Swap** - Quiz reveals and content replacement
+4. **Staggered Bullets** - Professional stepwise reveals
+5. **Emphasis** - Pulse, underline, highlight, glow
+6. **Scramble Text** - Hook moments
+7. **Mid-Scene Transitions** - Content repositioning during scene ⭐
+
+### 📖 Documentation
+See `GSAP_IMPLEMENTATION_COMPLETE.md` for:
+- Complete animation reference
+- Implementation patterns
+- Template extension guide
+- When to use which animation
+
+### 🎬 Hook1a Showcase
+The Hook1a template now demonstrates:
+- Question appears with kinetic energy
+- Underlines draw naturally
+- Pulse emphasis on key words
+- **Question gracefully moves to top mid-scene**
+- New content (subtitle + icons) cascade in
+- All animations fluid and organic
+
+### ⏳ Next: Extend to Other Templates
+1. Hook1E (mystery/scramble effects)
+2. Explain2A (staggered bullets)
+3. Explain2B (shape morphing for analogies)
+4. Apply3A (flip reveals for quiz)
+5. Apply3B (content swaps)
+6. Reflect4A (cascade reveals)
+7. Reflect4D (graceful transitions)
