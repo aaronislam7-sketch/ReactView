@@ -1,0 +1,34 @@
+Core motion “building blocks”
+You’ll use these across templates—right now they’re missing:
+	•	fadeIn, fadeOutUp (quick, subtle, non-janky)
+	•	staggerIn (wrapper that matches your default direction/spacing)
+	•	breathe (1–3% scale on low-priority elements only)
+	•	drawPathOnce (one-shot connection emphasis, then stop)
+	•	radialTimer (5s visual countdown for Apply scenes)
+	•	flipReveal (3D) needs container perspective + backface handling
+	2.	Design-token + reduced-motion awareness
+Centralize defaults (duration/ease/scale amounts) and a reducedMotion guard so every helper respects it automatically.
+	3.	Safety + ergonomics
+	•	Avoid magic numbers (shrinkToCorner uses ±700/±400); compute from container bounds.
+	•	Kill existing tweens on target before new ones to prevent stacking glitches.
+	•	Optionally accept a ctx (from gsap.context) for React auto-cleanup.
+	4.	Performance
+	•	glowPulse uses filter: drop-shadow(...) which is expensive on iOS. Prefer SVG stroke + blur filter or a box-shadow fallback.
+	•	scrambleText runs per-frame JS mutations; clamp frames and early-exit on reduced motion.
+	5.	Flip accuracy
+A 3D card flip needs:
+	•	Parent with perspective.
+	•	Front/back with backface-visibility: hidden.
+	•	Y-rotation toggled between 0 and 180.
+Your current rotationY tween will “work”, but will flicker without those guards.
+
+Group by category and align names to the “motion recipe” language you use in briefs:
+	•	entrances: fadeIn, staggerIn, cascadeReveal, writeOnText
+	•	exits: fadeOutUp
+	•	emphasis: drawUnderline, highlightReveal, pulseEmphasis, svgGlowStroke
+	•	paths: drawSVGPath, drawPathOnce
+	•	timers: radialTimer
+	•	swaps: flipRevealSafe, crossfadeSwap, scaleSwap, contentSwapSequence
+	•	midScene: gracefulMove, shrinkToCornerAuto, expandToCenter, breathe
+	•	special: scrambleText
+	•	utils: createTimeline, killAnimations, pauseAnimation, resumeAnimation
