@@ -1,53 +1,197 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate, Easing } from 'remotion';
 import { THEME } from '../utils/theme';
 import rough from 'roughjs/bundled/rough.esm.js';
+import gsap from 'gsap';
+import { Player } from '@lottiefiles/react-lottie-player';
+import {
+  gracefulMove,
+  pulseEmphasis,
+  cascadeReveal,
+} from '../utils/gsapAnimations';
 
 /**
- * EXPLAIN 2B: ANALOGY
+ * EXPLAIN 2B: ANALOGY (TED-ED Style V4)
  * 
  * Intent: Explain concept through relatable comparison
  * Pattern: "X is like Y because..."
- * Visual: Side-by-side frames, comparison arrows, bridge
+ * Visual: Side-by-side frames, then GRACEFUL MOVE to reveal connection
  * Tone: Relatable, Clear
- * Duration: 18-35s
+ * Duration: 20-35s
  * 
- * NO BOXES - Rough sketched comparison frames + bridging arrows
+ * NEW FEATURES:
+ * - ✅ Lottie animation support for both sides
+ * - ✅ Image fallback support
+ * - ✅ GSAP graceful moves: sides move out/shrink, text reveals
+ * - ✅ Permanent Marker font
+ * - ✅ Bold accent colors
+ * - ✅ Zero wobble
+ * - ✅ Money shot moment: connection reveal
+ * 
+ * Animation Flow:
+ * 1. Title appears
+ * 2. Familiar side (left) - Lottie or image
+ * 3. New concept side (right) - Lottie or image
+ * 4. Mid-scene: Both sides shrink & move to top corners
+ * 5. Connection text reveals in center (THE MONEY SHOT)
+ * 6. Detailed explanation cascades in
  */
 
 const Explain2BAnalogy = ({ scene }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
   const svgRef = useRef(null);
+  const titleRef = useRef(null);
+  const leftSideRef = useRef(null);
+  const rightSideRef = useRef(null);
+  const connectionRef = useRef(null);
+  const explanationRef = useRef(null);
+
+  const [triggeredAnimations, setTriggeredAnimations] = useState({
+    title: false,
+    familiar: false,
+    newConcept: false,
+    moveAway: false,
+    connectionReveal: false,
+    explanationReveal: false,
+  });
 
   const colors = scene.style_tokens?.colors || {
-    bg: THEME.colors.canvas.cream,
-    accent: THEME.colors.markers.orange,
-    accent2: THEME.colors.markers.blue,
-    ink: THEME.colors.text.primary,
+    bg: '#FFF9F0',
+    accent: '#FF6B35',     // Bold orange
+    accent2: '#2E7FE4',
+    ink: '#1A1A1A',
+  };
+
+  const fonts = scene.style_tokens?.fonts || {
+    primary: THEME.fonts.marker.primary,  // Permanent Marker
+    secondary: THEME.fonts.structure.primary,
+    size_title: 52,
+    size_label: 36,
+    size_connection: 56,
+    size_explanation: 28,
   };
 
   const data = scene.fill?.analogy || {};
 
-  // Beat timing
-  const BEAT = 36;
+  // Beat timing - TED-ED style pacing
+  const BEAT = 30;
   const beats = {
     prelude: 0,
     title: BEAT * 0.8,
     familiar: BEAT * 2,
-    newConcept: BEAT * 3.5,
-    bridge: BEAT * 5,
-    explanation: BEAT * 6.5,
-    settle: BEAT * 8,
+    newConcept: BEAT * 4,
+    pause: BEAT * 6,
+    moveAway: BEAT * 6.5,         // NEW: Sides move to corners
+    connectionReveal: BEAT * 8,   // NEW: Money shot
+    explanationReveal: BEAT * 9.5,
+    settle: BEAT * 11,
   };
 
-  const cameraZoom = interpolate(
-    frame,
-    [0, beats.familiar, beats.settle],
-    [1.04, 1.0, 1.01],
-    { easing: Easing.bezier(0.4, 0, 0.2, 1), extrapolateRight: 'clamp' }
-  );
+  // Subtle camera drift
+  const cameraDrift = {
+    x: Math.sin(frame * 0.007) * 2,
+    y: Math.cos(frame * 0.006) * 1.5,
+  };
 
+  // ========================================
+  // GSAP ANIMATION TRIGGERS
+  // ========================================
+  
+  // Title
+  useEffect(() => {
+    if (frame >= beats.title && !triggeredAnimations.title && titleRef.current) {
+      gsap.fromTo(titleRef.current,
+        { opacity: 0, y: -20, scale: 0.92 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.9, ease: "back.out(1.5)" }
+      );
+      setTriggeredAnimations(prev => ({ ...prev, title: true }));
+    }
+  }, [frame, beats.title, triggeredAnimations.title]);
+
+  // Familiar side appears
+  useEffect(() => {
+    if (frame >= beats.familiar && !triggeredAnimations.familiar && leftSideRef.current) {
+      gsap.fromTo(leftSideRef.current,
+        { opacity: 0, x: -50, scale: 0.9 },
+        { opacity: 1, x: 0, scale: 1, duration: 1.0, ease: "back.out(1.5)" }
+      );
+      setTriggeredAnimations(prev => ({ ...prev, familiar: true }));
+    }
+  }, [frame, beats.familiar, triggeredAnimations.familiar]);
+
+  // New concept side appears
+  useEffect(() => {
+    if (frame >= beats.newConcept && !triggeredAnimations.newConcept && rightSideRef.current) {
+      gsap.fromTo(rightSideRef.current,
+        { opacity: 0, x: 50, scale: 0.9 },
+        { opacity: 1, x: 0, scale: 1, duration: 1.0, ease: "back.out(1.5)" }
+      );
+      setTriggeredAnimations(prev => ({ ...prev, newConcept: true }));
+    }
+  }, [frame, beats.newConcept, triggeredAnimations.newConcept]);
+
+  // MID-SCENE: Sides move to corners (graceful)
+  useEffect(() => {
+    if (frame >= beats.moveAway && !triggeredAnimations.moveAway) {
+      if (leftSideRef.current) {
+        gsap.to(leftSideRef.current, {
+          x: -300,
+          y: -150,
+          scale: 0.5,
+          duration: 1.2,
+          ease: "power3.inOut",
+        });
+      }
+      if (rightSideRef.current) {
+        gsap.to(rightSideRef.current, {
+          x: 300,
+          y: -150,
+          scale: 0.5,
+          duration: 1.2,
+          ease: "power3.inOut",
+        });
+      }
+      setTriggeredAnimations(prev => ({ ...prev, moveAway: true }));
+    }
+  }, [frame, beats.moveAway, triggeredAnimations.moveAway]);
+
+  // Connection reveal - THE MONEY SHOT
+  useEffect(() => {
+    if (frame >= beats.connectionReveal && !triggeredAnimations.connectionReveal && connectionRef.current) {
+      gsap.fromTo(connectionRef.current,
+        { opacity: 0, scale: 0.85, y: 30 },
+        { opacity: 1, scale: 1, y: 0, duration: 1.5, ease: "back.out(1.5)" }
+      );
+      
+      // Pulse emphasis
+      setTimeout(() => {
+        if (connectionRef.current) {
+          pulseEmphasis(connectionRef.current, {
+            scale: 1.05,
+            duration: 0.5,
+            repeat: 1,
+            yoyo: true,
+          });
+        }
+      }, 600);
+      
+      setTriggeredAnimations(prev => ({ ...prev, connectionReveal: true }));
+    }
+  }, [frame, beats.connectionReveal, triggeredAnimations.connectionReveal]);
+
+  // Explanation reveal
+  useEffect(() => {
+    if (frame >= beats.explanationReveal && !triggeredAnimations.explanationReveal && explanationRef.current) {
+      gsap.fromTo(explanationRef.current,
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 1.0, ease: "power2.out" }
+      );
+      setTriggeredAnimations(prev => ({ ...prev, explanationReveal: true }));
+    }
+  }, [frame, beats.explanationReveal, triggeredAnimations.explanationReveal]);
+
+  // rough.js decorative elements - ZERO WOBBLE
   useEffect(() => {
     if (!svgRef.current) return;
 
@@ -58,131 +202,46 @@ const Explain2BAnalogy = ({ scene }) => {
       svg.removeChild(svg.firstChild);
     }
 
-    // Familiar concept frame (left)
-    if (frame >= beats.familiar) {
-      const progress = Math.min((frame - beats.familiar) / 32, 1);
+    // Connection arrow/bridge (appears after move)
+    if (frame >= beats.connectionReveal) {
+      const progress = Math.min((frame - beats.connectionReveal) / 40, 1);
       
-      const leftFrame = rc.rectangle(180, 350, 680, 420, {
+      // Curved connecting line from left to right
+      const bridgePath = `M 480 420 Q 960 ${420 - 50 * Math.sin(progress * Math.PI)} 1440 420`;
+      const bridge = rc.path(bridgePath, {
         stroke: colors.accent,
-        strokeWidth: 5,
-        roughness: 0.8,
-        bowing: 2,
-        fill: `${colors.accent}08`,
-        fillStyle: 'hachure',
-        hachureGap: 12,
-      });
-
-      const paths = leftFrame.querySelectorAll('path');
-      paths.forEach(path => {
-        const length = path.getTotalLength();
-        path.style.strokeDasharray = length;
-        path.style.strokeDashoffset = length * (1 - progress);
-      });
-
-      svg.appendChild(leftFrame);
-    }
-
-    // New concept frame (right)
-    if (frame >= beats.newConcept) {
-      const progress = Math.min((frame - beats.newConcept) / 32, 1);
-      
-      const rightFrame = rc.rectangle(1060, 350, 680, 420, {
-        stroke: colors.accent2,
-        strokeWidth: 5,
-        roughness: 0.8,
-        bowing: 2,
-        fill: `${colors.accent2}08`,
-        fillStyle: 'hachure',
-        hachureGap: 12,
-      });
-
-      const paths = rightFrame.querySelectorAll('path');
-      paths.forEach(path => {
-        const length = path.getTotalLength();
-        path.style.strokeDasharray = length;
-        path.style.strokeDashoffset = length * (1 - progress);
-      });
-
-      svg.appendChild(rightFrame);
-    }
-
-    // Bridge arrow (connecting)
-    if (frame >= beats.bridge) {
-      const progress = Math.min((frame - beats.bridge) / 35, 1);
-      
-      // Arrow shaft
-      const arrowPath = `M 880 560 L ${880 + 160 * progress} 560`;
-      const arrow = rc.path(arrowPath, {
-        stroke: colors.ink,
         strokeWidth: 6,
-        roughness: 0.9,
-        bowing: 2,
+        roughness: 0,
+        bowing: 0,
       });
-      svg.appendChild(arrow);
-
-      // Arrowhead
-      if (progress > 0.7) {
-        const headProgress = (progress - 0.7) / 0.3;
-        const headPath = `M 1040 560 L ${1040 - 25 * headProgress} ${560 - 20 * headProgress} M 1040 560 L ${1040 - 25 * headProgress} ${560 + 20 * headProgress}`;
-        const arrowhead = rc.path(headPath, {
-          stroke: colors.ink,
-          strokeWidth: 6,
-          roughness: 0.8,
-          bowing: 1,
-        });
-        svg.appendChild(arrowhead);
-      }
+      
+      // Animate stroke
+      const paths = bridge.querySelectorAll('path');
+      paths.forEach(path => {
+        const length = path.getTotalLength();
+        path.style.strokeDasharray = length;
+        path.style.strokeDashoffset = length * (1 - progress);
+      });
+      
+      svg.appendChild(bridge);
     }
 
-    // Decorative brackets
-    if (frame >= beats.explanation) {
-      const progress = Math.min((frame - beats.explanation) / 28, 1);
-
-      const leftBracket = rc.path(
-        `M 200 ${320 + 15 * (1 - progress)} Q 190 560 200 ${800 - 15 * (1 - progress)}`,
-        {
-          stroke: `${colors.accent}60`,
-          strokeWidth: 4,
-          roughness: 0.7,
-          bowing: 2,
-        }
-      );
-      svg.appendChild(leftBracket);
-
-      const rightBracket = rc.path(
-        `M 1720 ${320 + 15 * (1 - progress)} Q 1730 560 1720 ${800 - 15 * (1 - progress)}`,
-        {
-          stroke: `${colors.accent2}60`,
-          strokeWidth: 4,
-          roughness: 0.7,
-          bowing: 2,
-        }
-      );
-      svg.appendChild(rightBracket);
+    // Decorative emphasis circles (around connection text)
+    if (frame >= beats.connectionReveal + 20) {
+      const circleProgress = Math.min((frame - beats.connectionReveal - 20) / 30, 1);
+      
+      const emphasisCircle = rc.circle(960, 540, 320 * circleProgress, {
+        stroke: `${colors.accent2}40`,
+        strokeWidth: 4,
+        roughness: 0,
+        bowing: 0,
+        fill: 'none',
+      });
+      
+      svg.appendChild(emphasisCircle);
     }
 
   }, [frame, beats, colors]);
-
-  const buildIn = (startFrame, duration = 30) => {
-    if (frame < startFrame) {
-      return { opacity: 0, transform: 'translateY(-15px) scale(0.95)' };
-    }
-    if (frame >= startFrame + duration) {
-      return { opacity: 1, transform: 'translateY(0) scale(1)' };
-    }
-
-    const progress = interpolate(
-      frame,
-      [startFrame, startFrame + duration],
-      [0, 1],
-      { easing: Easing.out(Easing.back(1.4)), extrapolateRight: 'clamp' }
-    );
-
-    return {
-      opacity: progress,
-      transform: `translateY(${-15 * (1 - progress)}px) scale(${0.95 + progress * 0.05})`,
-    };
-  };
 
   return (
     <AbsoluteFill style={{ backgroundColor: colors.bg }}>
@@ -194,22 +253,22 @@ const Explain2BAnalogy = ({ scene }) => {
           width: '100%',
           height: '100%',
           pointerEvents: 'none',
-          transform: `scale(${cameraZoom})`,
+          transform: `translate(${cameraDrift.x}px, ${cameraDrift.y}px)`,
         }}
         viewBox="0 0 1920 1080"
         preserveAspectRatio="xMidYMid meet"
       />
 
-      <AbsoluteFill style={{ transform: `scale(${cameraZoom})` }}>
+      <AbsoluteFill style={{ transform: `translate(${cameraDrift.x}px, ${cameraDrift.y}px)` }}>
         <div style={{ position: 'relative', width: '100%', height: '100%', padding: '80px 100px' }}>
           {/* Title */}
           {frame >= beats.title && (
-            <div style={{ ...buildIn(beats.title, 28), textAlign: 'center' }}>
+            <div ref={titleRef} style={{ textAlign: 'center', opacity: 0 }}>
               <h2
                 style={{
-                  fontFamily: THEME.fonts.marker.secondary,
-                  fontSize: 52,
-                  fontWeight: 700,
+                  fontFamily: fonts.primary,
+                  fontSize: fonts.size_title,
+                  fontWeight: 400,
                   color: colors.ink,
                   margin: 0,
                 }}
@@ -219,32 +278,58 @@ const Explain2BAnalogy = ({ scene }) => {
             </div>
           )}
 
-          {/* Familiar concept */}
-          {frame >= beats.familiar + 10 && (
+          {/* Familiar concept (left) */}
+          {frame >= beats.familiar && (
             <div
+              ref={leftSideRef}
               style={{
                 position: 'absolute',
-                top: 400,
-                left: 220,
-                width: 600,
-                ...buildIn(beats.familiar + 10, 35),
+                top: 360,
+                left: 200,
+                width: 520,
+                opacity: 0,
               }}
             >
+              {/* Lottie or Image */}
+              {data.familiar?.lottie && (
+                <div style={{ marginBottom: 20 }}>
+                  <Player
+                    autoplay
+                    loop
+                    src={data.familiar.lottie}
+                    style={{ height: 280, width: '100%' }}
+                  />
+                </div>
+              )}
+              {!data.familiar?.lottie && data.familiar?.image && (
+                <div style={{ marginBottom: 20 }}>
+                  <img
+                    src={data.familiar.image}
+                    alt=""
+                    style={{
+                      width: '100%',
+                      height: 280,
+                      objectFit: 'contain',
+                    }}
+                  />
+                </div>
+              )}
+              
               <h3
                 style={{
-                  fontFamily: THEME.fonts.structure.primary,
-                  fontSize: 38,
-                  fontWeight: 700,
+                  fontFamily: fonts.primary,
+                  fontSize: fonts.size_label,
+                  fontWeight: 400,
                   color: colors.accent,
-                  margin: '0 0 20px 0',
+                  margin: '0 0 12px 0',
                 }}
               >
                 {data.familiar?.label || 'Familiar Thing'}
               </h3>
               <p
                 style={{
-                  fontFamily: THEME.fonts.structure.secondary,
-                  fontSize: 24,
+                  fontFamily: fonts.secondary,
+                  fontSize: 22,
                   color: colors.ink,
                   margin: 0,
                   lineHeight: 1.5,
@@ -255,32 +340,58 @@ const Explain2BAnalogy = ({ scene }) => {
             </div>
           )}
 
-          {/* New concept */}
-          {frame >= beats.newConcept + 10 && (
+          {/* New concept (right) */}
+          {frame >= beats.newConcept && (
             <div
+              ref={rightSideRef}
               style={{
                 position: 'absolute',
-                top: 400,
-                left: 1100,
-                width: 600,
-                ...buildIn(beats.newConcept + 10, 35),
+                top: 360,
+                right: 200,
+                width: 520,
+                opacity: 0,
               }}
             >
+              {/* Lottie or Image */}
+              {data.newConcept?.lottie && (
+                <div style={{ marginBottom: 20 }}>
+                  <Player
+                    autoplay
+                    loop
+                    src={data.newConcept.lottie}
+                    style={{ height: 280, width: '100%' }}
+                  />
+                </div>
+              )}
+              {!data.newConcept?.lottie && data.newConcept?.image && (
+                <div style={{ marginBottom: 20 }}>
+                  <img
+                    src={data.newConcept.image}
+                    alt=""
+                    style={{
+                      width: '100%',
+                      height: 280,
+                      objectFit: 'contain',
+                    }}
+                  />
+                </div>
+              )}
+              
               <h3
                 style={{
-                  fontFamily: THEME.fonts.structure.primary,
-                  fontSize: 38,
-                  fontWeight: 700,
+                  fontFamily: fonts.primary,
+                  fontSize: fonts.size_label,
+                  fontWeight: 400,
                   color: colors.accent2,
-                  margin: '0 0 20px 0',
+                  margin: '0 0 12px 0',
                 }}
               >
                 {data.newConcept?.label || 'New Concept'}
               </h3>
               <p
                 style={{
-                  fontFamily: THEME.fonts.structure.secondary,
-                  fontSize: 24,
+                  fontFamily: fonts.secondary,
+                  fontSize: 22,
                   color: colors.ink,
                   margin: 0,
                   lineHeight: 1.5,
@@ -291,28 +402,59 @@ const Explain2BAnalogy = ({ scene }) => {
             </div>
           )}
 
-          {/* Bridge label */}
-          {frame >= beats.bridge + 20 && (
+          {/* Connection - THE MONEY SHOT */}
+          {frame >= beats.connectionReveal && (
             <div
+              ref={connectionRef}
               style={{
                 position: 'absolute',
-                top: 500,
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                textAlign: 'center',
+                opacity: 0,
+                maxWidth: 800,
+              }}
+            >
+              <h2
+                style={{
+                  fontFamily: fonts.primary,
+                  fontSize: fonts.size_connection,
+                  fontWeight: 400,
+                  color: colors.accent,
+                  margin: '0 0 20px 0',
+                  lineHeight: 1.3,
+                }}
+              >
+                {data.connection || 'They work the same way!'}
+              </h2>
+            </div>
+          )}
+
+          {/* Explanation */}
+          {frame >= beats.explanationReveal && (
+            <div
+              ref={explanationRef}
+              style={{
+                position: 'absolute',
+                bottom: 120,
                 left: '50%',
                 transform: 'translateX(-50%)',
-                ...buildIn(beats.bridge + 20, 28),
+                textAlign: 'center',
+                maxWidth: 900,
+                opacity: 0,
               }}
             >
               <p
                 style={{
-                  fontFamily: THEME.fonts.marker.handwritten,
-                  fontSize: 32,
-                  color: `${colors.ink}70`,
+                  fontFamily: fonts.secondary,
+                  fontSize: fonts.size_explanation,
+                  color: colors.ink,
                   margin: 0,
-                  fontStyle: 'italic',
-                  whiteSpace: 'nowrap',
+                  lineHeight: 1.6,
                 }}
               >
-                {data.connection || 'is like'}
+                {data.explanation || 'Both follow the same core principle...'}
               </p>
             </div>
           )}
@@ -323,6 +465,6 @@ const Explain2BAnalogy = ({ scene }) => {
 };
 
 export { Explain2BAnalogy };
-export const EXPLAIN_2B_DURATION_MIN = 18 * 30;
+export const EXPLAIN_2B_DURATION_MIN = 20 * 30;
 export const EXPLAIN_2B_DURATION_MAX = 35 * 30;
 export const EXPLAIN_2B_EXIT_TRANSITION = 15;

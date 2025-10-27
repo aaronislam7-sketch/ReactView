@@ -1,261 +1,389 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate, Easing } from 'remotion';
+import React, { useEffect, useRef } from 'react';
+import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate } from 'remotion';
 import { THEME } from '../utils/theme';
 import rough from 'roughjs/bundled/rough.esm.js';
-import gsap from 'gsap';
-import {
-  drawUnderline,
-  pulseEmphasis,
-  gracefulMove,
-  scrambleText,
-  questionRevealSequence,
-  cascadeReveal,
-} from '../utils/gsapAnimations';
 
 /**
- * HOOK 1A: QUESTION BURST (Production V3 - GSAP)
+ * HOOK 1A: QUESTION BURST (CONVERSATIONAL V9 - REMOTION INTERPOLATE)
  * 
- * PRODUCTION-READY FEATURES:
- * - ✅ Zero wobble (roughness/bowing = 0)
- * - ✅ GSAP animations for world-class aesthetics
- * - ✅ Mid-scene transitions (question moves gracefully)
- * - ✅ Organic animation flows
- * - ✅ Emphasis animations (pulse, underline)
- * - ✅ Scramble text for hooks
- * - ✅ Staggered reveals
+ * ANIMATION STRATEGY:
+ * - ✅ Remotion interpolate() for BASIC animations (opacity, position, scale)
+ * - ✅ NO GSAP for basic motion - frame-based = reliable
+ * - ✅ GSAP ONLY for complex sequences (not needed here)
  * 
- * Animation Flow:
- * 1. Question Part 1 appears with bounce (GSAP)
- * 2. Underline draws underneath (GSAP drawUnderline)
- * 3. Question Part 2 appears
- * 4. Pulse emphasis on key words (GSAP)
- * 5. Mid-scene: Question gracefully moves to top (GSAP gracefulMove)
- * 6. New content (subtitle + icons) cascade in (GSAP)
+ * CONVERSATIONAL FEATURES:
+ * - ✅ Bold mid-scene transitions - things MOVE!
+ * - ✅ Conversational flow - elements exit when done
+ * - ✅ Headers in Cabin Sketch font (hand-drawn/sketchy look)
+ * - ✅ Permanent Marker for body/secondary text
+ * - ✅ Clean stage - only show what's needed NOW
+ * - ✅ Graceful wipes/exits via interpolate
+ * - ✅ Animated map (NO emojis)
+ * - ✅ ZERO WOBBLE everywhere (no roughness/bowing)
  * 
- * Intent: Pose provocative question with kinetic energy + mid-scene repositioning
- * Duration: 10-20s
+ * Typography Hierarchy:
+ * - Headers: SVG text with Cabin Sketch font (sketchy style, NO wobble)
+ * - Body/Secondary: Permanent Marker - energy and personality
+ * - Supporting: Inter - clean readability
+ * 
+ * How Animations Work (THE KEY):
+ * - SVG text rendered with transforms calculated via interpolate()
+ * - Each animation (entrance, move, pulse, wipe) = interpolate() call
+ * - Applied directly as SVG attributes (transform, opacity)
+ * - Reliable frame-based rendering - NO timing issues!
+ * 
+ * Conversational Flow:
+ * 1. "What if geography" appears (interpolate entrance)
+ * 2. Question 1 moves up (interpolate y position)
+ * 3. "was measured in mindsets?" appears (interpolate entrance)
+ * 4. Both pulse (interpolate scale)
+ * 5. Both wipe left (interpolate x + opacity)
+ * 6. Map draws in center
+ * 7. Map transforms to corner (interpolate)
+ * 8. "Welcome to Knodovia" appears (interpolate entrance)
+ * 9. Subtitle fades in (interpolate opacity)
+ * 10. Breathe animation (interpolate scale)
+ * 
+ * Intent: Conversational, dynamic, TED-ED quality with sketchy text, ZERO wobble
+ * Duration: 15-18s
  */
 
 const Hook1AQuestionBurst = ({ scene }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
   const svgRef = useRef(null);
-  const textRef1 = useRef(null);
-  const textRef2 = useRef(null);
-  const underline1Ref = useRef(null);
-  const underline2Ref = useRef(null);
-  const questionContainerRef = useRef(null);
-  const subtitleRef = useRef(null);
-  const iconsContainerRef = useRef(null);
-  
-  // Track which animations have been triggered
-  const [triggeredAnimations, setTriggeredAnimations] = useState({
-    questionPart1: false,
-    underline1: false,
-    questionPart2: false,
-    underline2: false,
-    pulse1: false,
-    pulse2: false,
-    moveToTop: false,
-    cascadeContent: false,
-  });
+  const mapSvgRef = useRef(null);
+  const roughTextSvgRef = useRef(null);
 
-  // Expanded style tokens with defaults
   const style = scene.style_tokens || {};
   const colors = style.colors || {
     bg: '#FFF9F0',
-    accent: '#E74C3C',
-    accent2: '#E67E22',
+    accent: '#FF6B35',      // Bold orange
+    accent2: '#9B59B6',     // Bold purple
     ink: '#1A1A1A',
   };
   
   const fonts = style.fonts || {
-    primary: "'Cabin Sketch', cursive",
-    size_title: 84,
-    size_subtitle: 36,
-  };
-  
-  const motion = style.motion || {
-    timing: 'fast',
-    easing: 'elastic',
-    stagger_delay: 150,
+    header: "'Cabin Sketch', cursive",    // Sketchy headers
+    secondary: THEME.fonts.marker.primary, // Permanent Marker
+    body: THEME.fonts.structure.primary,   // Inter
+    size_title: 76,
+    size_question: 92,
+    size_welcome: 72,
+    size_subtitle: 32,
   };
   
   const spacing = style.spacing || {
-    padding: 140,
-    gap: 40,
+    padding: 120,
+    gap: 30,
   };
 
   const texts = scene.fill?.texts || {};
-  const images = scene.fill?.images || [];
-  const lottie = scene.fill?.lottie || null;
-  const icons = scene.fill?.icons || [];
 
-  // Beat timing - frame-based
-  const timingMultiplier = motion.timing === 'fast' ? 0.8 : motion.timing === 'slow' ? 1.2 : 1.0;
-  const BEAT = 36 * timingMultiplier;
-  
+  // Beat timing - CONVERSATIONAL, DYNAMIC (with breathing room)
+  const BEAT = 30;
   const beats = {
     prelude: 0,
-    questionPart1: BEAT * 0.8,
-    underline1: BEAT * 2,
-    questionPart2: BEAT * 2.4,
-    pulse1: BEAT * 3,
-    underline2: BEAT * 3.6,
-    pulse2: BEAT * 4.5,
-    accentCircle: BEAT * 4.2,
-    sparkBurst: BEAT * 5,
-    moveToTop: BEAT * 6,        // NEW: Mid-scene transition
-    cascadeContent: BEAT * 7,   // NEW: New content appears
-    lottieIcon: BEAT * 5.5,
-    subtitle: BEAT * 6,
-    settle: BEAT * 8.5,
+    questionPart1: BEAT * 0.6,       // 0.6s
+    moveUp: BEAT * 2.0,              // 2.0s
+    questionPart2: BEAT * 2.8,       // 2.8s
+    pulse: BEAT * 4.2,               // 4.2s
+    wipeQuestions: BEAT * 5.5,       // 5.5s
+    mapReveal: BEAT * 6.5,           // 6.5s
+    transformMap: BEAT * 9.0,        // 9.0s
+    welcome: BEAT * 10.0,            // 10.0s
+    subtitle: BEAT * 12.0,           // 12s
+    breathe: BEAT * 13.5,            // 13.5s
+    settle: BEAT * 15,               // 15s
   };
 
-  // Camera motion (kept for background ambience)
-  const cameraZoom = interpolate(
-    frame,
-    [0, beats.questionPart1, beats.sparkBurst, beats.settle],
-    [1.05, 1.0, 1.03, 1.0],
-    { easing: Easing.bezier(0.4, 0, 0.2, 1), extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
-  );
-
+  // Subtle camera drift
   const cameraDrift = {
-    x: Math.sin(frame * 0.006) * 4,
-    y: Math.cos(frame * 0.005) * 3,
+    x: Math.sin(frame * 0.008) * 2,
+    y: Math.cos(frame * 0.006) * 1.5,
   };
 
   // ========================================
-  // GSAP ANIMATION TRIGGERS
+  // REMOTION INTERPOLATE ANIMATIONS
   // ========================================
   
-  // Question Part 1 - Kinetic entrance with GSAP
+  // Question 1: Entrance → Move up → Pulse → Wipe
+  const q1Opacity = frame < beats.questionPart1 ? 0 :
+    frame < beats.wipeQuestions ? interpolate(
+      frame,
+      [beats.questionPart1, beats.questionPart1 + 27], // 0.9s
+      [0, 1],
+      { extrapolateRight: 'clamp' }
+    ) :
+    interpolate(
+      frame,
+      [beats.wipeQuestions, beats.wipeQuestions + 30], // 1s wipe
+      [1, 0],
+      { extrapolateRight: 'clamp' }
+    );
+
+  const q1TranslateY = frame < beats.questionPart1 ? 30 :
+    frame < beats.moveUp ? interpolate(
+      frame,
+      [beats.questionPart1, beats.questionPart1 + 27],
+      [30, 0],
+      { extrapolateRight: 'clamp' }
+    ) :
+    interpolate(
+      frame,
+      [beats.moveUp, beats.moveUp + 24], // 0.8s move
+      [0, -60],
+      { extrapolateRight: 'clamp' }
+    );
+
+  const q1TranslateX = frame < beats.wipeQuestions ? 0 :
+    interpolate(
+      frame,
+      [beats.wipeQuestions, beats.wipeQuestions + 30],
+      [0, -1200],
+      { extrapolateRight: 'clamp' }
+    );
+
+  const q1Scale = frame < beats.pulse ? 1 :
+    frame < beats.pulse + 12 ? interpolate(
+      frame,
+      [beats.pulse, beats.pulse + 12], // 0.4s pulse out
+      [1, 1.05],
+      { extrapolateRight: 'clamp' }
+    ) :
+    frame < beats.pulse + 24 ? interpolate(
+      frame,
+      [beats.pulse + 12, beats.pulse + 24], // 0.4s pulse back
+      [1.05, 1],
+      { extrapolateRight: 'clamp' }
+    ) : 1;
+
+  // Question 2: Entrance → Pulse → Wipe
+  const q2Opacity = frame < beats.questionPart2 ? 0 :
+    frame < beats.wipeQuestions ? interpolate(
+      frame,
+      [beats.questionPart2, beats.questionPart2 + 30], // 1s
+      [0, 1],
+      { extrapolateRight: 'clamp' }
+    ) :
+    interpolate(
+      frame,
+      [beats.wipeQuestions, beats.wipeQuestions + 30],
+      [1, 0],
+      { extrapolateRight: 'clamp' }
+    );
+
+  const q2TranslateY = frame < beats.questionPart2 ? 40 :
+    interpolate(
+      frame,
+      [beats.questionPart2, beats.questionPart2 + 30],
+      [40, 0],
+      { extrapolateRight: 'clamp' }
+    );
+
+  const q2TranslateX = frame < beats.wipeQuestions ? 0 :
+    interpolate(
+      frame,
+      [beats.wipeQuestions, beats.wipeQuestions + 30],
+      [0, -1200],
+      { extrapolateRight: 'clamp' }
+    );
+
+  const q2Scale = frame < beats.questionPart2 ? 0.88 :
+    frame < beats.questionPart2 + 30 ? interpolate(
+      frame,
+      [beats.questionPart2, beats.questionPart2 + 30],
+      [0.88, 1],
+      { extrapolateRight: 'clamp' }
+    ) :
+    frame < beats.pulse ? 1 :
+    frame < beats.pulse + 12 ? interpolate(
+      frame,
+      [beats.pulse, beats.pulse + 12],
+      [1, 1.05],
+      { extrapolateRight: 'clamp' }
+    ) :
+    frame < beats.pulse + 24 ? interpolate(
+      frame,
+      [beats.pulse + 12, beats.pulse + 24],
+      [1.05, 1],
+      { extrapolateRight: 'clamp' }
+    ) : 1;
+
+  // Map: Entrance → Transform
+  const mapOpacity = frame < beats.mapReveal ? 0 :
+    interpolate(
+      frame,
+      [beats.mapReveal, beats.mapReveal + 39], // 1.3s
+      [0, 1],
+      { extrapolateRight: 'clamp' }
+    );
+
+  const mapScale = frame < beats.mapReveal ? 0.85 :
+    frame < beats.transformMap ? interpolate(
+      frame,
+      [beats.mapReveal, beats.mapReveal + 39],
+      [0.85, 1],
+      { extrapolateRight: 'clamp' }
+    ) :
+    interpolate(
+      frame,
+      [beats.transformMap, beats.transformMap + 36], // 1.2s
+      [1, 0.4],
+      { extrapolateRight: 'clamp' }
+    );
+
+  const mapTranslateX = frame < beats.transformMap ? 0 :
+    interpolate(
+      frame,
+      [beats.transformMap, beats.transformMap + 36],
+      [0, 600],
+      { extrapolateRight: 'clamp' }
+    );
+
+  const mapTranslateY = frame < beats.transformMap ? 0 :
+    interpolate(
+      frame,
+      [beats.transformMap, beats.transformMap + 36],
+      [0, -300],
+      { extrapolateRight: 'clamp' }
+    );
+
+  // Welcome: Entrance → Breathe
+  const welcomeOpacity = frame < beats.welcome ? 0 :
+    interpolate(
+      frame,
+      [beats.welcome, beats.welcome + 45], // 1.5s
+      [0, 1],
+      { extrapolateRight: 'clamp' }
+    );
+
+  const welcomeTranslateY = frame < beats.welcome ? 40 :
+    interpolate(
+      frame,
+      [beats.welcome, beats.welcome + 45],
+      [40, 0],
+      { extrapolateRight: 'clamp' }
+    );
+
+  const welcomeScale = frame < beats.welcome ? 0.88 :
+    frame < beats.welcome + 45 ? interpolate(
+      frame,
+      [beats.welcome, beats.welcome + 45],
+      [0.88, 1],
+      { extrapolateRight: 'clamp' }
+    ) :
+    frame < beats.breathe ? 1 :
+    1 + Math.sin((frame - beats.breathe) * 0.025) * 0.02; // Subtle breathe
+
+  // Subtitle: Fade in
+  const subtitleOpacity = frame < beats.subtitle ? 0 :
+    interpolate(
+      frame,
+      [beats.subtitle, beats.subtitle + 36], // 1.2s
+      [0, 1],
+      { extrapolateRight: 'clamp' }
+    );
+
+  const subtitleTranslateY = frame < beats.subtitle ? 20 :
+    interpolate(
+      frame,
+      [beats.subtitle, beats.subtitle + 36],
+      [20, 0],
+      { extrapolateRight: 'clamp' }
+    );
+
+  // ========================================
+  // ROUGH.JS - Headers & Map
+  // ========================================
+
+  // Render headers with CABIN SKETCH SVG text (NO boxes, NO wobble)
   useEffect(() => {
-    if (frame >= beats.questionPart1 && !triggeredAnimations.questionPart1 && textRef1.current) {
-      gsap.fromTo(textRef1.current,
-        {
-          opacity: 0,
-          y: -50,
-          scale: 0.85,
-          rotation: -3,
-        },
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          rotation: 0,
-          duration: 0.8,
-          ease: "back.out(1.7)",
-        }
-      );
-      setTriggeredAnimations(prev => ({ ...prev, questionPart1: true }));
+    if (!roughTextSvgRef.current) return;
+
+    const svg = roughTextSvgRef.current;
+
+    // Clear previous
+    while (svg.firstChild) {
+      svg.removeChild(svg.firstChild);
     }
-  }, [frame, beats.questionPart1, triggeredAnimations.questionPart1]);
 
-  // Underline 1 - Draw effect
-  useEffect(() => {
-    if (frame >= beats.underline1 && !triggeredAnimations.underline1 && underline1Ref.current) {
-      drawUnderline(underline1Ref.current, {
-        duration: 0.6,
-        ease: "power2.out",
-      });
-      setTriggeredAnimations(prev => ({ ...prev, underline1: true }));
+    // Question Part 1 - Cabin Sketch SVG text
+    if (frame >= beats.questionPart1 && frame < beats.wipeQuestions + 35) {
+      const text1 = texts.questionPart1 || 'What if geography';
+      
+      const textGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      textGroup.setAttribute('id', 'question1-group');
+      textGroup.setAttribute('opacity', String(q1Opacity));
+      textGroup.setAttribute('transform', `translate(${q1TranslateX}, ${q1TranslateY}) scale(${q1Scale})`);
+      
+      const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      textElement.setAttribute('x', '960');
+      textElement.setAttribute('y', '480');
+      textElement.setAttribute('text-anchor', 'middle');
+      textElement.setAttribute('font-family', "'Cabin Sketch', cursive");
+      textElement.setAttribute('font-size', fonts.size_title);
+      textElement.setAttribute('font-weight', '700');
+      textElement.setAttribute('fill', colors.ink);
+      textElement.textContent = text1;
+      
+      textGroup.appendChild(textElement);
+      svg.appendChild(textGroup);
     }
-  }, [frame, beats.underline1, triggeredAnimations.underline1]);
 
-  // Question Part 2 - Kinetic entrance
-  useEffect(() => {
-    if (frame >= beats.questionPart2 && !triggeredAnimations.questionPart2 && textRef2.current) {
-      gsap.fromTo(textRef2.current,
-        {
-          opacity: 0,
-          y: -50,
-          scale: 0.85,
-          rotation: 2,
-        },
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          rotation: 0,
-          duration: 0.8,
-          ease: "back.out(1.7)",
-        }
-      );
-      setTriggeredAnimations(prev => ({ ...prev, questionPart2: true }));
+    // Question Part 2 - Cabin Sketch SVG text
+    if (frame >= beats.questionPart2 && frame < beats.wipeQuestions + 35) {
+      const text2 = texts.questionPart2 || 'was measured in mindsets?';
+      
+      const textGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      textGroup.setAttribute('id', 'question2-group');
+      textGroup.setAttribute('opacity', String(q2Opacity));
+      textGroup.setAttribute('transform', `translate(${q2TranslateX}, ${q2TranslateY}) scale(${q2Scale})`);
+      
+      const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      textElement.setAttribute('x', '960');
+      textElement.setAttribute('y', '600');
+      textElement.setAttribute('text-anchor', 'middle');
+      textElement.setAttribute('font-family', "'Cabin Sketch', cursive");
+      textElement.setAttribute('font-size', fonts.size_question);
+      textElement.setAttribute('font-weight', '700');
+      textElement.setAttribute('fill', colors.accent);
+      textElement.textContent = text2;
+      
+      textGroup.appendChild(textElement);
+      svg.appendChild(textGroup);
     }
-  }, [frame, beats.questionPart2, triggeredAnimations.questionPart2]);
 
-  // Pulse 1 - Emphasis on first part
-  useEffect(() => {
-    if (frame >= beats.pulse1 && !triggeredAnimations.pulse1 && textRef1.current) {
-      pulseEmphasis(textRef1.current, {
-        scale: 1.05,
-        duration: 0.4,
-        repeat: 1,
-        yoyo: true,
-      });
-      setTriggeredAnimations(prev => ({ ...prev, pulse1: true }));
+    // "Welcome to Knodovia" - Cabin Sketch SVG text (THE HOOK)
+    if (frame >= beats.welcome) {
+      const welcomeText = texts.welcome || 'Welcome to Knodovia';
+      
+      const textGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      textGroup.setAttribute('id', 'welcome-group');
+      textGroup.setAttribute('opacity', String(welcomeOpacity));
+      textGroup.setAttribute('transform', `translate(0, ${welcomeTranslateY}) scale(${welcomeScale})`);
+      
+      const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      textElement.setAttribute('x', '960');
+      textElement.setAttribute('y', '560');
+      textElement.setAttribute('text-anchor', 'middle');
+      textElement.setAttribute('font-family', "'Cabin Sketch', cursive");
+      textElement.setAttribute('font-size', fonts.size_welcome);
+      textElement.setAttribute('font-weight', '700');
+      textElement.setAttribute('fill', colors.accent2);
+      textElement.textContent = welcomeText;
+      
+      textGroup.appendChild(textElement);
+      svg.appendChild(textGroup);
     }
-  }, [frame, beats.pulse1, triggeredAnimations.pulse1]);
 
-  // Underline 2 - Draw effect
+  }, [frame, beats, colors, texts, fonts, q1Opacity, q1TranslateX, q1TranslateY, q1Scale, q2Opacity, q2TranslateX, q2TranslateY, q2Scale, welcomeOpacity, welcomeTranslateY, welcomeScale]);
+
+  // Animated Map SVG - ZERO WOBBLE
   useEffect(() => {
-    if (frame >= beats.underline2 && !triggeredAnimations.underline2 && underline2Ref.current) {
-      drawUnderline(underline2Ref.current, {
-        duration: 0.6,
-        ease: "power2.out",
-      });
-      setTriggeredAnimations(prev => ({ ...prev, underline2: true }));
-    }
-  }, [frame, beats.underline2, triggeredAnimations.underline2]);
+    if (!mapSvgRef.current || frame < beats.mapReveal) return;
 
-  // Pulse 2 - Emphasis on second part
-  useEffect(() => {
-    if (frame >= beats.pulse2 && !triggeredAnimations.pulse2 && textRef2.current) {
-      pulseEmphasis(textRef2.current, {
-        scale: 1.08,
-        duration: 0.4,
-        repeat: 2,
-        yoyo: true,
-      });
-      setTriggeredAnimations(prev => ({ ...prev, pulse2: true }));
-    }
-  }, [frame, beats.pulse2, triggeredAnimations.pulse2]);
-
-  // MID-SCENE TRANSITION - Move question to top
-  useEffect(() => {
-    if (frame >= beats.moveToTop && !triggeredAnimations.moveToTop && questionContainerRef.current) {
-      gracefulMove(questionContainerRef.current, {
-        y: -250,
-        scale: 0.7,
-        duration: 1.2,
-        ease: "power3.inOut",
-      });
-      setTriggeredAnimations(prev => ({ ...prev, moveToTop: true }));
-    }
-  }, [frame, beats.moveToTop, triggeredAnimations.moveToTop]);
-
-  // Cascade in new content
-  useEffect(() => {
-    if (frame >= beats.cascadeContent && !triggeredAnimations.cascadeContent) {
-      const contentElements = [subtitleRef.current, iconsContainerRef.current].filter(Boolean);
-      if (contentElements.length > 0) {
-        cascadeReveal(contentElements, {
-          duration: 0.6,
-          ease: "back.out(1.7)",
-          stagger: 0.2,
-        });
-        setTriggeredAnimations(prev => ({ ...prev, cascadeContent: true }));
-      }
-    }
-  }, [frame, beats.cascadeContent, triggeredAnimations.cascadeContent]);
-
-  // rough.js shapes - ZERO WOBBLE (kept for decorative elements)
-  useEffect(() => {
-    if (!svgRef.current) return;
-
-    const svg = svgRef.current;
+    const svg = mapSvgRef.current;
     const rc = rough.svg(svg);
 
     // Clear previous
@@ -263,89 +391,112 @@ const Hook1AQuestionBurst = ({ scene }) => {
       svg.removeChild(svg.firstChild);
     }
 
-    // Accent circle - ZERO WOBBLE, clean shape
-    if (frame >= beats.accentCircle) {
-      const progress = Math.min((frame - beats.accentCircle) / 35, 1);
+    const progress = Math.min((frame - beats.mapReveal) / 50, 1);
+
+    // Stylized landmass
+    const islandPath = `
+      M 200 180 
+      Q 180 120 220 100
+      Q 270 80 320 100
+      Q 360 90 380 120
+      Q 420 110 440 140
+      Q 460 170 440 210
+      Q 430 250 400 270
+      Q 360 290 320 280
+      Q 280 290 240 270
+      Q 200 250 190 220
+      Q 180 200 200 180 Z
+    `;
+
+    const island = rc.path(islandPath, {
+      stroke: colors.accent,
+      strokeWidth: 6,
+      roughness: 0,  // ZERO WOBBLE
+      bowing: 0,     // ZERO WOBBLE
+      fill: `${colors.accent}15`,
+      fillStyle: 'hachure',
+      hachureGap: 8,
+      hachureAngle: 45,
+    });
+
+    const paths = island.querySelectorAll('path');
+    paths.forEach(path => {
+      const length = path.getTotalLength();
+      path.style.strokeDasharray = length;
+      path.style.strokeDashoffset = length * (1 - progress);
+    });
+
+    svg.appendChild(island);
+
+    // Small islands/details
+    if (progress > 0.5) {
+      const detailProgress = (progress - 0.5) * 2;
       
-      const circle = rc.circle(960, 540, 360, {
-        stroke: `${colors.accent}60`,
-        strokeWidth: 5,
+      const small1 = rc.circle(150, 200, 40 * detailProgress, {
+        stroke: colors.accent2,
+        strokeWidth: 4,
         roughness: 0,
         bowing: 0,
-        fill: 'none',
+        fill: `${colors.accent2}12`,
+        fillStyle: 'solid',
       });
-      
-      // Animate stroke drawing
-      const paths = circle.querySelectorAll('path');
-      paths.forEach(path => {
-        const length = path.getTotalLength();
-        path.style.strokeDasharray = length;
-        path.style.strokeDashoffset = length * (1 - progress);
+      svg.appendChild(small1);
+
+      const small2 = rc.circle(480, 180, 30 * detailProgress, {
+        stroke: colors.accent2,
+        strokeWidth: 4,
+        roughness: 0,
+        bowing: 0,
+        fill: `${colors.accent2}12`,
+        fillStyle: 'solid',
       });
-      
-      svg.appendChild(circle);
-    }
+      svg.appendChild(small2);
 
-    // Stars - ZERO WOBBLE, clean paths
-    if (frame >= beats.sparkBurst && frame < beats.moveToTop) {
-      const sparkData = [
-        { x: 340, y: 220, size: 35, rotation: 15 },
-        { x: 1580, y: 260, size: 40, rotation: -20 },
-        { x: 480, y: 820, size: 38, rotation: 25 },
-        { x: 1440, y: 850, size: 42, rotation: -15 },
-      ];
+      // Location markers
+      if (detailProgress > 0.6) {
+        const markerProgress = (detailProgress - 0.6) / 0.4;
+        
+        [[260, 160], [340, 200], [380, 240]].forEach(([x, y], i) => {
+          const delay = i * 0.2;
+          if (markerProgress > delay) {
+            const locProgress = Math.min((markerProgress - delay) / 0.3, 1);
+            
+            const markerPath = `M ${x} ${y} L ${x} ${y + 20 * locProgress}`;
+            const marker = rc.path(markerPath, {
+              stroke: colors.ink,
+              strokeWidth: 5,
+              roughness: 0,
+              bowing: 0,
+            });
+            svg.appendChild(marker);
 
-      sparkData.forEach((spark, i) => {
-        const delay = i * 6;
-        if (frame < beats.sparkBurst + delay) return;
-        
-        const progress = Math.min((frame - beats.sparkBurst - delay) / 22, 1);
-        const scale = progress;
-        
-        // Star path
-        const points = 5;
-        const outer = spark.size;
-        const inner = spark.size * 0.4;
-        let pathData = '';
-        
-        for (let p = 0; p < points * 2; p++) {
-          const radius = p % 2 === 0 ? outer : inner;
-          const angle = (p * Math.PI) / points - Math.PI / 2 + (spark.rotation * Math.PI / 180);
-          const px = spark.x + radius * Math.cos(angle) * scale;
-          const py = spark.y + radius * Math.sin(angle) * scale;
-          pathData += (p === 0 ? 'M' : ' L') + ` ${px} ${py}`;
-        }
-        pathData += ' Z';
-        
-        const star = rc.path(pathData, {
-          stroke: colors.accent,
-          strokeWidth: 3,
-          roughness: 0,
-          bowing: 0,
-          fill: `${colors.accent2}40`,
-          fillStyle: 'hachure',
-          hachureGap: 8,
-          hachureAngle: spark.rotation,
+            const pinHead = rc.circle(x, y, 12 * locProgress, {
+              stroke: colors.accent,
+              strokeWidth: 3,
+              roughness: 0,
+              bowing: 0,
+              fill: colors.accent,
+              fillStyle: 'solid',
+            });
+            svg.appendChild(pinHead);
+          }
         });
-        
-        star.style.opacity = progress;
-        svg.appendChild(star);
-      });
+      }
     }
 
-  }, [frame, beats, colors]);
+  }, [frame, beats.mapReveal, colors]);
 
   return (
     <AbsoluteFill
       style={{
         backgroundColor: colors.bg,
         backgroundImage: `
-          radial-gradient(circle at 25% 35%, ${colors.accent}06 0%, transparent 60%),
-          radial-gradient(circle at 75% 70%, ${colors.accent2}05 0%, transparent 55%)
+          radial-gradient(circle at 20% 30%, ${colors.accent}03 0%, transparent 60%),
+          radial-gradient(circle at 80% 70%, ${colors.accent2}03 0%, transparent 55%)
         `,
       }}
     >
-      {/* rough.js sketch layer */}
+      {/* Decorative layer */}
       <svg
         ref={svgRef}
         style={{
@@ -354,7 +505,22 @@ const Hook1AQuestionBurst = ({ scene }) => {
           width: '100%',
           height: '100%',
           pointerEvents: 'none',
-          transform: `scale(${cameraZoom}) translate(${cameraDrift.x}px, ${cameraDrift.y}px)`,
+          transform: `translate(${cameraDrift.x}px, ${cameraDrift.y}px)`,
+        }}
+        viewBox="0 0 1920 1080"
+        preserveAspectRatio="xMidYMid meet"
+      />
+
+      {/* Rough text layer (Cabin Sketch headers) */}
+      <svg
+        ref={roughTextSvgRef}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+          transform: `translate(${cameraDrift.x}px, ${cameraDrift.y}px)`,
         }}
         viewBox="0 0 1920 1080"
         preserveAspectRatio="xMidYMid meet"
@@ -363,159 +529,62 @@ const Hook1AQuestionBurst = ({ scene }) => {
       {/* Content layer */}
       <AbsoluteFill
         style={{
-          transform: `scale(${cameraZoom}) translate(${cameraDrift.x}px, ${cameraDrift.y}px)`,
+          transform: `translate(${cameraDrift.x}px, ${cameraDrift.y}px)`,
         }}
       >
-        {/* Question Container - animated as a group */}
-        <div
-          ref={questionContainerRef}
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: spacing.padding + 60,
-            transform: 'translateY(-50%)',
-            width: `calc(100% - ${(spacing.padding + 60) * 2}px)`,
-          }}
-        >
-          {/* Question Part 1 */}
-          {frame >= beats.questionPart1 && (
-            <div
+        {/* Animated Map Container */}
+        {frame >= beats.mapReveal && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: `translate(-50%, -50%) translate(${mapTranslateX}px, ${mapTranslateY}px) scale(${mapScale})`,
+              width: 640,
+              height: 400,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              opacity: mapOpacity,
+            }}
+          >
+            <svg
+              ref={mapSvgRef}
               style={{
-                position: 'relative',
-                marginBottom: spacing.gap,
+                width: '100%',
+                height: '100%',
               }}
-            >
-              <h1
-                ref={textRef1}
-                style={{
-                  fontFamily: fonts.primary,
-                  fontSize: fonts.size_title,
-                  fontWeight: 700,
-                  color: colors.ink,
-                  lineHeight: 1.1,
-                  margin: 0,
-                  letterSpacing: '-1px',
-                  opacity: 0, // Will be animated by GSAP
-                }}
-              >
-                {texts.questionPart1 || 'What if geography'}
-              </h1>
-              
-              {/* Underline 1 */}
-              {frame >= beats.underline1 && (
-                <div
-                  ref={underline1Ref}
-                  style={{
-                    position: 'absolute',
-                    bottom: -10,
-                    left: 0,
-                    width: '100%',
-                    height: 6,
-                    backgroundColor: colors.accent,
-                    transformOrigin: 'left center',
-                    transform: 'scaleX(0)', // Will be animated by GSAP
-                  }}
-                />
-              )}
-            </div>
-          )}
+              viewBox="0 0 640 400"
+              preserveAspectRatio="xMidYMid meet"
+            />
+          </div>
+        )}
 
-          {/* Question Part 2 */}
-          {frame >= beats.questionPart2 && (
-            <div
+        {/* Subtitle - Permanent Marker (body text) */}
+        {frame >= beats.subtitle && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '30%',
+              left: '50%',
+              transform: `translateX(-50%) translateY(${subtitleTranslateY}px)`,
+              maxWidth: 800,
+              textAlign: 'center',
+              opacity: subtitleOpacity,
+            }}
+          >
+            <p
               style={{
-                position: 'relative',
-                marginLeft: 60,
+                fontFamily: fonts.secondary, // Permanent Marker
+                fontSize: fonts.size_subtitle,
+                color: `${colors.ink}80`,
+                margin: 0,
+                lineHeight: 1.5,
               }}
             >
-              <h1
-                ref={textRef2}
-                style={{
-                  fontFamily: fonts.primary,
-                  fontSize: fonts.size_title + 8,
-                  fontWeight: 700,
-                  color: colors.accent,
-                  lineHeight: 1.1,
-                  margin: 0,
-                  letterSpacing: '-2px',
-                  opacity: 0, // Will be animated by GSAP
-                }}
-              >
-                {texts.questionPart2 || 'was measured in mindsets?'}
-              </h1>
-              
-              {/* Underline 2 */}
-              {frame >= beats.underline2 && (
-                <div
-                  ref={underline2Ref}
-                  style={{
-                    position: 'absolute',
-                    bottom: -12,
-                    left: 0,
-                    width: '100%',
-                    height: 7,
-                    backgroundColor: colors.accent,
-                    transformOrigin: 'left center',
-                    transform: 'scaleX(0)', // Will be animated by GSAP
-                  }}
-                />
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* NEW CONTENT - Appears after mid-scene transition */}
-        {frame >= beats.cascadeContent && (
-          <>
-            {/* Subtitle */}
-            <div
-              ref={subtitleRef}
-              style={{
-                position: 'absolute',
-                bottom: 200,
-                left: spacing.padding + 60,
-                opacity: 0, // Will be animated by GSAP
-              }}
-            >
-              <p
-                style={{
-                  fontFamily: fonts.primary,
-                  fontSize: fonts.size_subtitle,
-                  color: `${colors.ink}70`,
-                  margin: 0,
-                  fontStyle: 'italic',
-                }}
-              >
-                {texts.subtitle || 'Welcome to Knodovia...'}
-              </p>
-            </div>
-
-            {/* Icons Container */}
-            <div
-              ref={iconsContainerRef}
-              style={{
-                position: 'absolute',
-                bottom: 120,
-                right: spacing.padding + 60,
-                display: 'flex',
-                gap: 30,
-                opacity: 0, // Will be animated by GSAP
-              }}
-            >
-              {icons.map((icon, i) => (
-                <div
-                  key={i}
-                  style={{
-                    fontSize: icon.size || 64,
-                  }}
-                >
-                  {icon.emoji}
-                </div>
-              ))}
-              {/* Default icon if none provided */}
-              {icons.length === 0 && <div style={{ fontSize: 64 }}>🗺️</div>}
-            </div>
-          </>
+              {texts.subtitle || 'A place where your perspective shapes the landscape...'}
+            </p>
+          </div>
         )}
       </AbsoluteFill>
 
@@ -528,8 +597,8 @@ const Hook1AQuestionBurst = ({ scene }) => {
             backgroundColor: colors.bg,
             opacity: interpolate(
               frame,
-              [beats.settle, beats.settle + 35],
-              [0, 0.2],
+              [beats.settle, beats.settle + 30],
+              [0, 0.15],
               { extrapolateRight: 'clamp' }
             ),
           }}
@@ -540,6 +609,6 @@ const Hook1AQuestionBurst = ({ scene }) => {
 };
 
 export { Hook1AQuestionBurst };
-export const HOOK_1A_DURATION_MIN = 10 * 30;
-export const HOOK_1A_DURATION_MAX = 20 * 30;
+export const HOOK_1A_DURATION_MIN = 15 * 30;
+export const HOOK_1A_DURATION_MAX = 18 * 30;
 export const HOOK_1A_EXIT_TRANSITION = 15;

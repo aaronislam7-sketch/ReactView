@@ -3,37 +3,39 @@
   "template_id": "hook_1a",
   "pillar": "hook",
   "variant": "1A",
-  "duration_s": 20,
+  "duration_s": 15,
   "fps": 30,
   
   "meta": {
-    "title": "HOOK 1A: Question Burst - Knodovia (Production V2)",
-    "description": "Provocative question about geography and mindsets with zero wobble",
-    "tags": ["module:welcome-knodovia", "pedagogy:hook", "variant:1A", "production-ready"],
+    "title": "HOOK 1A: Question Burst - Knodovia (TED-ED Style V4)",
+    "description": "Provocative question about geography and mindsets with animated map - no emojis, compelling hook",
+    "tags": ["module:welcome-knodovia", "pedagogy:hook", "variant:1A", "production-ready", "ted-ed-style"],
     "difficulty": "beginner",
-    "tone": "thoughtful"
+    "tone": "intriguing"
   },
   
   "style_tokens": {
     "colors": {
       "bg": "#FFF9F0",
-      "accent": "#E74C3C",
-      "accent2": "#E67E22",
+      "accent": "#FF6B35",
+      "accent2": "#9B59B6",
       "ink": "#1A1A1A"
     },
     "fonts": {
-      "primary": "'Cabin Sketch', cursive",
-      "size_title": 84,
-      "size_subtitle": 36
+      "primary": "'Permanent Marker', cursive",
+      "secondary": "'Inter', sans-serif",
+      "size_title": 76,
+      "size_question": 92,
+      "size_welcome": 68,
+      "size_subtitle": 32
     },
     "motion": {
-      "timing": "fast",
-      "easing": "elastic",
-      "stagger_delay": 150
+      "timing": "medium",
+      "easing": "power3"
     },
     "spacing": {
-      "padding": 140,
-      "gap": 40
+      "padding": 120,
+      "gap": 30
     }
   },
   
@@ -42,7 +44,7 @@
       "w": 1920,
       "h": 1080
     },
-    "alignment": "left",
+    "alignment": "center",
     "safe_area": {
       "top": 80,
       "right": 100,
@@ -55,34 +57,26 @@
     "texts": {
       "questionPart1": "What if geography",
       "questionPart2": "was measured in mindsets?",
-      "subtitle": "Welcome to Knodovia..."
+      "welcome": "Welcome to Knodovia",
+      "subtitle": "A place where your perspective shapes the landscape..."
     },
     "images": [],
-    "lottie": null,
-    "icons": [
-      {
-        "emoji": "🗺️",
-        "x": 1600,
-        "y": 900,
-        "size": 80,
-        "fadeIn": 20
-      }
-    ]
+    "lottie": null
   },
   
   "timeline": [],
   "timing": {
     "beats": [
-      { "name": "prelude", "frame": 0, "duration": 29 },
-      { "name": "questionPart1", "frame": 29, "duration": 43 },
-      { "name": "underline1", "frame": 72, "duration": 28 },
-      { "name": "questionPart2", "frame": 86, "duration": 43 },
-      { "name": "underline2", "frame": 130, "duration": 28 },
-      { "name": "accentCircle", "frame": 151, "duration": 35 },
-      { "name": "sparkBurst", "frame": 180, "duration": 40 },
-      { "name": "lottieIcon", "frame": 198, "duration": 30 },
-      { "name": "subtitle", "frame": 216, "duration": 54 },
-      { "name": "settle", "frame": 270, "duration": 330 }
+      { "name": "prelude", "frame": 0, "duration": 24 },
+      { "name": "questionPart1", "frame": 24, "duration": 42 },
+      { "name": "pause1", "frame": 66, "duration": 9 },
+      { "name": "questionPart2", "frame": 75, "duration": 60 },
+      { "name": "pause2", "frame": 135, "duration": 15 },
+      { "name": "mapReveal", "frame": 150, "duration": 75 },
+      { "name": "welcome", "frame": 225, "duration": 60 },
+      { "name": "subtitle", "frame": 285, "duration": 60 },
+      { "name": "breathe", "frame": 330, "duration": 30 },
+      { "name": "settle", "frame": 360, "duration": 90 }
     ],
     "transitions": {
       "enter": "fade",

@@ -1,39 +1,46 @@
 {
-  "schema_version": "3.0",
+  "schema_version": "4.0",
   "template_id": "reflect_4d",
   "pillar": "reflect",
   "variant": "4D",
-  "duration_s": 20,
+  "duration_s": 22,
   "fps": 30,
   "meta": {
-    "title": "REFLECT 4D: Forward Link",
-    "description": "Connect current lesson to next learning step",
-    "tags": ["pedagogy:reflect", "variant:4D", "pattern:forward-link", "tone:encouraging"],
+    "title": "REFLECT 4D: Forward Link (TED-ED Style V4)",
+    "description": "Anchor current learning first, then transition to next journey with stepping stones animation",
+    "tags": ["pedagogy:reflect", "variant:4D", "pattern:forward-link", "tone:encouraging", "ted-ed-style"],
     "tone": "encouraging"
   },
   "style_tokens": {
     "colors": {
       "bg": "#FFF9F0",
-      "accent": "#8E44AD",
-      "accent2": "#E67E22",
-      "path": "#2E7FE4",
+      "accent": "#27AE60",
+      "accent2": "#9B59B6",
+      "accent3": "#FF6B35",
       "ink": "#1A1A1A"
+    },
+    "fonts": {
+      "primary": "'Permanent Marker', cursive",
+      "secondary": "'Inter', sans-serif",
+      "size_title": 48,
+      "size_section": 38,
+      "size_body": 24,
+      "size_cta": 44
     }
   },
   "layout": { "canvas": { "w": 1920, "h": 1080 } },
   "fill": {
     "forward": {
-      "title": "Your Journey Continues",
+      "title": "Your Learning Journey",
       "current": {
         "label": "You learned:",
         "summary": "How Knodovia's four regions represent different mindsets and ways of thinking"
       },
-      "connection": "leads to",
       "next": {
         "label": "Coming up:",
         "teaser": "Exploring how these mindsets interact and combine to solve real problems"
       },
-      "cta": "Ready to dive deeper?"
+      "cta": "Let's keep going!"
     }
   },
   "timeline": []
