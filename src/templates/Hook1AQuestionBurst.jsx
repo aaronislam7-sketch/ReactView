@@ -90,21 +90,21 @@ const Hook1AQuestionBurst = ({ scene }) => {
 
   const texts = scene.fill?.texts || {};
 
-  // Beat timing - CONVERSATIONAL, DYNAMIC
+  // Beat timing - CONVERSATIONAL, DYNAMIC (with breathing room for motion)
   const BEAT = 30;
   const beats = {
     prelude: 0,
     questionPart1: BEAT * 0.6,       // 0.6s - Quick entrance
-    moveUp: BEAT * 1.8,              // 1.8s - Make room
-    questionPart2: BEAT * 2.2,       // 2.2s - Second part appears
-    pulse: BEAT * 3.5,               // 3.5s - Pulse both
-    wipeQuestions: BEAT * 4.5,       // 4.5s - EXIT questions (clear stage!)
-    mapReveal: BEAT * 5.2,           // 5.2s - Map draws in
-    transformMap: BEAT * 7.5,        // 7.5s - Map shrinks to corner
-    welcome: BEAT * 8.2,             // 8.2s - THE HOOK (center stage)
-    subtitle: BEAT * 10,             // 10s - Tease
-    breathe: BEAT * 11.5,            // 11.5s - Settle with breathe
-    settle: BEAT * 13,               // 13s - Hold
+    moveUp: BEAT * 2.0,              // 2.0s - Make room (give time to land)
+    questionPart2: BEAT * 2.8,       // 2.8s - Second part appears (after move completes)
+    pulse: BEAT * 4.2,               // 4.2s - Pulse both (let question 2 breathe)
+    wipeQuestions: BEAT * 5.5,       // 5.5s - EXIT questions (after pulse completes)
+    mapReveal: BEAT * 6.5,           // 6.5s - Map draws in (clean stage first)
+    transformMap: BEAT * 9.0,        // 9.0s - Map shrinks to corner (let map reveal complete)
+    welcome: BEAT * 10.0,            // 10.0s - THE HOOK (after transform completes)
+    subtitle: BEAT * 12.0,           // 12s - Tease (let welcome land)
+    breathe: BEAT * 13.5,            // 13.5s - Settle with breathe
+    settle: BEAT * 15,               // 15s - Hold
   };
 
   // Subtle camera drift
@@ -292,7 +292,7 @@ const Hook1AQuestionBurst = ({ scene }) => {
   // ROUGH.JS - Headers & Map
   // ========================================
 
-  // Render headers in rough.js (PERMANENT MARKER TEXT via rough.js)
+  // Render headers with rough.js decorations
   useEffect(() => {
     if (!roughTextSvgRef.current) return;
 
@@ -304,19 +304,66 @@ const Hook1AQuestionBurst = ({ scene }) => {
       svg.removeChild(svg.firstChild);
     }
 
-    // We'll render "Welcome to Knodovia" as rough text when it appears
-    if (frame >= beats.welcome && frame < beats.wipeQuestions + 100) {
-      // Draw rough underline for "Welcome to Knodovia"
-      const progress = Math.min((frame - beats.welcome) / 30, 1);
+    // Rough box around Question Part 1 (when visible)
+    if (frame >= beats.questionPart1 + 15 && frame < beats.wipeQuestions) {
+      const boxProgress = Math.min((frame - beats.questionPart1 - 15) / 25, 1);
       
-      const underline = rc.line(660, 580, 660 + 600 * progress, 585, {
-        stroke: colors.accent2,
-        strokeWidth: 6,
-        roughness: 0.8,
-        bowing: 3,
+      const box1 = rc.rectangle(480, 420, 960 * boxProgress, 100, {
+        stroke: `${colors.ink}30`,
+        strokeWidth: 3,
+        roughness: 1.0,
+        bowing: 4,
+        fill: 'none',
       });
+      svg.appendChild(box1);
+    }
+
+    // Rough underline under Question Part 2 (when visible)
+    if (frame >= beats.questionPart2 + 20 && frame < beats.wipeQuestions) {
+      const underlineProgress = Math.min((frame - beats.questionPart2 - 20) / 30, 1);
       
+      const underline = rc.line(520, 620, 520 + 880 * underlineProgress, 625, {
+        stroke: colors.accent,
+        strokeWidth: 7,
+        roughness: 1.2,
+        bowing: 5,
+      });
       svg.appendChild(underline);
+    }
+
+    // Rough decorative box around "Welcome to Knodovia"
+    if (frame >= beats.welcome + 25) {
+      const welcomeBoxProgress = Math.min((frame - beats.welcome - 25) / 35, 1);
+      
+      const welcomeBox = rc.rectangle(580, 480, 760 * welcomeBoxProgress, 120, {
+        stroke: colors.accent2,
+        strokeWidth: 5,
+        roughness: 1.3,
+        bowing: 6,
+        fill: 'none',
+      });
+      svg.appendChild(welcomeBox);
+      
+      // Double underline for emphasis
+      if (welcomeBoxProgress > 0.5) {
+        const doubleProgress = (welcomeBoxProgress - 0.5) * 2;
+        
+        const underline1 = rc.line(620, 590, 620 + 680 * doubleProgress, 592, {
+          stroke: colors.accent2,
+          strokeWidth: 4,
+          roughness: 0.9,
+          bowing: 3,
+        });
+        svg.appendChild(underline1);
+        
+        const underline2 = rc.line(615, 600, 615 + 690 * doubleProgress, 603, {
+          stroke: colors.accent2,
+          strokeWidth: 4,
+          roughness: 0.9,
+          bowing: 3,
+        });
+        svg.appendChild(underline2);
+      }
     }
 
   }, [frame, beats, colors]);
@@ -685,6 +732,6 @@ const Hook1AQuestionBurst = ({ scene }) => {
 };
 
 export { Hook1AQuestionBurst };
-export const HOOK_1A_DURATION_MIN = 14 * 30;
+export const HOOK_1A_DURATION_MIN = 15 * 30;
 export const HOOK_1A_DURATION_MAX = 18 * 30;
 export const HOOK_1A_EXIT_TRANSITION = 15;
