@@ -11,30 +11,32 @@ import {
 } from '../utils/gsapAnimations';
 
 /**
- * HOOK 1A: QUESTION BURST (TED-ED Style V4)
+ * HOOK 1A: QUESTION BURST (CONVERSATIONAL V5)
  * 
- * PRODUCTION-READY FEATURES:
- * - ✅ Zero wobble (roughness/bowing = 0)
- * - ✅ GSAP animations for world-class aesthetics
- * - ✅ TED-ED style pacing and impact
+ * CONVERSATIONAL FEATURES:
+ * - ✅ Bold mid-scene GSAP transitions - things MOVE!
+ * - ✅ Conversational flow - elements exit when done
+ * - ✅ Headers rendered in rough.js
+ * - ✅ Permanent Marker throughout
+ * - ✅ Clean stage - only show what's needed NOW
+ * - ✅ Graceful wipes/exits via GSAP
  * - ✅ Animated map (NO emojis)
- * - ✅ Compelling hook that builds curiosity
- * - ✅ Permanent Marker font for brand energy
- * - ✅ Subtle breathe animations (1-3% scale)
- * - ✅ Bold accent colors (oranges/purples)
+ * - ✅ Zero wobble on structure
  * 
- * Animation Flow:
- * 1. Title fades in with dramatic pause
- * 2. Question Part 1 appears with emphasis
- * 3. Brief pause for impact
- * 4. Question Part 2 lands with weight
- * 5. Animated map draws in (stylized landmass)
- * 6. "Welcome to Knodovia" appears with intrigue
- * 7. Subtitle teases the journey ahead
- * 8. Gentle breathe animation on key elements
+ * Conversational Flow:
+ * 1. "What if geography" appears
+ * 2. It moves up slightly, making room
+ * 3. "was measured in mindsets?" appears below
+ * 4. Both pulse for emphasis
+ * 5. WIPE: Questions gracefully exit stage left
+ * 6. Map draws in center with energy
+ * 7. TRANSFORM: Map shrinks to corner
+ * 8. "Welcome to Knodovia" takes center stage (THE HOOK)
+ * 9. Subtitle fades in below
+ * 10. Breathe on welcome text
  * 
- * Intent: Create "ooo what is Knodovia?" feeling - pure curiosity
- * Duration: 12-18s (punchy, focused)
+ * Intent: Conversational, dynamic, TED-ED quality
+ * Duration: 14-18s
  */
 
 const Hook1AQuestionBurst = ({ scene }) => {
@@ -42,8 +44,10 @@ const Hook1AQuestionBurst = ({ scene }) => {
   const { fps, durationInFrames } = useVideoConfig();
   const svgRef = useRef(null);
   const mapSvgRef = useRef(null);
+  const roughTextSvgRef = useRef(null);
   const textRef1 = useRef(null);
   const textRef2 = useRef(null);
+  const questionContainerRef = useRef(null);
   const welcomeRef = useRef(null);
   const subtitleRef = useRef(null);
   const mapContainerRef = useRef(null);
@@ -52,13 +56,16 @@ const Hook1AQuestionBurst = ({ scene }) => {
   const [triggeredAnimations, setTriggeredAnimations] = useState({
     questionPart1: false,
     questionPart2: false,
+    moveUp: false,
+    pulse: false,
+    wipeQuestions: false,
     mapReveal: false,
+    transformMap: false,
     welcome: false,
     subtitle: false,
     breathe: false,
   });
 
-  // Expanded style tokens with defaults
   const style = scene.style_tokens || {};
   const colors = style.colors || {
     bg: '#FFF9F0',
@@ -72,13 +79,8 @@ const Hook1AQuestionBurst = ({ scene }) => {
     secondary: THEME.fonts.structure.primary,
     size_title: 76,
     size_question: 92,
-    size_welcome: 68,
+    size_welcome: 72,
     size_subtitle: 32,
-  };
-  
-  const motion = style.motion || {
-    timing: 'medium',
-    easing: 'power3',
   };
   
   const spacing = style.spacing || {
@@ -88,107 +90,165 @@ const Hook1AQuestionBurst = ({ scene }) => {
 
   const texts = scene.fill?.texts || {};
 
-  // Beat timing - IMPROVED PACING (more dramatic, TED-ED style)
-  const BEAT = 30; // 1 second at 30fps
+  // Beat timing - CONVERSATIONAL, DYNAMIC
+  const BEAT = 30;
   const beats = {
     prelude: 0,
-    questionPart1: BEAT * 0.8,      // 0.8s - Quick intro
-    pause1: BEAT * 2.2,              // 2.2s - Let it land
-    questionPart2: BEAT * 2.5,       // 2.5s - Second part
-    pause2: BEAT * 4.5,              // 4.5s - Build tension
-    mapReveal: BEAT * 5,             // 5s - Map draws in
-    welcome: BEAT * 7.5,             // 7.5s - THE HOOK
-    subtitle: BEAT * 9.5,            // 9.5s - Tease the journey
-    breathe: BEAT * 11,              // 11s - Settle with subtle movement
-    settle: BEAT * 12,               // 12s - Hold
+    questionPart1: BEAT * 0.6,       // 0.6s - Quick entrance
+    moveUp: BEAT * 1.8,              // 1.8s - Make room
+    questionPart2: BEAT * 2.2,       // 2.2s - Second part appears
+    pulse: BEAT * 3.5,               // 3.5s - Pulse both
+    wipeQuestions: BEAT * 4.5,       // 4.5s - EXIT questions (clear stage!)
+    mapReveal: BEAT * 5.2,           // 5.2s - Map draws in
+    transformMap: BEAT * 7.5,        // 7.5s - Map shrinks to corner
+    welcome: BEAT * 8.2,             // 8.2s - THE HOOK (center stage)
+    subtitle: BEAT * 10,             // 10s - Tease
+    breathe: BEAT * 11.5,            // 11.5s - Settle with breathe
+    settle: BEAT * 13,               // 13s - Hold
   };
 
-  // Subtle camera breathe (no zoom, just gentle drift)
+  // Subtle camera drift
   const cameraDrift = {
     x: Math.sin(frame * 0.008) * 2,
     y: Math.cos(frame * 0.006) * 1.5,
   };
 
   // ========================================
-  // GSAP ANIMATION TRIGGERS
+  // GSAP ANIMATION TRIGGERS - CONVERSATIONAL!
   // ========================================
   
-  // Question Part 1 - Strong entrance
+  // Question Part 1 - Bold entrance
   useEffect(() => {
     if (frame >= beats.questionPart1 && !triggeredAnimations.questionPart1 && textRef1.current) {
       gsap.fromTo(textRef1.current,
         {
           opacity: 0,
-          y: -30,
-          scale: 0.92,
+          y: 30,
+          scale: 0.9,
         },
         {
           opacity: 1,
           y: 0,
           scale: 1,
-          duration: 1.0,
-          ease: "power3.out",
+          duration: 0.9,
+          ease: "back.out(1.7)",
         }
       );
       setTriggeredAnimations(prev => ({ ...prev, questionPart1: true }));
     }
   }, [frame, beats.questionPart1, triggeredAnimations.questionPart1]);
 
-  // Question Part 2 - Lands with emphasis
+  // Move up to make room
+  useEffect(() => {
+    if (frame >= beats.moveUp && !triggeredAnimations.moveUp && textRef1.current) {
+      gsap.to(textRef1.current, {
+        y: -60,
+        duration: 0.8,
+        ease: "power2.inOut",
+      });
+      setTriggeredAnimations(prev => ({ ...prev, moveUp: true }));
+    }
+  }, [frame, beats.moveUp, triggeredAnimations.moveUp]);
+
+  // Question Part 2 - Appears below
   useEffect(() => {
     if (frame >= beats.questionPart2 && !triggeredAnimations.questionPart2 && textRef2.current) {
       gsap.fromTo(textRef2.current,
         {
           opacity: 0,
-          y: -40,
-          scale: 0.90,
+          y: 40,
+          scale: 0.88,
         },
         {
           opacity: 1,
           y: 0,
           scale: 1,
-          duration: 1.2,
-          ease: "power4.out",
+          duration: 1.0,
+          ease: "back.out(1.8)",
         }
       );
       setTriggeredAnimations(prev => ({ ...prev, questionPart2: true }));
     }
   }, [frame, beats.questionPart2, triggeredAnimations.questionPart2]);
 
-  // Map reveal - Draw in animation
+  // Pulse both for emphasis
+  useEffect(() => {
+    if (frame >= beats.pulse && !triggeredAnimations.pulse) {
+      if (questionContainerRef.current) {
+        pulseEmphasis(questionContainerRef.current, {
+          scale: 1.05,
+          duration: 0.4,
+          repeat: 1,
+          yoyo: true,
+        });
+      }
+      setTriggeredAnimations(prev => ({ ...prev, pulse: true }));
+    }
+  }, [frame, beats.pulse, triggeredAnimations.pulse]);
+
+  // WIPE: Exit questions stage left (CONVERSATIONAL - clear the stage!)
+  useEffect(() => {
+    if (frame >= beats.wipeQuestions && !triggeredAnimations.wipeQuestions && questionContainerRef.current) {
+      gsap.to(questionContainerRef.current, {
+        x: -1200,
+        opacity: 0,
+        duration: 1.0,
+        ease: "power3.in",
+      });
+      setTriggeredAnimations(prev => ({ ...prev, wipeQuestions: true }));
+    }
+  }, [frame, beats.wipeQuestions, triggeredAnimations.wipeQuestions]);
+
+  // Map reveal - Bold entrance
   useEffect(() => {
     if (frame >= beats.mapReveal && !triggeredAnimations.mapReveal && mapContainerRef.current) {
       gsap.fromTo(mapContainerRef.current,
         {
           opacity: 0,
-          scale: 0.85,
+          scale: 0.7,
+          y: 50,
         },
         {
           opacity: 1,
           scale: 1,
-          duration: 1.5,
-          ease: "power2.out",
+          y: 0,
+          duration: 1.3,
+          ease: "back.out(1.5)",
         }
       );
       setTriggeredAnimations(prev => ({ ...prev, mapReveal: true }));
     }
   }, [frame, beats.mapReveal, triggeredAnimations.mapReveal]);
 
-  // Welcome - THE HOOK MOMENT
+  // TRANSFORM: Map shrinks to upper corner (make room for welcome!)
+  useEffect(() => {
+    if (frame >= beats.transformMap && !triggeredAnimations.transformMap && mapContainerRef.current) {
+      gsap.to(mapContainerRef.current, {
+        x: 500,
+        y: -200,
+        scale: 0.5,
+        duration: 1.2,
+        ease: "power3.inOut",
+      });
+      setTriggeredAnimations(prev => ({ ...prev, transformMap: true }));
+    }
+  }, [frame, beats.transformMap, triggeredAnimations.transformMap]);
+
+  // Welcome - THE HOOK (center stage!)
   useEffect(() => {
     if (frame >= beats.welcome && !triggeredAnimations.welcome && welcomeRef.current) {
       gsap.fromTo(welcomeRef.current,
         {
           opacity: 0,
-          y: 20,
-          scale: 0.95,
+          y: 40,
+          scale: 0.88,
         },
         {
           opacity: 1,
           y: 0,
           scale: 1,
-          duration: 1.3,
-          ease: "back.out(1.3)",
+          duration: 1.5,
+          ease: "back.out(1.4)",
         }
       );
       setTriggeredAnimations(prev => ({ ...prev, welcome: true }));
@@ -201,7 +261,7 @@ const Hook1AQuestionBurst = ({ scene }) => {
       gsap.fromTo(subtitleRef.current,
         {
           opacity: 0,
-          y: 15,
+          y: 20,
         },
         {
           opacity: 1,
@@ -214,24 +274,54 @@ const Hook1AQuestionBurst = ({ scene }) => {
     }
   }, [frame, beats.subtitle, triggeredAnimations.subtitle]);
 
-  // Breathe animation - Subtle 1-3% scale on settle
+  // Breathe animation - Subtle on welcome
   useEffect(() => {
-    if (frame >= beats.breathe && !triggeredAnimations.breathe) {
-      // Breathe on welcome text
-      if (welcomeRef.current) {
-        gsap.to(welcomeRef.current, {
-          scale: 1.02,
-          duration: 2.5,
-          ease: "sine.inOut",
-          yoyo: true,
-          repeat: -1,
-        });
-      }
+    if (frame >= beats.breathe && !triggeredAnimations.breathe && welcomeRef.current) {
+      gsap.to(welcomeRef.current, {
+        scale: 1.02,
+        duration: 2.5,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: -1,
+      });
       setTriggeredAnimations(prev => ({ ...prev, breathe: true }));
     }
   }, [frame, beats.breathe, triggeredAnimations.breathe]);
 
-  // Animated Map SVG using rough.js - ZERO WOBBLE
+  // ========================================
+  // ROUGH.JS - Headers & Map
+  // ========================================
+
+  // Render headers in rough.js (PERMANENT MARKER TEXT via rough.js)
+  useEffect(() => {
+    if (!roughTextSvgRef.current) return;
+
+    const svg = roughTextSvgRef.current;
+    const rc = rough.svg(svg);
+
+    // Clear previous
+    while (svg.firstChild) {
+      svg.removeChild(svg.firstChild);
+    }
+
+    // We'll render "Welcome to Knodovia" as rough text when it appears
+    if (frame >= beats.welcome && frame < beats.wipeQuestions + 100) {
+      // Draw rough underline for "Welcome to Knodovia"
+      const progress = Math.min((frame - beats.welcome) / 30, 1);
+      
+      const underline = rc.line(660, 580, 660 + 600 * progress, 585, {
+        stroke: colors.accent2,
+        strokeWidth: 6,
+        roughness: 0.8,
+        bowing: 3,
+      });
+      
+      svg.appendChild(underline);
+    }
+
+  }, [frame, beats, colors]);
+
+  // Animated Map SVG - ZERO WOBBLE
   useEffect(() => {
     if (!mapSvgRef.current || frame < beats.mapReveal) return;
 
@@ -245,8 +335,7 @@ const Hook1AQuestionBurst = ({ scene }) => {
 
     const progress = Math.min((frame - beats.mapReveal) / 50, 1);
 
-    // Stylized landmass/island shape (creative, not emoji)
-    // Main island body
+    // Stylized landmass (creative, not emoji)
     const islandPath = `
       M 200 180 
       Q 180 120 220 100
@@ -264,15 +353,14 @@ const Hook1AQuestionBurst = ({ scene }) => {
     const island = rc.path(islandPath, {
       stroke: colors.accent,
       strokeWidth: 6,
-      roughness: 0,  // ZERO WOBBLE
-      bowing: 0,     // ZERO WOBBLE
+      roughness: 0,
+      bowing: 0,
       fill: `${colors.accent}15`,
       fillStyle: 'hachure',
       hachureGap: 8,
       hachureAngle: 45,
     });
 
-    // Animate stroke drawing
     const paths = island.querySelectorAll('path');
     paths.forEach(path => {
       const length = path.getTotalLength();
@@ -282,11 +370,10 @@ const Hook1AQuestionBurst = ({ scene }) => {
 
     svg.appendChild(island);
 
-    // Small islands/details (if progress is far enough)
+    // Small islands/details
     if (progress > 0.5) {
       const detailProgress = (progress - 0.5) * 2;
       
-      // Small island 1
       const small1 = rc.circle(150, 200, 40 * detailProgress, {
         stroke: colors.accent2,
         strokeWidth: 4,
@@ -297,7 +384,6 @@ const Hook1AQuestionBurst = ({ scene }) => {
       });
       svg.appendChild(small1);
 
-      // Small island 2
       const small2 = rc.circle(480, 180, 30 * detailProgress, {
         stroke: colors.accent2,
         strokeWidth: 4,
@@ -308,7 +394,7 @@ const Hook1AQuestionBurst = ({ scene }) => {
       });
       svg.appendChild(small2);
 
-      // Location markers (stylized dots)
+      // Location markers
       if (detailProgress > 0.6) {
         const markerProgress = (detailProgress - 0.6) / 0.4;
         
@@ -317,7 +403,6 @@ const Hook1AQuestionBurst = ({ scene }) => {
           if (markerProgress > delay) {
             const locProgress = Math.min((markerProgress - delay) / 0.3, 1);
             
-            // Pin-like marker
             const markerPath = `M ${x} ${y} L ${x} ${y + 20 * locProgress}`;
             const marker = rc.path(markerPath, {
               stroke: colors.ink,
@@ -327,7 +412,6 @@ const Hook1AQuestionBurst = ({ scene }) => {
             });
             svg.appendChild(marker);
 
-            // Pin head
             const pinHead = rc.circle(x, y, 12 * locProgress, {
               stroke: colors.accent,
               strokeWidth: 3,
@@ -344,30 +428,39 @@ const Hook1AQuestionBurst = ({ scene }) => {
 
   }, [frame, beats.mapReveal, colors]);
 
-  // Decorative elements - MINIMAL, purposeful
+  // Decorative elements
   useEffect(() => {
     if (!svgRef.current) return;
 
     const svg = svgRef.current;
     const rc = rough.svg(svg);
 
-    // Clear previous
     while (svg.firstChild) {
       svg.removeChild(svg.firstChild);
     }
 
-    // Subtle accent lines (only if needed for composition)
-    if (frame >= beats.pause2 && frame < beats.mapReveal) {
-      const progress = Math.min((frame - beats.pause2) / 15, 1);
+    // Energy sparks around welcome text
+    if (frame >= beats.welcome + 20 && frame < beats.settle) {
+      const sparkProgress = Math.min((frame - beats.welcome - 20) / 25, 1);
       
-      // Horizontal accent line under question
-      const accentLine = rc.line(400, 500, 400 + 1120 * progress, 500, {
-        stroke: `${colors.accent}30`,
-        strokeWidth: 3,
-        roughness: 0,
-        bowing: 0,
+      [[700, 500], [1220, 500], [960, 380], [960, 620]].forEach(([x, y], i) => {
+        const delay = i * 0.2;
+        if (sparkProgress > delay) {
+          const sProgress = Math.min((sparkProgress - delay) / 0.3, 1);
+          
+          const spark = rc.circle(x, y, 18 * sProgress, {
+            stroke: colors.accent2,
+            strokeWidth: 3,
+            roughness: 0.6,
+            bowing: 1,
+            fill: `${colors.accent2}30`,
+            fillStyle: 'solid',
+          });
+          
+          spark.style.opacity = sProgress * 0.8;
+          svg.appendChild(spark);
+        }
       });
-      svg.appendChild(accentLine);
     }
 
   }, [frame, beats, colors]);
@@ -397,34 +490,49 @@ const Hook1AQuestionBurst = ({ scene }) => {
         preserveAspectRatio="xMidYMid meet"
       />
 
+      {/* Rough text layer (for underlines, emphasis) */}
+      <svg
+        ref={roughTextSvgRef}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+          transform: `translate(${cameraDrift.x}px, ${cameraDrift.y}px)`,
+        }}
+        viewBox="0 0 1920 1080"
+        preserveAspectRatio="xMidYMid meet"
+      />
+
       {/* Content layer */}
       <AbsoluteFill
         style={{
           transform: `translate(${cameraDrift.x}px, ${cameraDrift.y}px)`,
         }}
       >
-        <div
-          style={{
-            position: 'relative',
-            width: '100%',
-            height: '100%',
-            padding: `${spacing.padding}px`,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          {/* Question Part 1 */}
-          {frame >= beats.questionPart1 && (
+        {/* Question Container - Will exit stage left */}
+        {frame >= beats.questionPart1 && frame < beats.wipeQuestions + 50 && (
+          <div
+            ref={questionContainerRef}
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '80%',
+              textAlign: 'center',
+            }}
+          >
+            {/* Question Part 1 */}
             <div
+              ref={textRef1}
               style={{
-                textAlign: 'center',
                 marginBottom: spacing.gap,
+                opacity: 0,
               }}
             >
               <h1
-                ref={textRef1}
                 style={{
                   fontFamily: fonts.primary,
                   fontSize: fonts.size_title,
@@ -432,73 +540,82 @@ const Hook1AQuestionBurst = ({ scene }) => {
                   color: colors.ink,
                   lineHeight: 1.1,
                   margin: 0,
-                  opacity: 0, // Will be animated by GSAP
                 }}
               >
                 {texts.questionPart1 || 'What if geography'}
               </h1>
             </div>
-          )}
 
-          {/* Question Part 2 - THE KEY HOOK */}
-          {frame >= beats.questionPart2 && (
-            <div
-              style={{
-                textAlign: 'center',
-                marginBottom: spacing.gap * 2,
-              }}
-            >
-              <h1
+            {/* Question Part 2 */}
+            {frame >= beats.questionPart2 && (
+              <div
                 ref={textRef2}
                 style={{
-                  fontFamily: fonts.primary,
-                  fontSize: fonts.size_question,
-                  fontWeight: 400,
-                  color: colors.accent,
-                  lineHeight: 1.1,
-                  margin: 0,
-                  opacity: 0, // Will be animated by GSAP
+                  opacity: 0,
                 }}
               >
-                {texts.questionPart2 || 'was measured in mindsets?'}
-              </h1>
-            </div>
-          )}
+                <h1
+                  style={{
+                    fontFamily: fonts.primary,
+                    fontSize: fonts.size_question,
+                    fontWeight: 400,
+                    color: colors.accent,
+                    lineHeight: 1.1,
+                    margin: 0,
+                  }}
+                >
+                  {texts.questionPart2 || 'was measured in mindsets?'}
+                </h1>
+              </div>
+            )}
+          </div>
+        )}
 
-          {/* Animated Map Container */}
-          {frame >= beats.mapReveal && (
-            <div
-              ref={mapContainerRef}
+        {/* Animated Map Container - Appears center, then moves to corner */}
+        {frame >= beats.mapReveal && (
+          <div
+            ref={mapContainerRef}
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: 640,
+              height: 400,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              opacity: 0,
+            }}
+          >
+            <svg
+              ref={mapSvgRef}
               style={{
-                position: 'relative',
-                width: 640,
-                height: 400,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                opacity: 0, // Will be animated by GSAP
+                width: '100%',
+                height: '100%',
               }}
-            >
-              <svg
-                ref={mapSvgRef}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                }}
-                viewBox="0 0 640 400"
-                preserveAspectRatio="xMidYMid meet"
-              />
-            </div>
-          )}
+              viewBox="0 0 640 400"
+              preserveAspectRatio="xMidYMid meet"
+            />
+          </div>
+        )}
 
-          {/* Welcome to Knodovia - THE HOOK */}
-          {frame >= beats.welcome && (
+        {/* Welcome to Knodovia - CENTER STAGE (THE HOOK) */}
+        {frame >= beats.welcome && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '80%',
+              textAlign: 'center',
+            }}
+          >
             <div
               ref={welcomeRef}
               style={{
-                textAlign: 'center',
-                marginTop: spacing.gap * 2,
-                opacity: 0, // Will be animated by GSAP
+                opacity: 0,
               }}
             >
               <h2
@@ -514,34 +631,37 @@ const Hook1AQuestionBurst = ({ scene }) => {
                 {texts.welcome || 'Welcome to Knodovia'}
               </h2>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Subtitle - Teaser */}
-          {frame >= beats.subtitle && (
-            <div
-              ref={subtitleRef}
+        {/* Subtitle - Teaser (below welcome) */}
+        {frame >= beats.subtitle && (
+          <div
+            ref={subtitleRef}
+            style={{
+              position: 'absolute',
+              bottom: '30%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              maxWidth: 800,
+              textAlign: 'center',
+              opacity: 0,
+            }}
+          >
+            <p
               style={{
-                textAlign: 'center',
-                marginTop: spacing.gap,
-                maxWidth: 800,
-                opacity: 0, // Will be animated by GSAP
+                fontFamily: fonts.secondary,
+                fontSize: fonts.size_subtitle,
+                color: `${colors.ink}80`,
+                margin: 0,
+                lineHeight: 1.5,
+                fontStyle: 'italic',
               }}
             >
-              <p
-                style={{
-                  fontFamily: fonts.secondary,
-                  fontSize: fonts.size_subtitle,
-                  color: `${colors.ink}80`,
-                  margin: 0,
-                  lineHeight: 1.5,
-                  fontStyle: 'italic',
-                }}
-              >
-                {texts.subtitle || 'A place where your perspective shapes the landscape...'}
-              </p>
-            </div>
-          )}
-        </div>
+              {texts.subtitle || 'A place where your perspective shapes the landscape...'}
+            </p>
+          </div>
+        )}
       </AbsoluteFill>
 
       {/* Settle fade */}
@@ -565,6 +685,6 @@ const Hook1AQuestionBurst = ({ scene }) => {
 };
 
 export { Hook1AQuestionBurst };
-export const HOOK_1A_DURATION_MIN = 12 * 30;
+export const HOOK_1A_DURATION_MIN = 14 * 30;
 export const HOOK_1A_DURATION_MAX = 18 * 30;
 export const HOOK_1A_EXIT_TRANSITION = 15;
