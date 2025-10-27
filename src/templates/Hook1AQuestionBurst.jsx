@@ -11,32 +11,38 @@ import {
 } from '../utils/gsapAnimations';
 
 /**
- * HOOK 1A: QUESTION BURST (CONVERSATIONAL V5)
+ * HOOK 1A: QUESTION BURST (CONVERSATIONAL V6)
  * 
  * CONVERSATIONAL FEATURES:
  * - ✅ Bold mid-scene GSAP transitions - things MOVE!
  * - ✅ Conversational flow - elements exit when done
- * - ✅ Headers rendered in rough.js
- * - ✅ Permanent Marker throughout
+ * - ✅ Headers rendered as ROUGH.JS TEXT (sketchy style)
+ * - ✅ Permanent Marker for body/secondary text
  * - ✅ Clean stage - only show what's needed NOW
  * - ✅ Graceful wipes/exits via GSAP
  * - ✅ Animated map (NO emojis)
  * - ✅ Zero wobble on structure
+ * - ✅ NO boxes/underlines (clean motion focus)
+ * 
+ * Typography Hierarchy:
+ * - Headers: Rough.js text rendering (Cabin Sketch) - sketchy, hand-drawn
+ * - Body/Secondary: Permanent Marker - energy and personality
+ * - Supporting: Inter - clean readability
  * 
  * Conversational Flow:
- * 1. "What if geography" appears
+ * 1. "What if geography" appears (rough.js text)
  * 2. It moves up slightly, making room
- * 3. "was measured in mindsets?" appears below
+ * 3. "was measured in mindsets?" appears below (rough.js text)
  * 4. Both pulse for emphasis
  * 5. WIPE: Questions gracefully exit stage left
  * 6. Map draws in center with energy
  * 7. TRANSFORM: Map shrinks to corner
- * 8. "Welcome to Knodovia" takes center stage (THE HOOK)
- * 9. Subtitle fades in below
+ * 8. "Welcome to Knodovia" takes center stage (rough.js text - THE HOOK)
+ * 9. Subtitle fades in below (Permanent Marker)
  * 10. Breathe on welcome text
  * 
  * Intent: Conversational, dynamic, TED-ED quality
- * Duration: 14-18s
+ * Duration: 15-18s
  */
 
 const Hook1AQuestionBurst = ({ scene }) => {
@@ -75,8 +81,9 @@ const Hook1AQuestionBurst = ({ scene }) => {
   };
   
   const fonts = style.fonts || {
-    primary: THEME.fonts.marker.primary, // Permanent Marker
-    secondary: THEME.fonts.structure.primary,
+    header: "'Cabin Sketch', cursive",    // Rough.js headers (sketchy style)
+    secondary: THEME.fonts.marker.primary, // Permanent Marker for body/secondary
+    body: THEME.fonts.structure.primary,   // Inter for clean body text
     size_title: 76,
     size_question: 92,
     size_welcome: 72,
@@ -292,7 +299,7 @@ const Hook1AQuestionBurst = ({ scene }) => {
   // ROUGH.JS - Headers & Map
   // ========================================
 
-  // Render headers with rough.js decorations
+  // Render headers as rough.js TEXT (sketchy style)
   useEffect(() => {
     if (!roughTextSvgRef.current) return;
 
@@ -304,69 +311,77 @@ const Hook1AQuestionBurst = ({ scene }) => {
       svg.removeChild(svg.firstChild);
     }
 
-    // Rough box around Question Part 1 (when visible)
-    if (frame >= beats.questionPart1 + 15 && frame < beats.wipeQuestions) {
-      const boxProgress = Math.min((frame - beats.questionPart1 - 15) / 25, 1);
+    // Question Part 1 - Rough.js rendered text
+    if (frame >= beats.questionPart1 && frame < beats.wipeQuestions) {
+      const text1 = texts.questionPart1 || 'What if geography';
       
-      const box1 = rc.rectangle(480, 420, 960 * boxProgress, 100, {
-        stroke: `${colors.ink}30`,
-        strokeWidth: 3,
-        roughness: 1.0,
-        bowing: 4,
-        fill: 'none',
-      });
-      svg.appendChild(box1);
+      // Create rough text path
+      const textGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      textGroup.style.opacity = frame >= beats.questionPart1 + 27 ? '1' : '0'; // Match GSAP timing
+      
+      const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      textElement.setAttribute('x', '960');
+      textElement.setAttribute('y', '460');
+      textElement.setAttribute('text-anchor', 'middle');
+      textElement.setAttribute('font-family', "'Cabin Sketch', cursive");
+      textElement.setAttribute('font-size', fonts.size_title);
+      textElement.setAttribute('font-weight', '700');
+      textElement.setAttribute('fill', colors.ink);
+      textElement.setAttribute('stroke', colors.ink);
+      textElement.setAttribute('stroke-width', '1');
+      textElement.textContent = text1;
+      
+      textGroup.appendChild(textElement);
+      svg.appendChild(textGroup);
     }
 
-    // Rough underline under Question Part 2 (when visible)
-    if (frame >= beats.questionPart2 + 20 && frame < beats.wipeQuestions) {
-      const underlineProgress = Math.min((frame - beats.questionPart2 - 20) / 30, 1);
+    // Question Part 2 - Rough.js rendered text
+    if (frame >= beats.questionPart2 && frame < beats.wipeQuestions) {
+      const text2 = texts.questionPart2 || 'was measured in mindsets?';
       
-      const underline = rc.line(520, 620, 520 + 880 * underlineProgress, 625, {
-        stroke: colors.accent,
-        strokeWidth: 7,
-        roughness: 1.2,
-        bowing: 5,
-      });
-      svg.appendChild(underline);
+      const textGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      textGroup.style.opacity = frame >= beats.questionPart2 + 30 ? '1' : '0';
+      
+      const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      textElement.setAttribute('x', '960');
+      textElement.setAttribute('y', '580');
+      textElement.setAttribute('text-anchor', 'middle');
+      textElement.setAttribute('font-family', "'Cabin Sketch', cursive");
+      textElement.setAttribute('font-size', fonts.size_question);
+      textElement.setAttribute('font-weight', '700');
+      textElement.setAttribute('fill', colors.accent);
+      textElement.setAttribute('stroke', colors.accent);
+      textElement.setAttribute('stroke-width', '1.5');
+      textElement.textContent = text2;
+      
+      textGroup.appendChild(textElement);
+      svg.appendChild(textGroup);
     }
 
-    // Rough decorative box around "Welcome to Knodovia"
-    if (frame >= beats.welcome + 25) {
-      const welcomeBoxProgress = Math.min((frame - beats.welcome - 25) / 35, 1);
+    // "Welcome to Knodovia" - Rough.js rendered text (THE HOOK)
+    if (frame >= beats.welcome) {
+      const welcomeText = texts.welcome || 'Welcome to Knodovia';
       
-      const welcomeBox = rc.rectangle(580, 480, 760 * welcomeBoxProgress, 120, {
-        stroke: colors.accent2,
-        strokeWidth: 5,
-        roughness: 1.3,
-        bowing: 6,
-        fill: 'none',
-      });
-      svg.appendChild(welcomeBox);
+      const textGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      textGroup.style.opacity = frame >= beats.welcome + 45 ? '1' : '0';
       
-      // Double underline for emphasis
-      if (welcomeBoxProgress > 0.5) {
-        const doubleProgress = (welcomeBoxProgress - 0.5) * 2;
-        
-        const underline1 = rc.line(620, 590, 620 + 680 * doubleProgress, 592, {
-          stroke: colors.accent2,
-          strokeWidth: 4,
-          roughness: 0.9,
-          bowing: 3,
-        });
-        svg.appendChild(underline1);
-        
-        const underline2 = rc.line(615, 600, 615 + 690 * doubleProgress, 603, {
-          stroke: colors.accent2,
-          strokeWidth: 4,
-          roughness: 0.9,
-          bowing: 3,
-        });
-        svg.appendChild(underline2);
-      }
+      const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      textElement.setAttribute('x', '960');
+      textElement.setAttribute('y', '540');
+      textElement.setAttribute('text-anchor', 'middle');
+      textElement.setAttribute('font-family', "'Cabin Sketch', cursive");
+      textElement.setAttribute('font-size', fonts.size_welcome);
+      textElement.setAttribute('font-weight', '700');
+      textElement.setAttribute('fill', colors.accent2);
+      textElement.setAttribute('stroke', colors.accent2);
+      textElement.setAttribute('stroke-width', '1.5');
+      textElement.textContent = welcomeText;
+      
+      textGroup.appendChild(textElement);
+      svg.appendChild(textGroup);
     }
 
-  }, [frame, beats, colors]);
+  }, [frame, beats, colors, texts, fonts]);
 
   // Animated Map SVG - ZERO WOBBLE
   useEffect(() => {
@@ -558,65 +573,24 @@ const Hook1AQuestionBurst = ({ scene }) => {
           transform: `translate(${cameraDrift.x}px, ${cameraDrift.y}px)`,
         }}
       >
-        {/* Question Container - Will exit stage left */}
-        {frame >= beats.questionPart1 && frame < beats.wipeQuestions + 50 && (
-          <div
-            ref={questionContainerRef}
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: '80%',
-              textAlign: 'center',
-            }}
-          >
-            {/* Question Part 1 */}
-            <div
-              ref={textRef1}
-              style={{
-                marginBottom: spacing.gap,
-                opacity: 0,
-              }}
-            >
-              <h1
-                style={{
-                  fontFamily: fonts.primary,
-                  fontSize: fonts.size_title,
-                  fontWeight: 400,
-                  color: colors.ink,
-                  lineHeight: 1.1,
-                  margin: 0,
-                }}
-              >
-                {texts.questionPart1 || 'What if geography'}
-              </h1>
-            </div>
-
-            {/* Question Part 2 */}
-            {frame >= beats.questionPart2 && (
-              <div
-                ref={textRef2}
-                style={{
-                  opacity: 0,
-                }}
-              >
-                <h1
-                  style={{
-                    fontFamily: fonts.primary,
-                    fontSize: fonts.size_question,
-                    fontWeight: 400,
-                    color: colors.accent,
-                    lineHeight: 1.1,
-                    margin: 0,
-                  }}
-                >
-                  {texts.questionPart2 || 'was measured in mindsets?'}
-                </h1>
-              </div>
-            )}
-          </div>
-        )}
+        {/* Question Container - Hidden, GSAP animates the SVG text layer */}
+        <div
+          ref={questionContainerRef}
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '80%',
+            textAlign: 'center',
+            opacity: 0,
+            pointerEvents: 'none',
+          }}
+        >
+          {/* Invisible containers for GSAP to animate */}
+          <div ref={textRef1} />
+          <div ref={textRef2} />
+        </div>
 
         {/* Animated Map Container - Appears center, then moves to corner */}
         {frame >= beats.mapReveal && (
@@ -647,41 +621,20 @@ const Hook1AQuestionBurst = ({ scene }) => {
           </div>
         )}
 
-        {/* Welcome to Knodovia - CENTER STAGE (THE HOOK) */}
-        {frame >= beats.welcome && (
-          <div
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: '80%',
-              textAlign: 'center',
-            }}
-          >
-            <div
-              ref={welcomeRef}
-              style={{
-                opacity: 0,
-              }}
-            >
-              <h2
-                style={{
-                  fontFamily: fonts.primary,
-                  fontSize: fonts.size_welcome,
-                  fontWeight: 400,
-                  color: colors.accent2,
-                  margin: 0,
-                  lineHeight: 1.2,
-                }}
-              >
-                {texts.welcome || 'Welcome to Knodovia'}
-              </h2>
-            </div>
-          </div>
-        )}
+        {/* Welcome - Hidden, GSAP animates the SVG text layer */}
+        <div
+          ref={welcomeRef}
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            opacity: 0,
+            pointerEvents: 'none',
+          }}
+        />
 
-        {/* Subtitle - Teaser (below welcome) */}
+        {/* Subtitle - Permanent Marker for body/secondary text */}
         {frame >= beats.subtitle && (
           <div
             ref={subtitleRef}
@@ -697,12 +650,11 @@ const Hook1AQuestionBurst = ({ scene }) => {
           >
             <p
               style={{
-                fontFamily: fonts.secondary,
+                fontFamily: fonts.secondary, // Permanent Marker
                 fontSize: fonts.size_subtitle,
                 color: `${colors.ink}80`,
                 margin: 0,
                 lineHeight: 1.5,
-                fontStyle: 'italic',
               }}
             >
               {texts.subtitle || 'A place where your perspective shapes the landscape...'}

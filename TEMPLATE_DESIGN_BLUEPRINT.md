@@ -106,38 +106,93 @@ Never zoom or pan dramatically - let content do the moving.
 
 ### **A. Typography Hierarchy**
 
-#### Font Usage:
-- **Headers/Titles**: Permanent Marker (brand energy)
-- **Body/Supporting**: Inter or DM Sans (clarity)
-- **Emphasis**: Permanent Marker (draws attention)
+#### Font Usage - THE CORRECT WAY:
+- **Headers/Titles**: **Rough.js TEXT RENDERING** (Cabin Sketch) - sketchy, hand-drawn style
+- **Body/Secondary**: **Permanent Marker** - energy, personality, brand voice
+- **Supporting/Clean**: **Inter or DM Sans** - clarity, readability
+
+#### Why This Matters:
+- Rough.js creates **actual sketchy text** (like hand-drawn headers)
+- Permanent Marker provides **personality** for body content
+- Clean fonts provide **readability** where needed
 
 #### Size Hierarchy:
 - **Hero text**: 72-92px (main hook)
 - **Section headers**: 48-64px
-- **Body text**: 24-32px
-- **Supporting text**: 18-24px
+- **Body text**: 24-32px (Permanent Marker)
+- **Supporting text**: 18-24px (Inter/DM Sans)
 
-### **B. Rough.js Decorations**
+#### Implementation:
+```javascript
+// Fonts structure
+const fonts = {
+  header: "'Cabin Sketch', cursive",      // For rough.js rendering
+  secondary: "'Permanent Marker', cursive", // For body/secondary
+  body: "'Inter', sans-serif",             // For clean supporting text
+};
+```
 
-Headers must have rough.js visual emphasis.
+### **B. Rough.js Text Rendering**
 
-#### Decoration Types:
-1. **Boxes**: Frame important headers
-2. **Underlines**: Single or double for emphasis
-3. **Circles**: Around key numbers or icons
+Headers are rendered as **SVG text** with sketchy styling (NOT decorations).
+
+#### Text Rendering Pattern:
+```javascript
+const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+textElement.setAttribute('x', '960');
+textElement.setAttribute('y', '540');
+textElement.setAttribute('text-anchor', 'middle');
+textElement.setAttribute('font-family', "'Cabin Sketch', cursive");
+textElement.setAttribute('font-size', '72');
+textElement.setAttribute('font-weight', '700');
+textElement.setAttribute('fill', color);
+textElement.setAttribute('stroke', color);
+textElement.setAttribute('stroke-width', '1.5');
+textElement.textContent = 'Your Header Text';
+```
+
+#### When to Use Rough.js TEXT:
+- ✅ Main headers
+- ✅ Section titles
+- ✅ Key hook phrases
+- ✅ Anything that needs visual weight
+
+#### When to Use Permanent Marker:
+- ✅ Body text
+- ✅ Subtitles
+- ✅ Supporting information
+- ✅ Secondary emphasis
+
+#### When to Use Clean Fonts (Inter/DM Sans):
+- ✅ Long-form descriptions
+- ✅ Data/numbers
+- ✅ Fine print
+- ✅ Where readability is paramount
+
+### **C. Rough.js Annotations (When Needed)**
+
+**IMPORTANT**: Not all templates need boxes/underlines!
+
+For templates that DO need annotations (e.g., Reflect 4A with emphasis circles):
+
+#### Annotation Types:
+1. **Boxes**: Frame important content (needs proper sizing)
+2. **Underlines**: Emphasis beneath text (needs alignment)
+3. **Circles**: Around numbers or icons
 4. **Arrows**: Show direction or flow
 
-**Timing**: Decorations appear 0.5-1.0s AFTER the text lands.
+#### Due Diligence Required:
+- ⚠️ **Measure text bounds** to avoid overlaps
+- ⚠️ **Test with different text lengths**
+- ⚠️ **Ensure decorations don't obscure content**
+- ⚠️ **Time decorations to appear AFTER text lands** (0.5-1.0s delay)
 
-**Example:**
-```javascript
-// Text appears at frame 100
-// Decoration starts drawing at frame 115-130
-if (frame >= beats.welcome + 25) {
-  const boxProgress = Math.min((frame - beats.welcome - 25) / 35, 1);
-  // Draw box around welcome text
-}
-```
+#### Hook1A Approach:
+- ✅ NO boxes or underlines
+- ✅ Focus on clean motion and sequencing
+- ✅ Let rough.js TEXT do the work
+
+**Rule**: Only add annotations if they serve the pedagogy. Motion and typography should carry most templates.
 
 ### **C. Color Philosophy**
 
@@ -309,22 +364,28 @@ const beats = {
 - Minimum breathing room: 0.8s (24 frames)
 - Standard breathing room: 1.0-1.2s (30-36 frames)
 
-### **C. Rough.js Decoration Pattern**
+### **C. Rough.js Text Rendering Pattern**
 
 ```javascript
-// Decoration appears AFTER text lands
-if (frame >= beats.textAppears + 25) { // 25 frames = ~0.8s delay
-  const progress = Math.min((frame - beats.textAppears - 25) / 35, 1);
+// Render header as rough.js TEXT
+if (frame >= beats.headerAppears) {
+  const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  textElement.setAttribute('x', '960');
+  textElement.setAttribute('y', '540');
+  textElement.setAttribute('text-anchor', 'middle');
+  textElement.setAttribute('font-family', "'Cabin Sketch', cursive");
+  textElement.setAttribute('font-size', '72');
+  textElement.setAttribute('font-weight', '700');
+  textElement.setAttribute('fill', colors.accent);
+  textElement.setAttribute('stroke', colors.accent);
+  textElement.setAttribute('stroke-width', '1.5');
+  textElement.textContent = headerText;
   
-  const decoration = rc.rectangle(x, y, width * progress, height, {
-    stroke: color,
-    strokeWidth: 5,
-    roughness: 1.2,  // Rough for emphasis
-    bowing: 5,
-    fill: 'none',
-  });
-  
-  svg.appendChild(decoration);
+  // Control visibility with GSAP timing
+  const textGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  textGroup.style.opacity = frame >= beats.headerAppears + 30 ? '1' : '0';
+  textGroup.appendChild(textElement);
+  svg.appendChild(textGroup);
 }
 ```
 
@@ -358,11 +419,11 @@ This keeps the DOM clean and improves performance.
 - [ ] Camera drift is subtle (±2px max)
 
 #### ✅ Visual Quality
-- [ ] Headers use Permanent Marker font
-- [ ] Body text uses Inter/DM Sans
-- [ ] Rough.js decorations on all headers (boxes, underlines, etc.)
-- [ ] Zero wobble on structural elements
-- [ ] Strategic rough on emphasis elements
+- [ ] Headers rendered as rough.js TEXT (Cabin Sketch, sketchy style)
+- [ ] Body/secondary text uses Permanent Marker
+- [ ] Supporting text uses Inter/DM Sans
+- [ ] Annotations only if pedagogically necessary (with proper diligence)
+- [ ] Zero wobble on structural elements (maps, frames)
 - [ ] Color palette follows brand guidelines
 
 #### ✅ Conversational Flow
@@ -401,10 +462,10 @@ This keeps the DOM clean and improves performance.
 ### **Timing Analysis** (15 seconds total)
 
 ```
-0.6s  (18f)  → Question 1 entrance (0.9s animation)
+0.6s  (18f)  → Question 1 entrance (rough.js text, 0.9s animation)
 2.0s  (60f)  → Question 1 moves up (0.8s animation)
               [Gap: 0.6s breathing room]
-2.8s  (84f)  → Question 2 appears (1.0s animation)
+2.8s  (84f)  → Question 2 appears (rough.js text, 1.0s animation)
               [Gap: 1.4s for both to land]
 4.2s  (126f) → Pulse both (0.4s animation)
               [Gap: 1.3s breathing room]
@@ -414,9 +475,9 @@ This keeps the DOM clean and improves performance.
               [Gap: 2.5s for map to shine]
 9.0s  (270f) → Map transforms to corner (1.2s animation)
               [Gap: 1.0s breathing room]
-10.0s (300f) → Welcome center stage (1.5s animation)
+10.0s (300f) → Welcome center stage (rough.js text, 1.5s animation)
               [Gap: 2.0s for hook to land]
-12.0s (360f) → Subtitle appears (1.0s animation)
+12.0s (360f) → Subtitle appears (Permanent Marker, 1.0s animation)
               [Gap: 1.5s breathing room]
 13.5s (405f) → Breathe animation starts
 15.0s (450f) → Settle/hold
@@ -430,19 +491,19 @@ This keeps the DOM clean and improves performance.
 - Total breathing time: ~7s
 - Ratio: ~50/50 motion/breathing
 
-### **Rough.js Decoration Timeline**
+### **Typography Timeline**
 
 ```
-Question 1 lands at 0.6s
-  → Box decoration at 1.1s (+0.5s)
-Question 2 lands at 2.8s
-  → Underline at 3.5s (+0.7s)
-Welcome lands at 10.0s
-  → Box at 10.8s (+0.8s)
-  → Double underline at 11.4s (+1.4s)
+Question 1 (rough.js): 0.6s - bold, sketchy header
+Question 2 (rough.js): 2.8s - bold, sketchy header, accent color
+Welcome (rough.js): 10.0s - THE HOOK, center stage, sketchy style
+Subtitle (Permanent Marker): 12.0s - personality, energy
 ```
 
-**Pattern**: Decorations always trail text by 0.5-1.0s
+**Pattern**: 
+- Headers = Rough.js text rendering (sketchy)
+- Body = Permanent Marker (personality)
+- NO boxes or underlines (clean motion focus)
 
 ### **User Emotional Journey**
 
