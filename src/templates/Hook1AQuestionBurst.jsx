@@ -16,7 +16,7 @@ import {
  * CONVERSATIONAL FEATURES:
  * - ✅ Bold mid-scene GSAP transitions - things MOVE!
  * - ✅ Conversational flow - elements exit when done
- * - ✅ Headers rendered as ROUGH.JS TEXT (sketchy style)
+ * - ✅ Headers use Cabin Sketch font (sketchy, hand-drawn style)
  * - ✅ Permanent Marker for body/secondary text
  * - ✅ Clean stage - only show what's needed NOW
  * - ✅ Graceful wipes/exits via GSAP
@@ -25,19 +25,24 @@ import {
  * - ✅ NO boxes/underlines (clean motion focus)
  * 
  * Typography Hierarchy:
- * - Headers: Rough.js text rendering (Cabin Sketch) - sketchy, hand-drawn
+ * - Headers: Cabin Sketch font on HTML (sketchy, hand-drawn)
  * - Body/Secondary: Permanent Marker - energy and personality
  * - Supporting: Inter - clean readability
  * 
+ * How Headers Work:
+ * - HTML elements with Cabin Sketch font (gives sketchy look)
+ * - GSAP animates these HTML elements (not SVG)
+ * - This keeps motion working while achieving sketchy style
+ * 
  * Conversational Flow:
- * 1. "What if geography" appears (rough.js text)
+ * 1. "What if geography" appears (Cabin Sketch)
  * 2. It moves up slightly, making room
- * 3. "was measured in mindsets?" appears below (rough.js text)
+ * 3. "was measured in mindsets?" appears below (Cabin Sketch)
  * 4. Both pulse for emphasis
  * 5. WIPE: Questions gracefully exit stage left
  * 6. Map draws in center with energy
  * 7. TRANSFORM: Map shrinks to corner
- * 8. "Welcome to Knodovia" takes center stage (rough.js text - THE HOOK)
+ * 8. "Welcome to Knodovia" takes center stage (Cabin Sketch - THE HOOK)
  * 9. Subtitle fades in below (Permanent Marker)
  * 10. Breathe on welcome text
  * 
@@ -299,7 +304,7 @@ const Hook1AQuestionBurst = ({ scene }) => {
   // ROUGH.JS - Headers & Map
   // ========================================
 
-  // Render headers as rough.js TEXT (sketchy style)
+  // Decorative elements only (no text rendering here)
   useEffect(() => {
     if (!roughTextSvgRef.current) return;
 
@@ -311,77 +316,10 @@ const Hook1AQuestionBurst = ({ scene }) => {
       svg.removeChild(svg.firstChild);
     }
 
-    // Question Part 1 - Rough.js rendered text
-    if (frame >= beats.questionPart1 && frame < beats.wipeQuestions) {
-      const text1 = texts.questionPart1 || 'What if geography';
-      
-      // Create rough text path
-      const textGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      textGroup.style.opacity = frame >= beats.questionPart1 + 27 ? '1' : '0'; // Match GSAP timing
-      
-      const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      textElement.setAttribute('x', '960');
-      textElement.setAttribute('y', '460');
-      textElement.setAttribute('text-anchor', 'middle');
-      textElement.setAttribute('font-family', "'Cabin Sketch', cursive");
-      textElement.setAttribute('font-size', fonts.size_title);
-      textElement.setAttribute('font-weight', '700');
-      textElement.setAttribute('fill', colors.ink);
-      textElement.setAttribute('stroke', colors.ink);
-      textElement.setAttribute('stroke-width', '1');
-      textElement.textContent = text1;
-      
-      textGroup.appendChild(textElement);
-      svg.appendChild(textGroup);
-    }
+    // No decorations for Hook1A - clean motion focus
+    // This layer reserved for future templates that need annotations
 
-    // Question Part 2 - Rough.js rendered text
-    if (frame >= beats.questionPart2 && frame < beats.wipeQuestions) {
-      const text2 = texts.questionPart2 || 'was measured in mindsets?';
-      
-      const textGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      textGroup.style.opacity = frame >= beats.questionPart2 + 30 ? '1' : '0';
-      
-      const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      textElement.setAttribute('x', '960');
-      textElement.setAttribute('y', '580');
-      textElement.setAttribute('text-anchor', 'middle');
-      textElement.setAttribute('font-family', "'Cabin Sketch', cursive");
-      textElement.setAttribute('font-size', fonts.size_question);
-      textElement.setAttribute('font-weight', '700');
-      textElement.setAttribute('fill', colors.accent);
-      textElement.setAttribute('stroke', colors.accent);
-      textElement.setAttribute('stroke-width', '1.5');
-      textElement.textContent = text2;
-      
-      textGroup.appendChild(textElement);
-      svg.appendChild(textGroup);
-    }
-
-    // "Welcome to Knodovia" - Rough.js rendered text (THE HOOK)
-    if (frame >= beats.welcome) {
-      const welcomeText = texts.welcome || 'Welcome to Knodovia';
-      
-      const textGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      textGroup.style.opacity = frame >= beats.welcome + 45 ? '1' : '0';
-      
-      const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      textElement.setAttribute('x', '960');
-      textElement.setAttribute('y', '540');
-      textElement.setAttribute('text-anchor', 'middle');
-      textElement.setAttribute('font-family', "'Cabin Sketch', cursive");
-      textElement.setAttribute('font-size', fonts.size_welcome);
-      textElement.setAttribute('font-weight', '700');
-      textElement.setAttribute('fill', colors.accent2);
-      textElement.setAttribute('stroke', colors.accent2);
-      textElement.setAttribute('stroke-width', '1.5');
-      textElement.textContent = welcomeText;
-      
-      textGroup.appendChild(textElement);
-      svg.appendChild(textGroup);
-    }
-
-  }, [frame, beats, colors, texts, fonts]);
+  }, [frame, beats, colors]);
 
   // Animated Map SVG - ZERO WOBBLE
   useEffect(() => {
@@ -573,24 +511,65 @@ const Hook1AQuestionBurst = ({ scene }) => {
           transform: `translate(${cameraDrift.x}px, ${cameraDrift.y}px)`,
         }}
       >
-        {/* Question Container - Hidden, GSAP animates the SVG text layer */}
-        <div
-          ref={questionContainerRef}
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: '80%',
-            textAlign: 'center',
-            opacity: 0,
-            pointerEvents: 'none',
-          }}
-        >
-          {/* Invisible containers for GSAP to animate */}
-          <div ref={textRef1} />
-          <div ref={textRef2} />
-        </div>
+        {/* Question Container - GSAP animates these HTML elements */}
+        {frame >= beats.questionPart1 && frame < beats.wipeQuestions + 50 && (
+          <div
+            ref={questionContainerRef}
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '80%',
+              textAlign: 'center',
+            }}
+          >
+            {/* Question Part 1 - Cabin Sketch gives sketchy look */}
+            <div
+              ref={textRef1}
+              style={{
+                marginBottom: spacing.gap,
+                opacity: 0, // GSAP will animate
+              }}
+            >
+              <h1
+                style={{
+                  fontFamily: fonts.header, // Cabin Sketch (sketchy style)
+                  fontSize: fonts.size_title,
+                  fontWeight: 700,
+                  color: colors.ink,
+                  lineHeight: 1.1,
+                  margin: 0,
+                }}
+              >
+                {texts.questionPart1 || 'What if geography'}
+              </h1>
+            </div>
+
+            {/* Question Part 2 - Cabin Sketch gives sketchy look */}
+            {frame >= beats.questionPart2 && (
+              <div
+                ref={textRef2}
+                style={{
+                  opacity: 0, // GSAP will animate
+                }}
+              >
+                <h1
+                  style={{
+                    fontFamily: fonts.header, // Cabin Sketch (sketchy style)
+                    fontSize: fonts.size_question,
+                    fontWeight: 700,
+                    color: colors.accent,
+                    lineHeight: 1.1,
+                    margin: 0,
+                  }}
+                >
+                  {texts.questionPart2 || 'was measured in mindsets?'}
+                </h1>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Animated Map Container - Appears center, then moves to corner */}
         {frame >= beats.mapReveal && (
@@ -621,18 +600,39 @@ const Hook1AQuestionBurst = ({ scene }) => {
           </div>
         )}
 
-        {/* Welcome - Hidden, GSAP animates the SVG text layer */}
-        <div
-          ref={welcomeRef}
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            opacity: 0,
-            pointerEvents: 'none',
-          }}
-        />
+        {/* Welcome to Knodovia - CENTER STAGE (THE HOOK) */}
+        {frame >= beats.welcome && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '80%',
+              textAlign: 'center',
+            }}
+          >
+            <div
+              ref={welcomeRef}
+              style={{
+                opacity: 0, // GSAP will animate
+              }}
+            >
+              <h2
+                style={{
+                  fontFamily: fonts.header, // Cabin Sketch (sketchy style)
+                  fontSize: fonts.size_welcome,
+                  fontWeight: 700,
+                  color: colors.accent2,
+                  margin: 0,
+                  lineHeight: 1.2,
+                }}
+              >
+                {texts.welcome || 'Welcome to Knodovia'}
+              </h2>
+            </div>
+          </div>
+        )}
 
         {/* Subtitle - Permanent Marker for body/secondary text */}
         {frame >= beats.subtitle && (

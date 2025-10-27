@@ -132,32 +132,39 @@ const fonts = {
 };
 ```
 
-### **B. Rough.js Text Rendering**
+### **B. Sketchy Headers (Cabin Sketch Font)**
 
-Headers are rendered as **SVG text** with sketchy styling (NOT decorations).
+Headers use **Cabin Sketch font on HTML elements** to achieve sketchy, hand-drawn look.
 
-#### Text Rendering Pattern:
+**IMPORTANT**: Use Cabin Sketch on regular HTML elements (not SVG), so GSAP can animate them!
+
+#### Header Pattern:
 ```javascript
-const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-textElement.setAttribute('x', '960');
-textElement.setAttribute('y', '540');
-textElement.setAttribute('text-anchor', 'middle');
-textElement.setAttribute('font-family', "'Cabin Sketch', cursive");
-textElement.setAttribute('font-size', '72');
-textElement.setAttribute('font-weight', '700');
-textElement.setAttribute('fill', color);
-textElement.setAttribute('stroke', color);
-textElement.setAttribute('stroke-width', '1.5');
-textElement.textContent = 'Your Header Text';
+<h1
+  style={{
+    fontFamily: "'Cabin Sketch', cursive", // Sketchy style
+    fontSize: 72,
+    fontWeight: 700,
+    color: colors.accent,
+  }}
+>
+  Your Header Text
+</h1>
 ```
 
-#### When to Use Rough.js TEXT:
+#### Why This Works:
+- ✅ HTML elements can be animated by GSAP
+- ✅ Cabin Sketch provides sketchy, hand-drawn look
+- ✅ No complex SVG rendering needed
+- ✅ Maintains all motion capabilities
+
+#### When to Use Cabin Sketch (Headers):
 - ✅ Main headers
 - ✅ Section titles
 - ✅ Key hook phrases
 - ✅ Anything that needs visual weight
 
-#### When to Use Permanent Marker:
+#### When to Use Permanent Marker (Body):
 - ✅ Body text
 - ✅ Subtitles
 - ✅ Supporting information
@@ -364,30 +371,37 @@ const beats = {
 - Minimum breathing room: 0.8s (24 frames)
 - Standard breathing room: 1.0-1.2s (30-36 frames)
 
-### **C. Rough.js Text Rendering Pattern**
+### **C. Header Animation Pattern**
 
 ```javascript
-// Render header as rough.js TEXT
-if (frame >= beats.headerAppears) {
-  const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-  textElement.setAttribute('x', '960');
-  textElement.setAttribute('y', '540');
-  textElement.setAttribute('text-anchor', 'middle');
-  textElement.setAttribute('font-family', "'Cabin Sketch', cursive");
-  textElement.setAttribute('font-size', '72');
-  textElement.setAttribute('font-weight', '700');
-  textElement.setAttribute('fill', colors.accent);
-  textElement.setAttribute('stroke', colors.accent);
-  textElement.setAttribute('stroke-width', '1.5');
-  textElement.textContent = headerText;
-  
-  // Control visibility with GSAP timing
-  const textGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  textGroup.style.opacity = frame >= beats.headerAppears + 30 ? '1' : '0';
-  textGroup.appendChild(textElement);
-  svg.appendChild(textGroup);
-}
+// Header as HTML with Cabin Sketch font
+// GSAP can animate HTML elements!
+const headerRef = useRef(null);
+
+useEffect(() => {
+  if (frame >= beats.headerAppears && !triggered && headerRef.current) {
+    gsap.fromTo(headerRef.current,
+      { opacity: 0, y: 30, scale: 0.9 },
+      { opacity: 1, y: 0, scale: 1, duration: 0.9, ease: "back.out(1.7)" }
+    );
+    setTriggered(true);
+  }
+}, [frame, beats.headerAppears, triggered]);
+
+// In JSX:
+<div ref={headerRef} style={{ opacity: 0 }}>
+  <h1 style={{
+    fontFamily: "'Cabin Sketch', cursive", // Sketchy look
+    fontSize: 72,
+    fontWeight: 700,
+    color: colors.accent,
+  }}>
+    Your Header Text
+  </h1>
+</div>
 ```
+
+**Key Point**: HTML + Cabin Sketch = Sketchy look + GSAP animations work!
 
 ### **D. Conditional Rendering**
 
@@ -419,9 +433,10 @@ This keeps the DOM clean and improves performance.
 - [ ] Camera drift is subtle (±2px max)
 
 #### ✅ Visual Quality
-- [ ] Headers rendered as rough.js TEXT (Cabin Sketch, sketchy style)
+- [ ] Headers use Cabin Sketch font on HTML elements (sketchy style)
 - [ ] Body/secondary text uses Permanent Marker
 - [ ] Supporting text uses Inter/DM Sans
+- [ ] GSAP animations work on all text elements
 - [ ] Annotations only if pedagogically necessary (with proper diligence)
 - [ ] Zero wobble on structural elements (maps, frames)
 - [ ] Color palette follows brand guidelines
@@ -494,16 +509,17 @@ This keeps the DOM clean and improves performance.
 ### **Typography Timeline**
 
 ```
-Question 1 (rough.js): 0.6s - bold, sketchy header
-Question 2 (rough.js): 2.8s - bold, sketchy header, accent color
-Welcome (rough.js): 10.0s - THE HOOK, center stage, sketchy style
-Subtitle (Permanent Marker): 12.0s - personality, energy
+Question 1 (Cabin Sketch): 0.6s - bold, sketchy header, GSAP animated
+Question 2 (Cabin Sketch): 2.8s - bold, sketchy header, accent color, GSAP animated
+Welcome (Cabin Sketch): 10.0s - THE HOOK, center stage, sketchy style, GSAP animated
+Subtitle (Permanent Marker): 12.0s - personality, energy, GSAP animated
 ```
 
 **Pattern**: 
-- Headers = Rough.js text rendering (sketchy)
+- Headers = Cabin Sketch font on HTML (sketchy + animatable)
 - Body = Permanent Marker (personality)
 - NO boxes or underlines (clean motion focus)
+- ALL text animated by GSAP
 
 ### **User Emotional Journey**
 
