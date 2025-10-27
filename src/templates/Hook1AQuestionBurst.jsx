@@ -11,42 +11,41 @@ import {
 } from '../utils/gsapAnimations';
 
 /**
- * HOOK 1A: QUESTION BURST (CONVERSATIONAL V6)
+ * HOOK 1A: QUESTION BURST (CONVERSATIONAL V7 - ROUGH.JS SKETCH STYLE)
  * 
  * CONVERSATIONAL FEATURES:
  * - ✅ Bold mid-scene GSAP transitions - things MOVE!
  * - ✅ Conversational flow - elements exit when done
- * - ✅ Headers use Cabin Sketch font (sketchy, hand-drawn style)
+ * - ✅ Headers rendered in ROUGH.JS SKETCH STYLE (true hand-drawn look)
  * - ✅ Permanent Marker for body/secondary text
  * - ✅ Clean stage - only show what's needed NOW
  * - ✅ Graceful wipes/exits via GSAP
  * - ✅ Animated map (NO emojis)
- * - ✅ Zero wobble on structure
- * - ✅ NO boxes/underlines (clean motion focus)
+ * - ✅ Zero wobble on structure maps, rough on text
  * 
  * Typography Hierarchy:
- * - Headers: Cabin Sketch font on HTML (sketchy, hand-drawn)
+ * - Headers: Rough.js SVG text (Cabin Sketch + rough edges)
  * - Body/Secondary: Permanent Marker - energy and personality
  * - Supporting: Inter - clean readability
  * 
- * How Headers Work:
- * - HTML elements with Cabin Sketch font (gives sketchy look)
- * - GSAP animates these HTML elements (not SVG)
- * - This keeps motion working while achieving sketchy style
+ * How Headers Work (THE KEY):
+ * - Rough.js renders SVG text with sketchy effects
+ * - GSAP animates the ENTIRE SVG LAYER (not individual elements)
+ * - This keeps ALL motion working while achieving true sketchy style
  * 
  * Conversational Flow:
- * 1. "What if geography" appears (Cabin Sketch)
- * 2. It moves up slightly, making room
- * 3. "was measured in mindsets?" appears below (Cabin Sketch)
- * 4. Both pulse for emphasis
- * 5. WIPE: Questions gracefully exit stage left
+ * 1. "What if geography" appears (rough.js sketch)
+ * 2. SVG layer moves up slightly, making room
+ * 3. "was measured in mindsets?" appears below (rough.js sketch)
+ * 4. SVG layer pulses for emphasis
+ * 5. WIPE: SVG layer exits stage left
  * 6. Map draws in center with energy
  * 7. TRANSFORM: Map shrinks to corner
- * 8. "Welcome to Knodovia" takes center stage (Cabin Sketch - THE HOOK)
+ * 8. SVG layer resets, "Welcome to Knodovia" appears (rough.js sketch - THE HOOK)
  * 9. Subtitle fades in below (Permanent Marker)
- * 10. Breathe on welcome text
+ * 10. Breathe animation on SVG layer
  * 
- * Intent: Conversational, dynamic, TED-ED quality
+ * Intent: Conversational, dynamic, TED-ED quality with true sketchy text
  * Duration: 15-18s
  */
 
@@ -129,19 +128,18 @@ const Hook1AQuestionBurst = ({ scene }) => {
   // GSAP ANIMATION TRIGGERS - CONVERSATIONAL!
   // ========================================
   
-  // Question Part 1 - Bold entrance
+  // Question Part 1 - Bold entrance (animate SVG layer)
   useEffect(() => {
-    if (frame >= beats.questionPart1 && !triggeredAnimations.questionPart1 && textRef1.current) {
-      gsap.fromTo(textRef1.current,
+    if (frame >= beats.questionPart1 && !triggeredAnimations.questionPart1 && roughTextSvgRef.current) {
+      // Animate the entire SVG layer
+      gsap.fromTo(roughTextSvgRef.current,
         {
           opacity: 0,
           y: 30,
-          scale: 0.9,
         },
         {
           opacity: 1,
           y: 0,
-          scale: 1,
           duration: 0.9,
           ease: "back.out(1.7)",
         }
@@ -150,10 +148,10 @@ const Hook1AQuestionBurst = ({ scene }) => {
     }
   }, [frame, beats.questionPart1, triggeredAnimations.questionPart1]);
 
-  // Move up to make room
+  // Move up to make room (animate SVG layer)
   useEffect(() => {
-    if (frame >= beats.moveUp && !triggeredAnimations.moveUp && textRef1.current) {
-      gsap.to(textRef1.current, {
+    if (frame >= beats.moveUp && !triggeredAnimations.moveUp && roughTextSvgRef.current) {
+      gsap.to(roughTextSvgRef.current, {
         y: -60,
         duration: 0.8,
         ease: "power2.inOut",
@@ -183,25 +181,23 @@ const Hook1AQuestionBurst = ({ scene }) => {
     }
   }, [frame, beats.questionPart2, triggeredAnimations.questionPart2]);
 
-  // Pulse both for emphasis
+  // Pulse both for emphasis (animate SVG layer)
   useEffect(() => {
-    if (frame >= beats.pulse && !triggeredAnimations.pulse) {
-      if (questionContainerRef.current) {
-        pulseEmphasis(questionContainerRef.current, {
-          scale: 1.05,
-          duration: 0.4,
-          repeat: 1,
-          yoyo: true,
-        });
-      }
+    if (frame >= beats.pulse && !triggeredAnimations.pulse && roughTextSvgRef.current) {
+      pulseEmphasis(roughTextSvgRef.current, {
+        scale: 1.05,
+        duration: 0.4,
+        repeat: 1,
+        yoyo: true,
+      });
       setTriggeredAnimations(prev => ({ ...prev, pulse: true }));
     }
   }, [frame, beats.pulse, triggeredAnimations.pulse]);
 
-  // WIPE: Exit questions stage left (CONVERSATIONAL - clear the stage!)
+  // WIPE: Exit questions stage left (animate SVG layer)
   useEffect(() => {
-    if (frame >= beats.wipeQuestions && !triggeredAnimations.wipeQuestions && questionContainerRef.current) {
-      gsap.to(questionContainerRef.current, {
+    if (frame >= beats.wipeQuestions && !triggeredAnimations.wipeQuestions && roughTextSvgRef.current) {
+      gsap.to(roughTextSvgRef.current, {
         x: -1200,
         opacity: 0,
         duration: 1.0,
@@ -246,10 +242,13 @@ const Hook1AQuestionBurst = ({ scene }) => {
     }
   }, [frame, beats.transformMap, triggeredAnimations.transformMap]);
 
-  // Welcome - THE HOOK (center stage!)
+  // Welcome - THE HOOK (animate SVG layer after wipe completes)
   useEffect(() => {
-    if (frame >= beats.welcome && !triggeredAnimations.welcome && welcomeRef.current) {
-      gsap.fromTo(welcomeRef.current,
+    if (frame >= beats.welcome && !triggeredAnimations.welcome && roughTextSvgRef.current) {
+      // Reset SVG position after wipe, then animate welcome in
+      gsap.set(roughTextSvgRef.current, { x: 0, y: 0 });
+      
+      gsap.fromTo(roughTextSvgRef.current,
         {
           opacity: 0,
           y: 40,
@@ -286,10 +285,10 @@ const Hook1AQuestionBurst = ({ scene }) => {
     }
   }, [frame, beats.subtitle, triggeredAnimations.subtitle]);
 
-  // Breathe animation - Subtle on welcome
+  // Breathe animation - Subtle on welcome (SVG layer)
   useEffect(() => {
-    if (frame >= beats.breathe && !triggeredAnimations.breathe && welcomeRef.current) {
-      gsap.to(welcomeRef.current, {
+    if (frame >= beats.breathe && !triggeredAnimations.breathe && roughTextSvgRef.current) {
+      gsap.to(roughTextSvgRef.current, {
         scale: 1.02,
         duration: 2.5,
         ease: "sine.inOut",
@@ -304,7 +303,7 @@ const Hook1AQuestionBurst = ({ scene }) => {
   // ROUGH.JS - Headers & Map
   // ========================================
 
-  // Decorative elements only (no text rendering here)
+  // Render headers with rough.js sketchy text style
   useEffect(() => {
     if (!roughTextSvgRef.current) return;
 
@@ -316,10 +315,117 @@ const Hook1AQuestionBurst = ({ scene }) => {
       svg.removeChild(svg.firstChild);
     }
 
-    // No decorations for Hook1A - clean motion focus
-    // This layer reserved for future templates that need annotations
+    // Question Part 1 - Rough sketchy text
+    if (frame >= beats.questionPart1 && frame < beats.wipeQuestions) {
+      const text1 = texts.questionPart1 || 'What if geography';
+      
+      const textGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      
+      // Create text element with Cabin Sketch
+      const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      textElement.setAttribute('x', '960');
+      textElement.setAttribute('y', '480');
+      textElement.setAttribute('text-anchor', 'middle');
+      textElement.setAttribute('font-family', "'Cabin Sketch', cursive");
+      textElement.setAttribute('font-size', fonts.size_title);
+      textElement.setAttribute('font-weight', '700');
+      textElement.setAttribute('fill', colors.ink);
+      textElement.setAttribute('stroke', colors.ink);
+      textElement.setAttribute('stroke-width', '0.5');
+      textElement.setAttribute('paint-order', 'stroke fill');
+      textElement.textContent = text1;
+      
+      textGroup.appendChild(textElement);
+      
+      // Add rough sketch effect around text (bounding box with rough edges)
+      const textWidth = text1.length * 45; // Approximate width
+      const roughBox = rc.rectangle(960 - textWidth/2 - 20, 430, textWidth + 40, 100, {
+        stroke: `${colors.ink}15`,
+        strokeWidth: 2,
+        roughness: 1.8,
+        bowing: 3,
+        fill: 'none',
+      });
+      textGroup.appendChild(roughBox);
+      
+      svg.appendChild(textGroup);
+    }
 
-  }, [frame, beats, colors]);
+    // Question Part 2 - Rough sketchy text
+    if (frame >= beats.questionPart2 && frame < beats.wipeQuestions) {
+      const text2 = texts.questionPart2 || 'was measured in mindsets?';
+      
+      const textGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      
+      // Create text element
+      const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      textElement.setAttribute('x', '960');
+      textElement.setAttribute('y', '600');
+      textElement.setAttribute('text-anchor', 'middle');
+      textElement.setAttribute('font-family', "'Cabin Sketch', cursive");
+      textElement.setAttribute('font-size', fonts.size_question);
+      textElement.setAttribute('font-weight', '700');
+      textElement.setAttribute('fill', colors.accent);
+      textElement.setAttribute('stroke', colors.accent);
+      textElement.setAttribute('stroke-width', '0.8');
+      textElement.setAttribute('paint-order', 'stroke fill');
+      textElement.textContent = text2;
+      
+      textGroup.appendChild(textElement);
+      
+      // Add rough sketch underline
+      const textWidth = text2.length * 50;
+      const roughUnderline = rc.line(960 - textWidth/2, 620, 960 + textWidth/2, 620, {
+        stroke: colors.accent,
+        strokeWidth: 5,
+        roughness: 2.0,
+        bowing: 4,
+      });
+      textGroup.appendChild(roughUnderline);
+      
+      svg.appendChild(textGroup);
+    }
+
+    // "Welcome to Knodovia" - Rough sketchy text (THE HOOK)
+    if (frame >= beats.welcome) {
+      const welcomeText = texts.welcome || 'Welcome to Knodovia';
+      
+      const textGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      
+      // Create text element
+      const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      textElement.setAttribute('x', '960');
+      textElement.setAttribute('y', '560');
+      textElement.setAttribute('text-anchor', 'middle');
+      textElement.setAttribute('font-family', "'Cabin Sketch', cursive");
+      textElement.setAttribute('font-size', fonts.size_welcome);
+      textElement.setAttribute('font-weight', '700');
+      textElement.setAttribute('fill', colors.accent2);
+      textElement.setAttribute('stroke', colors.accent2);
+      textElement.setAttribute('stroke-width', '0.8');
+      textElement.setAttribute('paint-order', 'stroke fill');
+      textElement.textContent = welcomeText;
+      
+      textGroup.appendChild(textElement);
+      
+      // Add rough sketch box around welcome
+      const textWidth = welcomeText.length * 42;
+      const roughWelcomeBox = rc.rectangle(960 - textWidth/2 - 30, 510, textWidth + 60, 100, {
+        stroke: colors.accent2,
+        strokeWidth: 4,
+        roughness: 2.2,
+        bowing: 5,
+        fill: `${colors.accent2}08`,
+        fillStyle: 'hachure',
+        hachureGap: 15,
+        hachureAngle: 45,
+      });
+      textGroup.appendChild(roughWelcomeBox);
+      
+      svg.appendChild(textGroup);
+    }
+
+  }, [frame, beats, colors, texts, fonts]);
 
   // Animated Map SVG - ZERO WOBBLE
   useEffect(() => {
@@ -511,7 +617,7 @@ const Hook1AQuestionBurst = ({ scene }) => {
           transform: `translate(${cameraDrift.x}px, ${cameraDrift.y}px)`,
         }}
       >
-        {/* Question Container - GSAP animates these HTML elements */}
+        {/* Question Container - GSAP animates the container, rough.js SVG inside */}
         {frame >= beats.questionPart1 && frame < beats.wipeQuestions + 50 && (
           <div
             ref={questionContainerRef}
@@ -520,54 +626,14 @@ const Hook1AQuestionBurst = ({ scene }) => {
               top: '50%',
               left: '50%',
               transform: 'translate(-50%, -50%)',
-              width: '80%',
-              textAlign: 'center',
+              width: '100%',
+              height: '100%',
+              pointerEvents: 'none',
             }}
           >
-            {/* Question Part 1 - Cabin Sketch gives sketchy look */}
-            <div
-              ref={textRef1}
-              style={{
-                marginBottom: spacing.gap,
-                opacity: 0, // GSAP will animate
-              }}
-            >
-              <h1
-                style={{
-                  fontFamily: fonts.header, // Cabin Sketch (sketchy style)
-                  fontSize: fonts.size_title,
-                  fontWeight: 700,
-                  color: colors.ink,
-                  lineHeight: 1.1,
-                  margin: 0,
-                }}
-              >
-                {texts.questionPart1 || 'What if geography'}
-              </h1>
-            </div>
-
-            {/* Question Part 2 - Cabin Sketch gives sketchy look */}
-            {frame >= beats.questionPart2 && (
-              <div
-                ref={textRef2}
-                style={{
-                  opacity: 0, // GSAP will animate
-                }}
-              >
-                <h1
-                  style={{
-                    fontFamily: fonts.header, // Cabin Sketch (sketchy style)
-                    fontSize: fonts.size_question,
-                    fontWeight: 700,
-                    color: colors.accent,
-                    lineHeight: 1.1,
-                    margin: 0,
-                  }}
-                >
-                  {texts.questionPart2 || 'was measured in mindsets?'}
-                </h1>
-              </div>
-            )}
+            {/* Hidden refs for GSAP to animate */}
+            <div ref={textRef1} style={{ opacity: 0, width: 0, height: 0 }} />
+            <div ref={textRef2} style={{ opacity: 0, width: 0, height: 0 }} />
           </div>
         )}
 
@@ -600,38 +666,17 @@ const Hook1AQuestionBurst = ({ scene }) => {
           </div>
         )}
 
-        {/* Welcome to Knodovia - CENTER STAGE (THE HOOK) */}
+        {/* Welcome - Hidden ref for GSAP (rough.js SVG renders the text) */}
         {frame >= beats.welcome && (
           <div
+            ref={welcomeRef}
             style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: '80%',
-              textAlign: 'center',
+              opacity: 0,
+              width: 0,
+              height: 0,
+              pointerEvents: 'none',
             }}
-          >
-            <div
-              ref={welcomeRef}
-              style={{
-                opacity: 0, // GSAP will animate
-              }}
-            >
-              <h2
-                style={{
-                  fontFamily: fonts.header, // Cabin Sketch (sketchy style)
-                  fontSize: fonts.size_welcome,
-                  fontWeight: 700,
-                  color: colors.accent2,
-                  margin: 0,
-                  lineHeight: 1.2,
-                }}
-              >
-                {texts.welcome || 'Welcome to Knodovia'}
-              </h2>
-            </div>
-          </div>
+          />
         )}
 
         {/* Subtitle - Permanent Marker for body/secondary text */}
