@@ -32,14 +32,14 @@ export const THEME = {
       cream: '#FFF9F0'          // Warm canvas option
     },
 
-    // Marker colors - energetic, clear
+    // Marker colors - energetic, BOLD, clear (enhanced for impact)
     markers: {
       black: '#1A1A1A',         // Main ink
       blue: '#2E7FE4',          // Primary emphasis
       red: '#E74C3C',           // Alert/hook
       green: '#27AE60',         // Success/apply
-      purple: '#8E44AD',        // Reflect/thoughtful
-      orange: '#E67E22',        // Warm accent
+      purple: '#9B59B6',        // Reflect/thoughtful (BOLDER)
+      orange: '#FF6B35',        // Warm accent (BOLDER)
       yellow: '#F39C12'         // Highlight
     },
 

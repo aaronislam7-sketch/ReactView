@@ -1,22 +1,31 @@
 {
-  "schema_version": "3.0",
+  "schema_version": "4.0",
   "template_id": "apply_3a",
   "pillar": "apply",
   "variant": "3A",
-  "duration_s": 18,
+  "duration_s": 20,
   "fps": 30,
   "meta": {
-    "title": "APPLY 3A: Micro Quiz",
-    "description": "Quick knowledge check with immediate feedback",
-    "tags": ["pedagogy:apply", "variant:3A", "pattern:quiz", "tone:energetic"],
+    "title": "APPLY 3A: Micro Quiz (TED-ED Style V4)",
+    "description": "Quick knowledge check with 5-second countdown and automatic reveal",
+    "tags": ["pedagogy:apply", "variant:3A", "pattern:quiz", "tone:energetic", "ted-ed-style"],
     "tone": "energetic"
   },
   "style_tokens": {
     "colors": {
       "bg": "#FAFBFC",
       "accent": "#27AE60",
+      "accent2": "#FF6B35",
       "wrong": "#E74C3C",
       "ink": "#1A1A1A"
+    },
+    "fonts": {
+      "primary": "'Permanent Marker', cursive",
+      "secondary": "'Inter', sans-serif",
+      "size_question": 52,
+      "size_option": 26,
+      "size_timer": 64,
+      "size_explanation": 24
     }
   },
   "layout": { "canvas": { "w": 1920, "h": 1080 } },
@@ -28,7 +37,8 @@
         "Pragmatica",
         "Innovara"
       ],
-      "correctIndex": 1
+      "correctIndex": 1,
+      "explanation": "Pragmatica is defined by logical thinking and efficient decision-making."
     }
   },
   "timeline": []

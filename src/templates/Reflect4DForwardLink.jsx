@@ -1,53 +1,188 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate, Easing } from 'remotion';
 import { THEME } from '../utils/theme';
 import rough from 'roughjs/bundled/rough.esm.js';
+import gsap from 'gsap';
+import {
+  gracefulMove,
+  pulseEmphasis,
+} from '../utils/gsapAnimations';
 
 /**
- * REFLECT 4D: FORWARD LINK
+ * REFLECT 4D: FORWARD LINK (TED-ED Style V4)
  * 
- * Intent: Connect current lesson to next learning step
- * Pattern: "Now that you know X, next we'll..."
- * Visual: Bridge/arrow from current to next, path forward
+ * Intent: Anchor current learning FIRST, then transition to what's next
+ * Pattern: "You learned X... Now you're ready for Y"
+ * Visual: Current achievement → graceful transform → next journey
  * Tone: Encouraging, Forward-looking
- * Duration: 15-25s
+ * Duration: 18-28s
  * 
- * NO BOXES - Rough sketched bridge + path arrows
+ * NEW FEATURES:
+ * - ✅ ANCHOR LEARNING FIRST (celebrate what was learned)
+ * - ✅ Clear progression animation (transform/morph, not just arrows)
+ * - ✅ Animated stepping stones showing progression
+ * - ✅ Permanent Marker font
+ * - ✅ Bold accent colors
+ * - ✅ Zero wobble on structure, dynamic on transitions
+ * - ✅ Ending on "next up" with excitement
+ * 
+ * Animation Flow:
+ * 1. Title appears
+ * 2. Current learning anchored & celebrated (center focus)
+ * 3. Achievement markers appear (check marks, stars)
+ * 4. Current learning gracefully moves to "complete" position
+ * 5. Stepping stones/progression path animates
+ * 6. Next journey revealed with energy
+ * 7. Forward CTA
  */
 
 const Reflect4DForwardLink = ({ scene }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
   const svgRef = useRef(null);
+  const titleRef = useRef(null);
+  const currentRef = useRef(null);
+  const nextRef = useRef(null);
+  const ctaRef = useRef(null);
+
+  const [triggeredAnimations, setTriggeredAnimations] = useState({
+    title: false,
+    current: false,
+    celebrate: false,
+    moveToComplete: false,
+    steppingStones: false,
+    nextReveal: false,
+    cta: false,
+  });
 
   const colors = scene.style_tokens?.colors || {
-    bg: THEME.colors.canvas.cream,
-    accent: THEME.colors.markers.purple,
-    accent2: THEME.colors.markers.orange,
-    path: THEME.colors.markers.blue,
-    ink: THEME.colors.text.primary,
+    bg: '#FFF9F0',
+    accent: '#27AE60',    // Green for achievement
+    accent2: '#9B59B6',   // Bold purple for next
+    accent3: '#FF6B35',   // Bold orange for energy
+    ink: '#1A1A1A',
+  };
+
+  const fonts = scene.style_tokens?.fonts || {
+    primary: THEME.fonts.marker.primary,  // Permanent Marker
+    secondary: THEME.fonts.structure.primary,
+    size_title: 48,
+    size_section: 38,
+    size_body: 24,
+    size_cta: 44,
   };
 
   const data = scene.fill?.forward || {};
 
-  // Beat timing
-  const BEAT = 36;
+  // Beat timing - TED-ED style (anchor first, then forward)
+  const BEAT = 30;
   const beats = {
     prelude: 0,
-    currentSummary: BEAT * 0.8,
-    bridge: BEAT * 2.5,
-    nextTeaser: BEAT * 4.5,
-    pathForward: BEAT * 6,
-    settle: BEAT * 7.5,
+    title: BEAT * 0.5,
+    current: BEAT * 1.5,          // Anchor learning
+    celebrate: BEAT * 3,          // Celebrate achievement
+    moveToComplete: BEAT * 4.5,   // Move to "complete" position
+    steppingStones: BEAT * 5.5,   // Progression path
+    nextReveal: BEAT * 7,         // Next journey
+    cta: BEAT * 8.5,              // Forward CTA
+    settle: BEAT * 10,
   };
 
-  const cameraZoom = interpolate(
-    frame,
-    [0, beats.currentSummary, beats.settle],
-    [1.04, 1.0, 1.02],
-    { easing: Easing.bezier(0.4, 0, 0.2, 1), extrapolateRight: 'clamp' }
-  );
+  // Subtle camera drift
+  const cameraDrift = {
+    x: Math.sin(frame * 0.007) * 2,
+    y: Math.cos(frame * 0.006) * 1.5,
+  };
 
+  // ========================================
+  // GSAP ANIMATION TRIGGERS
+  // ========================================
+  
+  // Title
+  useEffect(() => {
+    if (frame >= beats.title && !triggeredAnimations.title && titleRef.current) {
+      gsap.fromTo(titleRef.current,
+        { opacity: 0, y: -20, scale: 0.92 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.9, ease: "back.out(1.5)" }
+      );
+      setTriggeredAnimations(prev => ({ ...prev, title: true }));
+    }
+  }, [frame, beats.title, triggeredAnimations.title]);
+
+  // Current learning - ANCHOR & CELEBRATE
+  useEffect(() => {
+    if (frame >= beats.current && !triggeredAnimations.current && currentRef.current) {
+      gsap.fromTo(currentRef.current,
+        { opacity: 0, y: 30, scale: 0.9 },
+        { opacity: 1, y: 0, scale: 1, duration: 1.2, ease: "back.out(1.5)" }
+      );
+      setTriggeredAnimations(prev => ({ ...prev, current: true }));
+    }
+  }, [frame, beats.current, triggeredAnimations.current]);
+
+  // Celebrate achievement
+  useEffect(() => {
+    if (frame >= beats.celebrate && !triggeredAnimations.celebrate && currentRef.current) {
+      pulseEmphasis(currentRef.current, {
+        scale: 1.08,
+        duration: 0.6,
+        repeat: 2,
+        yoyo: true,
+      });
+      setTriggeredAnimations(prev => ({ ...prev, celebrate: true }));
+    }
+  }, [frame, beats.celebrate, triggeredAnimations.celebrate]);
+
+  // Move to "complete" position (upper left)
+  useEffect(() => {
+    if (frame >= beats.moveToComplete && !triggeredAnimations.moveToComplete && currentRef.current) {
+      gracefulMove(currentRef.current, {
+        x: -250,
+        y: -150,
+        scale: 0.7,
+        duration: 1.3,
+        ease: "power3.inOut",
+      });
+      setTriggeredAnimations(prev => ({ ...prev, moveToComplete: true }));
+    }
+  }, [frame, beats.moveToComplete, triggeredAnimations.moveToComplete]);
+
+  // Next journey reveal
+  useEffect(() => {
+    if (frame >= beats.nextReveal && !triggeredAnimations.nextReveal && nextRef.current) {
+      gsap.fromTo(nextRef.current,
+        { opacity: 0, x: 50, scale: 0.9 },
+        { opacity: 1, x: 0, scale: 1, duration: 1.3, ease: "back.out(1.5)" }
+      );
+      
+      // Pulse for excitement
+      setTimeout(() => {
+        if (nextRef.current) {
+          pulseEmphasis(nextRef.current, {
+            scale: 1.05,
+            duration: 0.5,
+            repeat: 1,
+            yoyo: true,
+          });
+        }
+      }, 600);
+      
+      setTriggeredAnimations(prev => ({ ...prev, nextReveal: true }));
+    }
+  }, [frame, beats.nextReveal, triggeredAnimations.nextReveal]);
+
+  // CTA
+  useEffect(() => {
+    if (frame >= beats.cta && !triggeredAnimations.cta && ctaRef.current) {
+      gsap.fromTo(ctaRef.current,
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 1.0, ease: "power2.out" }
+      );
+      setTriggeredAnimations(prev => ({ ...prev, cta: true }));
+    }
+  }, [frame, beats.cta, triggeredAnimations.cta]);
+
+  // rough.js elements - ZERO WOBBLE on structure, animated transitions
   useEffect(() => {
     if (!svgRef.current) return;
 
@@ -58,18 +193,18 @@ const Reflect4DForwardLink = ({ scene }) => {
       svg.removeChild(svg.firstChild);
     }
 
-    // Current lesson frame (left)
-    if (frame >= beats.currentSummary) {
-      const progress = Math.min((frame - beats.currentSummary) / 32, 1);
+    // Current learning frame (center) - before moving
+    if (frame >= beats.current && frame < beats.moveToComplete) {
+      const progress = Math.min((frame - beats.current) / 35, 1);
       
-      const currentFrame = rc.rectangle(180, 380, 620, 280, {
+      const currentFrame = rc.rectangle(660, 420, 600, 240, {
         stroke: colors.accent,
         strokeWidth: 5,
-        roughness: 0.8,
-        bowing: 2,
+        roughness: 0,
+        bowing: 0,
         fill: `${colors.accent}10`,
         fillStyle: 'hachure',
-        hachureGap: 12,
+        hachureGap: 10,
       });
 
       const paths = currentFrame.querySelectorAll('path');
@@ -82,47 +217,108 @@ const Reflect4DForwardLink = ({ scene }) => {
       svg.appendChild(currentFrame);
     }
 
-    // Bridge path (connecting)
-    if (frame >= beats.bridge) {
-      const progress = Math.min((frame - beats.bridge) / 50, 1);
+    // Achievement markers (check marks, stars)
+    if (frame >= beats.celebrate && frame < beats.moveToComplete) {
+      const celebrateProgress = Math.min((frame - beats.celebrate) / 20, 1);
       
-      // Curved bridge
-      const bridgePath = `M 800 520 Q ${800 + 280 * progress} 480 ${800 + 560 * progress} 520`;
-      const bridge = rc.path(bridgePath, {
-        stroke: colors.path,
-        strokeWidth: 7,
-        roughness: 0.9,
-        bowing: 2,
+      // Check marks around current learning
+      [[700, 460], [1200, 460], [950, 620]].forEach(([x, y], i) => {
+        const delay = i * 0.3;
+        if (celebrateProgress > delay) {
+          const checkProgress = Math.min((celebrateProgress - delay) / 0.4, 1);
+          
+          const checkPath = `M ${x - 15} ${y} L ${x - 5} ${y + 12 * checkProgress} L ${x + 20 * checkProgress} ${y - 15}`;
+          const check = rc.path(checkPath, {
+            stroke: colors.accent,
+            strokeWidth: 6,
+            roughness: 0,
+            bowing: 0,
+          });
+          svg.appendChild(check);
+        }
       });
-      svg.appendChild(bridge);
-
-      // Arrow on bridge
-      if (progress > 0.7) {
-        const arrowProgress = (progress - 0.7) / 0.3;
-        const arrowX = 1360;
-        const arrowPath = `M ${arrowX} 520 L ${arrowX - 30 * arrowProgress} ${520 - 22 * arrowProgress} M ${arrowX} 520 L ${arrowX - 30 * arrowProgress} ${520 + 22 * arrowProgress}`;
-        const arrow = rc.path(arrowPath, {
-          stroke: colors.path,
-          strokeWidth: 7,
-          roughness: 0.8,
-          bowing: 1,
-        });
-        svg.appendChild(arrow);
-      }
     }
 
-    // Next lesson frame (right)
-    if (frame >= beats.nextTeaser) {
-      const progress = Math.min((frame - beats.nextTeaser) / 35, 1);
+    // Current learning frame (small, upper left) - after moving
+    if (frame >= beats.moveToComplete) {
+      const smallFrame = rc.rectangle(200, 220, 420, 170, {
+        stroke: colors.accent,
+        strokeWidth: 4,
+        roughness: 0,
+        bowing: 0,
+        fill: `${colors.accent}08`,
+        fillStyle: 'solid',
+      });
+      svg.appendChild(smallFrame);
       
-      const nextFrame = rc.rectangle(1120, 380, 620, 280, {
+      // Check mark on completed
+      const checkPath = `M 240 270 L 260 290 L 300 250`;
+      const check = rc.path(checkPath, {
+        stroke: colors.accent,
+        strokeWidth: 6,
+        roughness: 0,
+        bowing: 0,
+      });
+      svg.appendChild(check);
+    }
+
+    // STEPPING STONES / PROGRESSION PATH (animated)
+    if (frame >= beats.steppingStones) {
+      const stoneProgress = Math.min((frame - beats.steppingStones) / 40, 1);
+      
+      // 3 stepping stones showing progression
+      const stones = [
+        { x: 640, y: 300, size: 0.3 },
+        { x: 840, y: 380, size: 0.6 },
+        { x: 1040, y: 300, size: 1.0 },
+      ];
+      
+      stones.forEach((stone, i) => {
+        const delay = i * 0.25;
+        if (stoneProgress > delay) {
+          const sProgress = Math.min((stoneProgress - delay) / 0.4, 1);
+          const size = 40 + stone.size * 30;
+          
+          const stoneCircle = rc.circle(stone.x, stone.y, size * sProgress * 2, {
+            stroke: colors.accent3,
+            strokeWidth: 4,
+            roughness: 0,
+            bowing: 0,
+            fill: `${colors.accent3}20`,
+            fillStyle: 'solid',
+          });
+          svg.appendChild(stoneCircle);
+          
+          // Connecting lines between stones
+          if (i > 0 && sProgress > 0.5) {
+            const prevStone = stones[i - 1];
+            const lineProgress = (sProgress - 0.5) / 0.5;
+            const linePath = `M ${prevStone.x} ${prevStone.y} Q ${(prevStone.x + stone.x) / 2} ${Math.min(prevStone.y, stone.y) - 40} ${prevStone.x + (stone.x - prevStone.x) * lineProgress} ${prevStone.y + (stone.y - prevStone.y) * lineProgress}`;
+            
+            const connLine = rc.path(linePath, {
+              stroke: colors.accent3,
+              strokeWidth: 3,
+              roughness: 0.6,
+              bowing: 2,
+            });
+            svg.appendChild(connLine);
+          }
+        }
+      });
+    }
+
+    // Next journey frame
+    if (frame >= beats.nextReveal) {
+      const progress = Math.min((frame - beats.nextReveal) / 38, 1);
+      
+      const nextFrame = rc.rectangle(1200, 420, 520, 240, {
         stroke: colors.accent2,
         strokeWidth: 5,
-        roughness: 0.8,
-        bowing: 2,
+        roughness: 0,
+        bowing: 0,
         fill: `${colors.accent2}10`,
         fillStyle: 'hachure',
-        hachureGap: 12,
+        hachureGap: 10,
       });
 
       const paths = nextFrame.querySelectorAll('path');
@@ -133,30 +329,52 @@ const Reflect4DForwardLink = ({ scene }) => {
       });
 
       svg.appendChild(nextFrame);
+      
+      // Energy burst around next
+      if (progress > 0.7) {
+        const burstProgress = (progress - 0.7) / 0.3;
+        
+        for (let i = 0; i < 6; i++) {
+          const angle = (i / 6) * Math.PI * 2;
+          const distance = 60 * burstProgress;
+          const sparkX = 1460 + Math.cos(angle) * distance;
+          const sparkY = 540 + Math.sin(angle) * distance;
+          
+          const sparkSize = 12;
+          const sparkCircle = rc.circle(sparkX, sparkY, sparkSize * burstProgress * 2, {
+            stroke: colors.accent2,
+            strokeWidth: 2,
+            roughness: 0,
+            bowing: 0,
+            fill: colors.accent2,
+            fillStyle: 'solid',
+          });
+          sparkCircle.style.opacity = 1 - burstProgress * 0.5;
+          svg.appendChild(sparkCircle);
+        }
+      }
     }
 
-    // Path forward (bottom arrow)
-    if (frame >= beats.pathForward) {
-      const progress = Math.min((frame - beats.pathForward) / 40, 1);
+    // Forward arrow (CTA decoration)
+    if (frame >= beats.cta) {
+      const arrowProgress = Math.min((frame - beats.cta) / 30, 1);
       
-      const pathArrow = rc.path(
-        `M 960 740 L ${960 + 180 * progress} 740`,
-        {
-          stroke: colors.path,
-          strokeWidth: 5,
-          roughness: 0.8,
-          bowing: 2,
-        }
-      );
-      svg.appendChild(pathArrow);
-
+      const arrowPath = `M 760 ${880 + 10 * Math.sin(arrowProgress * Math.PI)} L ${760 + 180 * arrowProgress} ${880 + 10 * Math.sin(arrowProgress * Math.PI)}`;
+      const arrow = rc.path(arrowPath, {
+        stroke: colors.accent2,
+        strokeWidth: 6,
+        roughness: 0.8,
+        bowing: 2,
+      });
+      svg.appendChild(arrow);
+      
       // Arrowhead
-      if (progress > 0.6) {
-        const headProgress = (progress - 0.6) / 0.4;
-        const headPath = `M 1140 740 L ${1140 - 20 * headProgress} ${740 - 16 * headProgress} M 1140 740 L ${1140 - 20 * headProgress} ${740 + 16 * headProgress}`;
+      if (arrowProgress > 0.6) {
+        const headProgress = (arrowProgress - 0.6) / 0.4;
+        const headPath = `M 940 880 L ${940 - 25 * headProgress} ${880 - 20 * headProgress} M 940 880 L ${940 - 25 * headProgress} ${880 + 20 * headProgress}`;
         const head = rc.path(headPath, {
-          stroke: colors.path,
-          strokeWidth: 5,
+          stroke: colors.accent2,
+          strokeWidth: 6,
           roughness: 0.8,
           bowing: 1,
         });
@@ -164,50 +382,7 @@ const Reflect4DForwardLink = ({ scene }) => {
       }
     }
 
-    // Decorative journey dots
-    if (frame >= beats.bridge + 20) {
-      for (let i = 0; i < 5; i++) {
-        const dotFrame = beats.bridge + 20 + i * 8;
-        if (frame < dotFrame) continue;
-
-        const dotProgress = Math.min((frame - dotFrame) / 15, 1);
-        const dotX = 850 + i * 110;
-        const dotY = 500 - 20 + Math.sin((i / 5) * Math.PI) * 20;
-
-        const dot = rc.circle(dotX, dotY, 12 * dotProgress, {
-          stroke: 'none',
-          fill: colors.path,
-          fillStyle: 'solid',
-          roughness: 0.6,
-        });
-
-        dot.style.opacity = 0.5;
-        svg.appendChild(dot);
-      }
-    }
-
   }, [frame, beats, colors]);
-
-  const buildIn = (startFrame, duration = 28) => {
-    if (frame < startFrame) {
-      return { opacity: 0, transform: 'translateY(-15px) scale(0.95)' };
-    }
-    if (frame >= startFrame + duration) {
-      return { opacity: 1, transform: 'translateY(0) scale(1)' };
-    }
-
-    const progress = interpolate(
-      frame,
-      [startFrame, startFrame + duration],
-      [0, 1],
-      { easing: Easing.out(Easing.back(1.5)), extrapolateRight: 'clamp' }
-    );
-
-    return {
-      opacity: progress,
-      transform: `translateY(${-15 * (1 - progress)}px) scale(${0.95 + progress * 0.05})`,
-    };
-  };
 
   return (
     <AbsoluteFill style={{ backgroundColor: colors.bg }}>
@@ -219,47 +394,48 @@ const Reflect4DForwardLink = ({ scene }) => {
           width: '100%',
           height: '100%',
           pointerEvents: 'none',
-          transform: `scale(${cameraZoom})`,
+          transform: `translate(${cameraDrift.x}px, ${cameraDrift.y}px)`,
         }}
         viewBox="0 0 1920 1080"
         preserveAspectRatio="xMidYMid meet"
       />
 
-      <AbsoluteFill style={{ transform: `scale(${cameraZoom})` }}>
+      <AbsoluteFill style={{ transform: `translate(${cameraDrift.x}px, ${cameraDrift.y}px)` }}>
         <div style={{ position: 'relative', width: '100%', height: '100%', padding: '80px 120px' }}>
           {/* Title */}
-          {frame >= BEAT * 0.3 && (
-            <div style={{ ...buildIn(BEAT * 0.3, 28), textAlign: 'center' }}>
+          {frame >= beats.title && (
+            <div ref={titleRef} style={{ textAlign: 'center', opacity: 0 }}>
               <h2
                 style={{
-                  fontFamily: THEME.fonts.marker.secondary,
-                  fontSize: 52,
-                  fontWeight: 700,
+                  fontFamily: fonts.primary,
+                  fontSize: fonts.size_title,
+                  fontWeight: 400,
                   color: colors.ink,
                   margin: 0,
                 }}
               >
-                {data.title || 'Your Journey Continues'}
+                {data.title || 'Your Learning Journey'}
               </h2>
             </div>
           )}
 
-          {/* Current summary */}
-          {frame >= beats.currentSummary + 10 && (
+          {/* Current learning - ANCHORED FIRST */}
+          {frame >= beats.current && (
             <div
+              ref={currentRef}
               style={{
                 position: 'absolute',
-                top: 440,
-                left: 210,
+                top: 460,
+                left: 680,
                 width: 560,
-                ...buildIn(beats.currentSummary + 10, 32),
+                opacity: 0,
               }}
             >
               <h3
                 style={{
-                  fontFamily: THEME.fonts.structure.primary,
-                  fontSize: 28,
-                  fontWeight: 700,
+                  fontFamily: fonts.primary,
+                  fontSize: fonts.size_section,
+                  fontWeight: 400,
                   color: colors.accent,
                   margin: '0 0 16px 0',
                 }}
@@ -268,11 +444,11 @@ const Reflect4DForwardLink = ({ scene }) => {
               </h3>
               <p
                 style={{
-                  fontFamily: THEME.fonts.structure.secondary,
-                  fontSize: 22,
+                  fontFamily: fonts.secondary,
+                  fontSize: fonts.size_body,
                   color: colors.ink,
                   margin: 0,
-                  lineHeight: 1.5,
+                  lineHeight: 1.6,
                 }}
               >
                 {data.current?.summary || 'Key concepts from this lesson'}
@@ -280,48 +456,53 @@ const Reflect4DForwardLink = ({ scene }) => {
             </div>
           )}
 
-          {/* Bridge label */}
-          {frame >= beats.bridge + 25 && (
+          {/* Current (small, after moving) */}
+          {frame >= beats.moveToComplete + 20 && (
             <div
               style={{
                 position: 'absolute',
-                top: 450,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                ...buildIn(beats.bridge + 25, 25),
+                top: 250,
+                left: 230,
+                width: 360,
+                opacity: interpolate(
+                  frame,
+                  [beats.moveToComplete + 20, beats.moveToComplete + 40],
+                  [0, 1],
+                  { extrapolateRight: 'clamp' }
+                ),
               }}
             >
               <p
                 style={{
-                  fontFamily: THEME.fonts.marker.handwritten,
-                  fontSize: 30,
-                  color: colors.path,
+                  fontFamily: fonts.secondary,
+                  fontSize: 18,
+                  fontWeight: 600,
+                  color: colors.accent,
                   margin: 0,
-                  fontStyle: 'italic',
-                  whiteSpace: 'nowrap',
                 }}
               >
-                {data.connection || 'leads to'}
+                ✓ Completed
               </p>
             </div>
           )}
 
-          {/* Next teaser */}
-          {frame >= beats.nextTeaser + 12 && (
+          {/* Next journey */}
+          {frame >= beats.nextReveal && (
             <div
+              ref={nextRef}
               style={{
                 position: 'absolute',
-                top: 440,
-                left: 1150,
-                width: 560,
-                ...buildIn(beats.nextTeaser + 12, 35),
+                top: 460,
+                left: 1220,
+                width: 480,
+                opacity: 0,
               }}
             >
               <h3
                 style={{
-                  fontFamily: THEME.fonts.structure.primary,
-                  fontSize: 28,
-                  fontWeight: 700,
+                  fontFamily: fonts.primary,
+                  fontSize: fonts.size_section,
+                  fontWeight: 400,
                   color: colors.accent2,
                   margin: '0 0 16px 0',
                 }}
@@ -330,11 +511,11 @@ const Reflect4DForwardLink = ({ scene }) => {
               </h3>
               <p
                 style={{
-                  fontFamily: THEME.fonts.structure.secondary,
-                  fontSize: 22,
+                  fontFamily: fonts.secondary,
+                  fontSize: fonts.size_body,
                   color: colors.ink,
                   margin: 0,
-                  lineHeight: 1.5,
+                  lineHeight: 1.6,
                 }}
               >
                 {data.next?.teaser || 'Exciting new concepts ahead'}
@@ -342,24 +523,26 @@ const Reflect4DForwardLink = ({ scene }) => {
             </div>
           )}
 
-          {/* Path forward CTA */}
-          {frame >= beats.pathForward + 15 && (
+          {/* Forward CTA */}
+          {frame >= beats.cta && (
             <div
+              ref={ctaRef}
               style={{
                 position: 'absolute',
-                bottom: 140,
+                bottom: 100,
                 left: '50%',
                 transform: 'translateX(-50%)',
-                ...buildIn(beats.pathForward + 15, 28),
+                textAlign: 'center',
+                opacity: 0,
               }}
             >
               <p
                 style={{
-                  fontFamily: THEME.fonts.marker.primary,
-                  fontSize: 34,
-                  color: colors.path,
+                  fontFamily: fonts.primary,
+                  fontSize: fonts.size_cta,
+                  fontWeight: 400,
+                  color: colors.accent2,
                   margin: 0,
-                  textAlign: 'center',
                 }}
               >
                 {data.cta || "Let's keep going!"}
@@ -373,6 +556,6 @@ const Reflect4DForwardLink = ({ scene }) => {
 };
 
 export { Reflect4DForwardLink };
-export const REFLECT_4D_DURATION_MIN = 15 * 30;
-export const REFLECT_4D_DURATION_MAX = 25 * 30;
+export const REFLECT_4D_DURATION_MIN = 18 * 30;
+export const REFLECT_4D_DURATION_MAX = 28 * 30;
 export const REFLECT_4D_EXIT_TRANSITION = 15;

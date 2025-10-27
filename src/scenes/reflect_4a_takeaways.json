@@ -1,14 +1,14 @@
 {
-  "schema_version": "3.0",
+  "schema_version": "4.0",
   "template_id": "reflect_4a",
   "pillar": "reflect",
   "variant": "4A",
-  "duration_s": 22,
+  "duration_s": 25,
   "fps": 30,
   "meta": {
-    "title": "REFLECT 4A: Key Takeaways",
-    "description": "Summarize core lessons in memorable list",
-    "tags": ["pedagogy:reflect", "variant:4A", "pattern:takeaways", "tone:affirming"],
+    "title": "REFLECT 4A: Key Takeaways (TED-ED Style V4)",
+    "description": "Summarize core lessons with rough annotate emphasis and 1-liners + subtext",
+    "tags": ["pedagogy:reflect", "variant:4A", "pattern:takeaways", "tone:affirming", "ted-ed-style"],
     "tone": "affirming"
   },
   "style_tokens": {
@@ -16,7 +16,16 @@
       "bg": "#FAFBFC",
       "accent": "#27AE60",
       "accent2": "#2E7FE4",
+      "accent3": "#FF6B35",
       "ink": "#1A1A1A"
+    },
+    "fonts": {
+      "primary": "'Permanent Marker', cursive",
+      "secondary": "'Inter', sans-serif",
+      "size_title": 54,
+      "size_number": 42,
+      "size_oneliner": 32,
+      "size_subtext": 22
     }
   },
   "layout": { "canvas": { "w": 1920, "h": 1080 } },
@@ -24,10 +33,20 @@
     "reflection": {
       "title": "Key Takeaways",
       "takeaways": [
-        "Geography can be understood through mindsets, not just physical borders",
-        "Each region of Knodovia reflects a different way of thinking",
-        "Understanding these perspectives helps us navigate complex ideas"
-      ]
+        {
+          "main": "Geography can be understood through mindsets",
+          "sub": "Not just physical borders, but ways of thinking and being"
+        },
+        {
+          "main": "Each region reflects a different perspective",
+          "sub": "Pragmatica, Empathios, Innovara, and Reflectora each offer unique value"
+        },
+        {
+          "main": "Understanding these helps navigate complexity",
+          "sub": "By recognizing which mindset serves each situation best"
+        }
+      ],
+      "exitMessage": "Ready to move forward..."
     }
   },
   "timeline": []

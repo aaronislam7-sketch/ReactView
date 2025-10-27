@@ -1,22 +1,30 @@
 {
-  "schema_version": "3.0",
+  "schema_version": "4.0",
   "template_id": "explain_2b",
   "pillar": "explain",
   "variant": "2B",
-  "duration_s": 25,
+  "duration_s": 28,
   "fps": 30,
   "meta": {
-    "title": "EXPLAIN 2B: Analogy",
-    "description": "Explain concept through relatable comparison",
-    "tags": ["pedagogy:explain", "variant:2B", "pattern:analogy", "tone:relatable"],
+    "title": "EXPLAIN 2B: Analogy (TED-ED Style V4)",
+    "description": "Explain concept through relatable comparison with Lottie/image support and graceful transitions",
+    "tags": ["pedagogy:explain", "variant:2B", "pattern:analogy", "tone:relatable", "ted-ed-style"],
     "tone": "relatable"
   },
   "style_tokens": {
     "colors": {
       "bg": "#FFF9F0",
-      "accent": "#E67E22",
+      "accent": "#FF6B35",
       "accent2": "#2E7FE4",
       "ink": "#1A1A1A"
+    },
+    "fonts": {
+      "primary": "'Permanent Marker', cursive",
+      "secondary": "'Inter', sans-serif",
+      "size_title": 52,
+      "size_label": 36,
+      "size_connection": 56,
+      "size_explanation": 28
     }
   },
   "layout": { "canvas": { "w": 1920, "h": 1080 } },
@@ -25,13 +33,18 @@
       "title": "Think of it like this...",
       "familiar": {
         "label": "A Compass",
-        "description": "Points you in the right direction, shows you where North is, helps you navigate unfamiliar territory."
+        "description": "Points you in the right direction, shows you where North is, helps you navigate unfamiliar territory.",
+        "lottie": null,
+        "image": null
       },
       "newConcept": {
         "label": "A Mindset",
-        "description": "Guides your decisions, shows you what matters most, helps you navigate life's challenges."
+        "description": "Guides your decisions, shows you what matters most, helps you navigate life's challenges.",
+        "lottie": null,
+        "image": null
       },
-      "connection": "works like"
+      "connection": "They work the same way!",
+      "explanation": "Both provide direction and help you navigate complexity with confidence."
     }
   },
   "timeline": []
