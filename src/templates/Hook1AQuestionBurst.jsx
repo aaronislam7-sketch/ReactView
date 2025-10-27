@@ -1,25 +1,23 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate, Easing } from 'remotion';
+import React, { useEffect, useRef } from 'react';
+import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate } from 'remotion';
 import { THEME } from '../utils/theme';
 import rough from 'roughjs/bundled/rough.esm.js';
-import gsap from 'gsap';
-import {
-  drawUnderline,
-  pulseEmphasis,
-  gracefulMove,
-  cascadeReveal,
-} from '../utils/gsapAnimations';
 
 /**
- * HOOK 1A: QUESTION BURST (CONVERSATIONAL V8 - FINAL)
+ * HOOK 1A: QUESTION BURST (CONVERSATIONAL V9 - REMOTION INTERPOLATE)
+ * 
+ * ANIMATION STRATEGY:
+ * - ✅ Remotion interpolate() for BASIC animations (opacity, position, scale)
+ * - ✅ NO GSAP for basic motion - frame-based = reliable
+ * - ✅ GSAP ONLY for complex sequences (not needed here)
  * 
  * CONVERSATIONAL FEATURES:
- * - ✅ Bold mid-scene GSAP transitions - things MOVE!
+ * - ✅ Bold mid-scene transitions - things MOVE!
  * - ✅ Conversational flow - elements exit when done
  * - ✅ Headers in Cabin Sketch font (hand-drawn/sketchy look)
  * - ✅ Permanent Marker for body/secondary text
  * - ✅ Clean stage - only show what's needed NOW
- * - ✅ Graceful wipes/exits via GSAP
+ * - ✅ Graceful wipes/exits via interpolate
  * - ✅ Animated map (NO emojis)
  * - ✅ ZERO WOBBLE everywhere (no roughness/bowing)
  * 
@@ -28,24 +26,23 @@ import {
  * - Body/Secondary: Permanent Marker - energy and personality
  * - Supporting: Inter - clean readability
  * 
- * How Headers Work (THE KEY):
- * - SVG text elements with Cabin Sketch font (sketchy look)
- * - Each text group has unique ID (#question1-group, #question2-group, #welcome-group)
- * - GSAP animates INDIVIDUAL TEXT GROUPS by ID
- * - NO boxes, NO underlines, NO wobble effects
- * - ONLY text with sketchy font style
+ * How Animations Work (THE KEY):
+ * - SVG text rendered with transforms calculated via interpolate()
+ * - Each animation (entrance, move, pulse, wipe) = interpolate() call
+ * - Applied directly as SVG attributes (transform, opacity)
+ * - Reliable frame-based rendering - NO timing issues!
  * 
  * Conversational Flow:
- * 1. "What if geography" appears (Cabin Sketch SVG text)
- * 2. Question 1 group moves up, making room
- * 3. "was measured in mindsets?" appears (Cabin Sketch SVG text)
- * 4. Both question groups pulse
- * 5. WIPE: Both question groups exit stage left
- * 6. Map draws in center with energy
- * 7. TRANSFORM: Map shrinks to corner
- * 8. "Welcome to Knodovia" appears (Cabin Sketch SVG text - THE HOOK)
- * 9. Subtitle fades in below (Permanent Marker)
- * 10. Breathe animation on welcome group
+ * 1. "What if geography" appears (interpolate entrance)
+ * 2. Question 1 moves up (interpolate y position)
+ * 3. "was measured in mindsets?" appears (interpolate entrance)
+ * 4. Both pulse (interpolate scale)
+ * 5. Both wipe left (interpolate x + opacity)
+ * 6. Map draws in center
+ * 7. Map transforms to corner (interpolate)
+ * 8. "Welcome to Knodovia" appears (interpolate entrance)
+ * 9. Subtitle fades in (interpolate opacity)
+ * 10. Breathe animation (interpolate scale)
  * 
  * Intent: Conversational, dynamic, TED-ED quality with sketchy text, ZERO wobble
  * Duration: 15-18s
@@ -57,26 +54,6 @@ const Hook1AQuestionBurst = ({ scene }) => {
   const svgRef = useRef(null);
   const mapSvgRef = useRef(null);
   const roughTextSvgRef = useRef(null);
-  const textRef1 = useRef(null);
-  const textRef2 = useRef(null);
-  const questionContainerRef = useRef(null);
-  const welcomeRef = useRef(null);
-  const subtitleRef = useRef(null);
-  const mapContainerRef = useRef(null);
-  
-  // Track which animations have been triggered
-  const [triggeredAnimations, setTriggeredAnimations] = useState({
-    questionPart1: false,
-    questionPart2: false,
-    moveUp: false,
-    pulse: false,
-    wipeQuestions: false,
-    mapReveal: false,
-    transformMap: false,
-    welcome: false,
-    subtitle: false,
-    breathe: false,
-  });
 
   const style = scene.style_tokens || {};
   const colors = style.colors || {
@@ -87,9 +64,9 @@ const Hook1AQuestionBurst = ({ scene }) => {
   };
   
   const fonts = style.fonts || {
-    header: "'Cabin Sketch', cursive",    // Rough.js headers (sketchy style)
-    secondary: THEME.fonts.marker.primary, // Permanent Marker for body/secondary
-    body: THEME.fonts.structure.primary,   // Inter for clean body text
+    header: "'Cabin Sketch', cursive",    // Sketchy headers
+    secondary: THEME.fonts.marker.primary, // Permanent Marker
+    body: THEME.fonts.structure.primary,   // Inter
     size_title: 76,
     size_question: 92,
     size_welcome: 72,
@@ -103,21 +80,21 @@ const Hook1AQuestionBurst = ({ scene }) => {
 
   const texts = scene.fill?.texts || {};
 
-  // Beat timing - CONVERSATIONAL, DYNAMIC (with breathing room for motion)
+  // Beat timing - CONVERSATIONAL, DYNAMIC (with breathing room)
   const BEAT = 30;
   const beats = {
     prelude: 0,
-    questionPart1: BEAT * 0.6,       // 0.6s - Quick entrance
-    moveUp: BEAT * 2.0,              // 2.0s - Make room (give time to land)
-    questionPart2: BEAT * 2.8,       // 2.8s - Second part appears (after move completes)
-    pulse: BEAT * 4.2,               // 4.2s - Pulse both (let question 2 breathe)
-    wipeQuestions: BEAT * 5.5,       // 5.5s - EXIT questions (after pulse completes)
-    mapReveal: BEAT * 6.5,           // 6.5s - Map draws in (clean stage first)
-    transformMap: BEAT * 9.0,        // 9.0s - Map shrinks to corner (let map reveal complete)
-    welcome: BEAT * 10.0,            // 10.0s - THE HOOK (after transform completes)
-    subtitle: BEAT * 12.0,           // 12s - Tease (let welcome land)
-    breathe: BEAT * 13.5,            // 13.5s - Settle with breathe
-    settle: BEAT * 15,               // 15s - Hold
+    questionPart1: BEAT * 0.6,       // 0.6s
+    moveUp: BEAT * 2.0,              // 2.0s
+    questionPart2: BEAT * 2.8,       // 2.8s
+    pulse: BEAT * 4.2,               // 4.2s
+    wipeQuestions: BEAT * 5.5,       // 5.5s
+    mapReveal: BEAT * 6.5,           // 6.5s
+    transformMap: BEAT * 9.0,        // 9.0s
+    welcome: BEAT * 10.0,            // 10.0s
+    subtitle: BEAT * 12.0,           // 12s
+    breathe: BEAT * 13.5,            // 13.5s
+    settle: BEAT * 15,               // 15s
   };
 
   // Subtle camera drift
@@ -127,217 +104,200 @@ const Hook1AQuestionBurst = ({ scene }) => {
   };
 
   // ========================================
-  // GSAP ANIMATION TRIGGERS - CONVERSATIONAL!
+  // REMOTION INTERPOLATE ANIMATIONS
   // ========================================
   
-  // Question Part 1 - Bold entrance (animate specific group)
-  useEffect(() => {
-    if (frame >= beats.questionPart1 && !triggeredAnimations.questionPart1 && roughTextSvgRef.current) {
-      const question1Group = roughTextSvgRef.current.querySelector('#question1-group');
-      if (question1Group) {
-        gsap.fromTo(question1Group,
-          {
-            opacity: 0,
-            y: 30,
-          },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.9,
-            ease: "back.out(1.7)",
-          }
-        );
-      }
-      setTriggeredAnimations(prev => ({ ...prev, questionPart1: true }));
-    }
-  }, [frame, beats.questionPart1, triggeredAnimations.questionPart1]);
+  // Question 1: Entrance → Move up → Pulse → Wipe
+  const q1Opacity = frame < beats.questionPart1 ? 0 :
+    frame < beats.wipeQuestions ? interpolate(
+      frame,
+      [beats.questionPart1, beats.questionPart1 + 27], // 0.9s
+      [0, 1],
+      { extrapolateRight: 'clamp' }
+    ) :
+    interpolate(
+      frame,
+      [beats.wipeQuestions, beats.wipeQuestions + 30], // 1s wipe
+      [1, 0],
+      { extrapolateRight: 'clamp' }
+    );
 
-  // Move up to make room (animate question1 group)
-  useEffect(() => {
-    if (frame >= beats.moveUp && !triggeredAnimations.moveUp && roughTextSvgRef.current) {
-      const question1Group = roughTextSvgRef.current.querySelector('#question1-group');
-      if (question1Group) {
-        gsap.to(question1Group, {
-          y: -60,
-          duration: 0.8,
-          ease: "power2.inOut",
-        });
-      }
-      setTriggeredAnimations(prev => ({ ...prev, moveUp: true }));
-    }
-  }, [frame, beats.moveUp, triggeredAnimations.moveUp]);
+  const q1TranslateY = frame < beats.questionPart1 ? 30 :
+    frame < beats.moveUp ? interpolate(
+      frame,
+      [beats.questionPart1, beats.questionPart1 + 27],
+      [30, 0],
+      { extrapolateRight: 'clamp' }
+    ) :
+    interpolate(
+      frame,
+      [beats.moveUp, beats.moveUp + 24], // 0.8s move
+      [0, -60],
+      { extrapolateRight: 'clamp' }
+    );
 
-  // Question Part 2 - Appears below
-  useEffect(() => {
-    if (frame >= beats.questionPart2 && !triggeredAnimations.questionPart2 && textRef2.current) {
-      gsap.fromTo(textRef2.current,
-        {
-          opacity: 0,
-          y: 40,
-          scale: 0.88,
-        },
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          duration: 1.0,
-          ease: "back.out(1.8)",
-        }
-      );
-      setTriggeredAnimations(prev => ({ ...prev, questionPart2: true }));
-    }
-  }, [frame, beats.questionPart2, triggeredAnimations.questionPart2]);
+  const q1TranslateX = frame < beats.wipeQuestions ? 0 :
+    interpolate(
+      frame,
+      [beats.wipeQuestions, beats.wipeQuestions + 30],
+      [0, -1200],
+      { extrapolateRight: 'clamp' }
+    );
 
-  // Pulse both for emphasis (animate question container)
-  useEffect(() => {
-    if (frame >= beats.pulse && !triggeredAnimations.pulse && roughTextSvgRef.current) {
-      const question1Group = roughTextSvgRef.current.querySelector('#question1-group');
-      const question2Group = roughTextSvgRef.current.querySelector('#question2-group');
-      if (question1Group) {
-        pulseEmphasis(question1Group, {
-          scale: 1.05,
-          duration: 0.4,
-          repeat: 1,
-          yoyo: true,
-        });
-      }
-      if (question2Group) {
-        pulseEmphasis(question2Group, {
-          scale: 1.05,
-          duration: 0.4,
-          repeat: 1,
-          yoyo: true,
-        });
-      }
-      setTriggeredAnimations(prev => ({ ...prev, pulse: true }));
-    }
-  }, [frame, beats.pulse, triggeredAnimations.pulse]);
+  const q1Scale = frame < beats.pulse ? 1 :
+    frame < beats.pulse + 12 ? interpolate(
+      frame,
+      [beats.pulse, beats.pulse + 12], // 0.4s pulse out
+      [1, 1.05],
+      { extrapolateRight: 'clamp' }
+    ) :
+    frame < beats.pulse + 24 ? interpolate(
+      frame,
+      [beats.pulse + 12, beats.pulse + 24], // 0.4s pulse back
+      [1.05, 1],
+      { extrapolateRight: 'clamp' }
+    ) : 1;
 
-  // WIPE: Exit questions stage left (animate both question groups)
-  useEffect(() => {
-    if (frame >= beats.wipeQuestions && !triggeredAnimations.wipeQuestions && roughTextSvgRef.current) {
-      const question1Group = roughTextSvgRef.current.querySelector('#question1-group');
-      const question2Group = roughTextSvgRef.current.querySelector('#question2-group');
-      if (question1Group) {
-        gsap.to(question1Group, {
-          x: -1200,
-          opacity: 0,
-          duration: 1.0,
-          ease: "power3.in",
-        });
-      }
-      if (question2Group) {
-        gsap.to(question2Group, {
-          x: -1200,
-          opacity: 0,
-          duration: 1.0,
-          ease: "power3.in",
-        });
-      }
-      setTriggeredAnimations(prev => ({ ...prev, wipeQuestions: true }));
-    }
-  }, [frame, beats.wipeQuestions, triggeredAnimations.wipeQuestions]);
+  // Question 2: Entrance → Pulse → Wipe
+  const q2Opacity = frame < beats.questionPart2 ? 0 :
+    frame < beats.wipeQuestions ? interpolate(
+      frame,
+      [beats.questionPart2, beats.questionPart2 + 30], // 1s
+      [0, 1],
+      { extrapolateRight: 'clamp' }
+    ) :
+    interpolate(
+      frame,
+      [beats.wipeQuestions, beats.wipeQuestions + 30],
+      [1, 0],
+      { extrapolateRight: 'clamp' }
+    );
 
-  // Map reveal - Bold entrance
-  useEffect(() => {
-    if (frame >= beats.mapReveal && !triggeredAnimations.mapReveal && mapContainerRef.current) {
-      gsap.fromTo(mapContainerRef.current,
-        {
-          opacity: 0,
-          scale: 0.7,
-          y: 50,
-        },
-        {
-          opacity: 1,
-          scale: 1,
-          y: 0,
-          duration: 1.3,
-          ease: "back.out(1.5)",
-        }
-      );
-      setTriggeredAnimations(prev => ({ ...prev, mapReveal: true }));
-    }
-  }, [frame, beats.mapReveal, triggeredAnimations.mapReveal]);
+  const q2TranslateY = frame < beats.questionPart2 ? 40 :
+    interpolate(
+      frame,
+      [beats.questionPart2, beats.questionPart2 + 30],
+      [40, 0],
+      { extrapolateRight: 'clamp' }
+    );
 
-  // TRANSFORM: Map shrinks to upper corner (make room for welcome!)
-  useEffect(() => {
-    if (frame >= beats.transformMap && !triggeredAnimations.transformMap && mapContainerRef.current) {
-      gsap.to(mapContainerRef.current, {
-        x: 500,
-        y: -200,
-        scale: 0.5,
-        duration: 1.2,
-        ease: "power3.inOut",
-      });
-      setTriggeredAnimations(prev => ({ ...prev, transformMap: true }));
-    }
-  }, [frame, beats.transformMap, triggeredAnimations.transformMap]);
+  const q2TranslateX = frame < beats.wipeQuestions ? 0 :
+    interpolate(
+      frame,
+      [beats.wipeQuestions, beats.wipeQuestions + 30],
+      [0, -1200],
+      { extrapolateRight: 'clamp' }
+    );
 
-  // Welcome - THE HOOK (animate welcome group)
-  useEffect(() => {
-    if (frame >= beats.welcome && !triggeredAnimations.welcome && roughTextSvgRef.current) {
-      const welcomeGroup = roughTextSvgRef.current.querySelector('#welcome-group');
-      if (welcomeGroup) {
-        gsap.fromTo(welcomeGroup,
-          {
-            opacity: 0,
-            y: 40,
-            scale: 0.88,
-          },
-          {
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            duration: 1.5,
-            ease: "back.out(1.4)",
-          }
-        );
-      }
-      setTriggeredAnimations(prev => ({ ...prev, welcome: true }));
-    }
-  }, [frame, beats.welcome, triggeredAnimations.welcome]);
+  const q2Scale = frame < beats.questionPart2 ? 0.88 :
+    frame < beats.questionPart2 + 30 ? interpolate(
+      frame,
+      [beats.questionPart2, beats.questionPart2 + 30],
+      [0.88, 1],
+      { extrapolateRight: 'clamp' }
+    ) :
+    frame < beats.pulse ? 1 :
+    frame < beats.pulse + 12 ? interpolate(
+      frame,
+      [beats.pulse, beats.pulse + 12],
+      [1, 1.05],
+      { extrapolateRight: 'clamp' }
+    ) :
+    frame < beats.pulse + 24 ? interpolate(
+      frame,
+      [beats.pulse + 12, beats.pulse + 24],
+      [1.05, 1],
+      { extrapolateRight: 'clamp' }
+    ) : 1;
 
-  // Subtitle - Teaser
-  useEffect(() => {
-    if (frame >= beats.subtitle && !triggeredAnimations.subtitle && subtitleRef.current) {
-      gsap.fromTo(subtitleRef.current,
-        {
-          opacity: 0,
-          y: 20,
-        },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 1.0,
-          ease: "power2.out",
-        }
-      );
-      setTriggeredAnimations(prev => ({ ...prev, subtitle: true }));
-    }
-  }, [frame, beats.subtitle, triggeredAnimations.subtitle]);
+  // Map: Entrance → Transform
+  const mapOpacity = frame < beats.mapReveal ? 0 :
+    interpolate(
+      frame,
+      [beats.mapReveal, beats.mapReveal + 39], // 1.3s
+      [0, 1],
+      { extrapolateRight: 'clamp' }
+    );
 
-  // Breathe animation - Subtle on welcome (welcome group)
-  useEffect(() => {
-    if (frame >= beats.breathe && !triggeredAnimations.breathe && roughTextSvgRef.current) {
-      const welcomeGroup = roughTextSvgRef.current.querySelector('#welcome-group');
-      if (welcomeGroup) {
-        gsap.to(welcomeGroup, {
-          scale: 1.02,
-          duration: 2.5,
-          ease: "sine.inOut",
-          yoyo: true,
-          repeat: -1,
-        });
-      }
-      setTriggeredAnimations(prev => ({ ...prev, breathe: true }));
-    }
-  }, [frame, beats.breathe, triggeredAnimations.breathe]);
+  const mapScale = frame < beats.mapReveal ? 0.85 :
+    frame < beats.transformMap ? interpolate(
+      frame,
+      [beats.mapReveal, beats.mapReveal + 39],
+      [0.85, 1],
+      { extrapolateRight: 'clamp' }
+    ) :
+    interpolate(
+      frame,
+      [beats.transformMap, beats.transformMap + 36], // 1.2s
+      [1, 0.4],
+      { extrapolateRight: 'clamp' }
+    );
+
+  const mapTranslateX = frame < beats.transformMap ? 0 :
+    interpolate(
+      frame,
+      [beats.transformMap, beats.transformMap + 36],
+      [0, 600],
+      { extrapolateRight: 'clamp' }
+    );
+
+  const mapTranslateY = frame < beats.transformMap ? 0 :
+    interpolate(
+      frame,
+      [beats.transformMap, beats.transformMap + 36],
+      [0, -300],
+      { extrapolateRight: 'clamp' }
+    );
+
+  // Welcome: Entrance → Breathe
+  const welcomeOpacity = frame < beats.welcome ? 0 :
+    interpolate(
+      frame,
+      [beats.welcome, beats.welcome + 45], // 1.5s
+      [0, 1],
+      { extrapolateRight: 'clamp' }
+    );
+
+  const welcomeTranslateY = frame < beats.welcome ? 40 :
+    interpolate(
+      frame,
+      [beats.welcome, beats.welcome + 45],
+      [40, 0],
+      { extrapolateRight: 'clamp' }
+    );
+
+  const welcomeScale = frame < beats.welcome ? 0.88 :
+    frame < beats.welcome + 45 ? interpolate(
+      frame,
+      [beats.welcome, beats.welcome + 45],
+      [0.88, 1],
+      { extrapolateRight: 'clamp' }
+    ) :
+    frame < beats.breathe ? 1 :
+    1 + Math.sin((frame - beats.breathe) * 0.025) * 0.02; // Subtle breathe
+
+  // Subtitle: Fade in
+  const subtitleOpacity = frame < beats.subtitle ? 0 :
+    interpolate(
+      frame,
+      [beats.subtitle, beats.subtitle + 36], // 1.2s
+      [0, 1],
+      { extrapolateRight: 'clamp' }
+    );
+
+  const subtitleTranslateY = frame < beats.subtitle ? 20 :
+    interpolate(
+      frame,
+      [beats.subtitle, beats.subtitle + 36],
+      [20, 0],
+      { extrapolateRight: 'clamp' }
+    );
 
   // ========================================
   // ROUGH.JS - Headers & Map
   // ========================================
 
-  // Render headers with rough.js TEXT ONLY (NO boxes, NO wobble)
+  // Render headers with CABIN SKETCH SVG text (NO boxes, NO wobble)
   useEffect(() => {
     if (!roughTextSvgRef.current) return;
 
@@ -348,12 +308,14 @@ const Hook1AQuestionBurst = ({ scene }) => {
       svg.removeChild(svg.firstChild);
     }
 
-    // Question Part 1 - SVG text with Cabin Sketch (sketchy font style)
-    if (frame >= beats.questionPart1 && frame < beats.wipeQuestions) {
+    // Question Part 1 - Cabin Sketch SVG text
+    if (frame >= beats.questionPart1 && frame < beats.wipeQuestions + 35) {
       const text1 = texts.questionPart1 || 'What if geography';
       
       const textGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       textGroup.setAttribute('id', 'question1-group');
+      textGroup.setAttribute('opacity', String(q1Opacity));
+      textGroup.setAttribute('transform', `translate(${q1TranslateX}, ${q1TranslateY}) scale(${q1Scale})`);
       
       const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       textElement.setAttribute('x', '960');
@@ -369,12 +331,14 @@ const Hook1AQuestionBurst = ({ scene }) => {
       svg.appendChild(textGroup);
     }
 
-    // Question Part 2 - SVG text with Cabin Sketch (sketchy font style)
-    if (frame >= beats.questionPart2 && frame < beats.wipeQuestions) {
+    // Question Part 2 - Cabin Sketch SVG text
+    if (frame >= beats.questionPart2 && frame < beats.wipeQuestions + 35) {
       const text2 = texts.questionPart2 || 'was measured in mindsets?';
       
       const textGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       textGroup.setAttribute('id', 'question2-group');
+      textGroup.setAttribute('opacity', String(q2Opacity));
+      textGroup.setAttribute('transform', `translate(${q2TranslateX}, ${q2TranslateY}) scale(${q2Scale})`);
       
       const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       textElement.setAttribute('x', '960');
@@ -390,12 +354,14 @@ const Hook1AQuestionBurst = ({ scene }) => {
       svg.appendChild(textGroup);
     }
 
-    // "Welcome to Knodovia" - SVG text with Cabin Sketch (THE HOOK)
+    // "Welcome to Knodovia" - Cabin Sketch SVG text (THE HOOK)
     if (frame >= beats.welcome) {
       const welcomeText = texts.welcome || 'Welcome to Knodovia';
       
       const textGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       textGroup.setAttribute('id', 'welcome-group');
+      textGroup.setAttribute('opacity', String(welcomeOpacity));
+      textGroup.setAttribute('transform', `translate(0, ${welcomeTranslateY}) scale(${welcomeScale})`);
       
       const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       textElement.setAttribute('x', '960');
@@ -411,7 +377,7 @@ const Hook1AQuestionBurst = ({ scene }) => {
       svg.appendChild(textGroup);
     }
 
-  }, [frame, beats, colors, texts, fonts]);
+  }, [frame, beats, colors, texts, fonts, q1Opacity, q1TranslateX, q1TranslateY, q1Scale, q2Opacity, q2TranslateX, q2TranslateY, q2Scale, welcomeOpacity, welcomeTranslateY, welcomeScale]);
 
   // Animated Map SVG - ZERO WOBBLE
   useEffect(() => {
@@ -427,7 +393,7 @@ const Hook1AQuestionBurst = ({ scene }) => {
 
     const progress = Math.min((frame - beats.mapReveal) / 50, 1);
 
-    // Stylized landmass (creative, not emoji)
+    // Stylized landmass
     const islandPath = `
       M 200 180 
       Q 180 120 220 100
@@ -445,8 +411,8 @@ const Hook1AQuestionBurst = ({ scene }) => {
     const island = rc.path(islandPath, {
       stroke: colors.accent,
       strokeWidth: 6,
-      roughness: 0,
-      bowing: 0,
+      roughness: 0,  // ZERO WOBBLE
+      bowing: 0,     // ZERO WOBBLE
       fill: `${colors.accent}15`,
       fillStyle: 'hachure',
       hachureGap: 8,
@@ -520,43 +486,6 @@ const Hook1AQuestionBurst = ({ scene }) => {
 
   }, [frame, beats.mapReveal, colors]);
 
-  // Decorative elements
-  useEffect(() => {
-    if (!svgRef.current) return;
-
-    const svg = svgRef.current;
-    const rc = rough.svg(svg);
-
-    while (svg.firstChild) {
-      svg.removeChild(svg.firstChild);
-    }
-
-    // Energy sparks around welcome text
-    if (frame >= beats.welcome + 20 && frame < beats.settle) {
-      const sparkProgress = Math.min((frame - beats.welcome - 20) / 25, 1);
-      
-      [[700, 500], [1220, 500], [960, 380], [960, 620]].forEach(([x, y], i) => {
-        const delay = i * 0.2;
-        if (sparkProgress > delay) {
-          const sProgress = Math.min((sparkProgress - delay) / 0.3, 1);
-          
-          const spark = rc.circle(x, y, 18 * sProgress, {
-            stroke: colors.accent2,
-            strokeWidth: 3,
-            roughness: 0.6,
-            bowing: 1,
-            fill: `${colors.accent2}30`,
-            fillStyle: 'solid',
-          });
-          
-          spark.style.opacity = sProgress * 0.8;
-          svg.appendChild(spark);
-        }
-      });
-    }
-
-  }, [frame, beats, colors]);
-
   return (
     <AbsoluteFill
       style={{
@@ -582,7 +511,7 @@ const Hook1AQuestionBurst = ({ scene }) => {
         preserveAspectRatio="xMidYMid meet"
       />
 
-      {/* Rough text layer (for underlines, emphasis) */}
+      {/* Rough text layer (Cabin Sketch headers) */}
       <svg
         ref={roughTextSvgRef}
         style={{
@@ -603,41 +532,20 @@ const Hook1AQuestionBurst = ({ scene }) => {
           transform: `translate(${cameraDrift.x}px, ${cameraDrift.y}px)`,
         }}
       >
-        {/* Question Container - GSAP animates the container, rough.js SVG inside */}
-        {frame >= beats.questionPart1 && frame < beats.wipeQuestions + 50 && (
-          <div
-            ref={questionContainerRef}
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: '100%',
-              height: '100%',
-              pointerEvents: 'none',
-            }}
-          >
-            {/* Hidden refs for GSAP to animate */}
-            <div ref={textRef1} style={{ opacity: 0, width: 0, height: 0 }} />
-            <div ref={textRef2} style={{ opacity: 0, width: 0, height: 0 }} />
-          </div>
-        )}
-
-        {/* Animated Map Container - Appears center, then moves to corner */}
+        {/* Animated Map Container */}
         {frame >= beats.mapReveal && (
           <div
-            ref={mapContainerRef}
             style={{
               position: 'absolute',
               top: '50%',
               left: '50%',
-              transform: 'translate(-50%, -50%)',
+              transform: `translate(-50%, -50%) translate(${mapTranslateX}px, ${mapTranslateY}px) scale(${mapScale})`,
               width: 640,
               height: 400,
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              opacity: 0,
+              opacity: mapOpacity,
             }}
           >
             <svg
@@ -652,31 +560,17 @@ const Hook1AQuestionBurst = ({ scene }) => {
           </div>
         )}
 
-        {/* Welcome - Hidden ref for GSAP (rough.js SVG renders the text) */}
-        {frame >= beats.welcome && (
-          <div
-            ref={welcomeRef}
-            style={{
-              opacity: 0,
-              width: 0,
-              height: 0,
-              pointerEvents: 'none',
-            }}
-          />
-        )}
-
-        {/* Subtitle - Permanent Marker for body/secondary text */}
+        {/* Subtitle - Permanent Marker (body text) */}
         {frame >= beats.subtitle && (
           <div
-            ref={subtitleRef}
             style={{
               position: 'absolute',
               bottom: '30%',
               left: '50%',
-              transform: 'translateX(-50%)',
+              transform: `translateX(-50%) translateY(${subtitleTranslateY}px)`,
               maxWidth: 800,
               textAlign: 'center',
-              opacity: 0,
+              opacity: subtitleOpacity,
             }}
           >
             <p
