@@ -6,7 +6,45 @@
  * with subtle imperfections that mimic hand-drawn motion.
  */
 
-// ==================== STANDARD EASINGS ====================
+import { Easing } from 'remotion';
+
+// ==================== BLUEPRINT V5 EASING MAP (EZ) ====================
+
+/**
+ * Centralized easing map for all templates
+ * Use these named easings instead of inline bezier curves
+ */
+export const EZ = {
+  // Default for most things - natural, material-style ease
+  smooth: Easing.bezier(0.4, 0, 0.2, 1),
+  
+  // Calm, balanced in-out - good for camera pans & big moves
+  power2InOut: Easing.bezier(0.45, 0, 0.55, 1),
+  
+  // Punchier S-curve - hero entrances, decisive repositioning
+  power3InOut: Easing.bezier(0.65, 0, 0.35, 1),
+  
+  // Confident exits / compressions - slide/fade outs
+  power3In: Easing.bezier(0.55, 0, 1, 0.45),
+  
+  // Gentle landings - secondary reveals, UI settles
+  power2Out: Easing.bezier(0, 0, 0.2, 1),
+  
+  // Tiny overshoot for charm - tick pops, lightbulb, emphasis
+  backOut: Easing.bezier(0.175, 0.885, 0.32, 1.275),
+};
+
+/**
+ * Get easing function by name (with fallback to smooth)
+ * 
+ * @param name - Easing name from EZ map
+ * @returns Remotion easing function
+ */
+export const getEasing = (name: string) => {
+  return EZ[name as keyof typeof EZ] || EZ.smooth;
+};
+
+// ==================== LEGACY EASINGS (Deprecated, use EZ map) ====================
 
 // Smooth & Natural
 export const easeOutSoft = [0.2, 0.8, 0.2, 1];
