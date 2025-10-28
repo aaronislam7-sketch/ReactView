@@ -103,9 +103,10 @@ export const toCss = (bezier: number[]): string =>
   `cubic-bezier(${bezier.join(', ')})`;
 
 /**
- * Get easing by name (with fallback)
+ * Get legacy easing by name (with fallback)
+ * @deprecated Use getEasing() with EZ map instead
  */
-export const getEasing = (name: string): number[] => {
+export const getLegacyEasing = (name: string): number[] => {
   const easings: Record<string, number[]> = {
     soft: easeOutSoft,
     smooth: easeInOut,
