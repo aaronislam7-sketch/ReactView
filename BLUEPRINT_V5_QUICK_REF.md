@@ -11,7 +11,6 @@
   "schema_version": "5.0",
   "scene_id": "hook1a",
   "template_id": "Hook1AQuestionBurst",
-  "duration_s": 18,
   
   "style_tokens": {
     "mode": "notebook",
@@ -53,9 +52,10 @@
 
 ## ⏱️ Timing Rules
 
-- **Author in seconds** → Convert to frames internally via `frames(s)`
+- **Author in seconds (always)** → JSON is FPS-agnostic
 - **Absolute timing** → All `start` values from scene start (not relative)
-- **Anchor to 30fps** → 4s @ 30fps = 2s @ 60fps (auto-scales)
+- **Frame conversion** → 4s @ 30fps = 120 frames, 4s @ 60fps = 240 frames (same duration)
+- **toFrames() helper** → Presets convert seconds to frames: `toFrames(seconds, fps)`
 - **Breathing room** → 0.8–1.5s between major changes
 
 ---
@@ -64,28 +64,29 @@
 
 ### Entrances
 ```javascript
-fadeUpIn(frame, { start, dur, dist, ease }, easingMap)
-slideInLeft(frame, { start, dur, dist, ease }, easingMap)
-slideInRight(frame, { start, dur, dist, ease }, easingMap)
-popInSpring(frame, { start, mass, stiffness, damping }, easingMap)
+// All accept seconds, convert to frames internally
+fadeUpIn(frame, { start, dur, dist, ease }, easingMap, fps)
+slideInLeft(frame, { start, dur, dist, ease }, easingMap, fps)
+slideInRight(frame, { start, dur, dist, ease }, easingMap, fps)
+popInSpring(frame, { start, mass, stiffness, damping }, easingMap, fps)
 ```
 
 ### Emphasis
 ```javascript
-pulseEmphasis(frame, { start, dur, scale }, easingMap)
-breathe(frame, { start, loop }, easingMap)
+pulseEmphasis(frame, { start, dur, scale }, easingMap, fps)
+breathe(frame, { start, loop }, easingMap, fps)
 ```
 
 ### Exits
 ```javascript
-fadeDownOut(frame, { start, dur, dist, ease }, easingMap)
+fadeDownOut(frame, { start, dur, dist, ease }, easingMap, fps)
 ```
 
 ### Complex
 ```javascript
-drawOnPath(frame, { start, dur, length, ease }, easingMap)
-shrinkToCorner(frame, { start, dur, targetScale, targetPos }, easingMap)
-highlightSwipe(frame, { start, dur, rect }, easingMap) // Hook returns JSX
+drawOnPath(frame, { start, dur, length, ease }, easingMap, fps)
+shrinkToCorner(frame, { start, dur, targetScale, targetPos }, easingMap, fps)
+highlightSwipe(frame, { start, dur, rect }, easingMap, fps) // Hook returns JSX
 ```
 
 ---
@@ -134,9 +135,12 @@ export const Hook1AQuestionBurst = ({ scene, styles, presets, easingMap, transit
   // Component
 };
 
-export const getDuration = (scene, fps) => Math.round(scene.duration_s * fps);
-export const DURATION_MIN = 450;
-export const DURATION_MAX = 540;
+export const getDuration = (scene, fps) => {
+  const tailPadding = 0.5;
+  return toFrames(scene.beats.exit + tailPadding, fps);
+};
+export const DURATION_MIN_FRAMES = 450;
+export const DURATION_MAX_FRAMES = 540;
 export const SUPPORTED_MODES = ['notebook', 'whiteboard'];
 export const CAPABILITIES = { usesSVG: true, usesLottie: false };
 export const PRESETS_REQUIRED = ['fadeUpIn', 'pulseEmphasis'];
@@ -148,6 +152,11 @@ export const getPosterFrame = (scene, fps) => Math.round(scene.beats.emphasis * 
 ## 🆔 ID Factory Pattern
 
 ```javascript
+// Parent wraps scene with context
+<SceneIdContext.Provider value={uniqueId}>
+  <TemplateComponent scene={scene} />
+</SceneIdContext.Provider>
+
 // In template
 const id = useSceneId();
 
@@ -166,8 +175,10 @@ const id = useSceneId();
 - [ ] ID factory for all `<defs>`
 - [ ] Beats in JSON (seconds, absolute)
 - [ ] Uses preset functions (not inline interpolate)
+- [ ] Presets accept seconds, convert to frames internally
 - [ ] EZ easing map (no hardcoded beziers)
-- [ ] Zero wobble (roughness/bowing = 0)
+- [ ] **Strict zero wobble** (ALL rough.js: `roughness: 0, bowing: 0`)
+- [ ] Fonts preloaded in preview AND render contexts (SSR)
 - [ ] Respects `scene.style_tokens.mode`
 - [ ] All required exports present
 
@@ -180,7 +191,8 @@ const id = useSceneId();
 - ❌ No `Math.random()` or frame-based IDs
 - ❌ No inline bezier curves (use EZ map)
 - ❌ No non-token colors
-- ❌ No wobble (must justify)
+- ❌ **No wobble** (ALL rough.js MUST be `roughness: 0, bowing: 0`)
+- ❌ No unpreloaded fonts (breaks SSR)
 
 ---
 

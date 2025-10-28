@@ -57,9 +57,10 @@ const id = useSceneId(); // Returns (key) => `s-${sceneId}-${key}`
 
 ### FPS Handling
 
-- **Author at 30fps** — All JSON timing values assume 30fps baseline
-- **Auto-scale** — If user changes to 60fps, 4s @ 30fps becomes 2s @ 60fps
-- **Frame conversion** — Templates use `frames(seconds)` helper internally
+- **Author in seconds (always)** — All JSON timing values are in seconds, FPS-agnostic
+- **Frame conversion** — When FPS changes, frame count adjusts but duration stays the same
+  - Example: 4s @ 30fps = 120 frames, 4s @ 60fps = 240 frames (still 4 seconds)
+- **toFrames() helper** — Templates convert seconds to frames: `toFrames(seconds, fps)`
 - **FPS not in JSON** — Controlled globally, not per-scene
 
 ---
@@ -129,9 +130,14 @@ export const STYLE = {
 
 ### Rules
 
-- ✅ **Zero wobble** — Sketchiness via fonts + texture, not rough.js randomness
+- ✅ **Strict zero wobble** — All rough.js calls MUST use `roughness: 0, bowing: 0`
+  - Sketchiness comes from fonts (Cabin Sketch, Permanent Marker) and texture overlays
+  - No randomness in shape rendering
 - ✅ **Consistent assets** — Sticky notes, tape, arrows, callouts, doodles
-- ✅ **Preload fonts** — Avoid layout shift on first render
+- ✅ **Preload fonts** — Fonts used in `style_tokens.fonts` MUST be preloaded in BOTH:
+  - Preview context (browser)
+  - Render context (Remotion SSR for export)
+  - Avoid layout shift and ensure consistent measurements
 - ✅ **Mode mixable** — Single video can alternate notebook ↔ whiteboard per scene
 
 ---
@@ -253,10 +259,11 @@ Internal lookup via centralized map ensures consistency.
 **Pattern A: Config-based (most presets)**
 ```javascript
 // Returns { opacity, transform, ... }
-export const fadeUpIn = (frame, config, easingMap) => {
+// Accepts seconds, converts to frames internally
+export const fadeUpIn = (frame, config, easingMap, fps) => {
   const { start, dur, dist = 50, ease = 'smooth' } = config;
-  const startFrame = start;
-  const endFrame = start + dur;
+  const startFrame = toFrames(start, fps);
+  const endFrame = toFrames(start + dur, fps);
   
   const easeFn = easingMap[ease] || easingMap.smooth;
   
@@ -281,13 +288,16 @@ export const fadeUpIn = (frame, config, easingMap) => {
 **Pattern B: Return raw values (for special cases)**
 ```javascript
 // For path morph, counters, dashoffsets
-export const drawOnPath = (frame, config, easingMap) => {
+// Accepts seconds, converts to frames internally
+export const drawOnPath = (frame, config, easingMap, fps) => {
   const { start, dur, length, ease = 'power3InOut' } = config;
   const easeFn = easingMap[ease];
+  const startFrame = toFrames(start, fps);
+  const endFrame = toFrames(start + dur, fps);
   
   const progress = interpolate(
     frame,
-    [start, start + dur],
+    [startFrame, endFrame],
     [0, 1],
     { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: easeFn }
   );
@@ -302,9 +312,12 @@ export const drawOnPath = (frame, config, easingMap) => {
 **Pattern C: Hooks (only when JSX/refs required)**
 ```javascript
 // For highlightSwipe that needs <clipPath> in <defs>
-export const useHighlightSwipe = (frame, config, easingMap) => {
+// Accepts seconds, converts to frames internally
+export const useHighlightSwipe = (frame, config, easingMap, fps) => {
   const clipId = useId();
   const { start, dur, rect, ease = 'smooth' } = config;
+  const startFrame = toFrames(start, fps);
+  const endFrame = toFrames(start + dur, fps);
   
   // ... calculate width progress
   
@@ -355,7 +368,6 @@ export const useHighlightSwipe = (frame, config, easingMap) => {
   "schema_version": "5.0",
   "scene_id": "hook1a",
   "template_id": "Hook1AQuestionBurst",
-  "duration_s": 18,
   
   "meta": {
     "title": "Welcome to Knodovia",
@@ -448,6 +460,7 @@ export const useHighlightSwipe = (frame, config, easingMap) => {
       "id": "exitGroup",
       "type": "group",
       "targets": ["titleSeq1", "titleSeq2"],
+      "scope": ["transform", "opacity"],
       "anim": [
         { 
           "preset": "fadeDownOut", 
@@ -492,7 +505,6 @@ Templates can define custom types via registry pattern.
 | `schema_version` | string | ✅ | Current: "5.0" |
 | `scene_id` | string | ✅ | Unique scene identifier |
 | `template_id` | string | ✅ | Template component name |
-| `duration_s` | number | ✅ | Scene duration in seconds |
 | `meta` | object | ❌ | Metadata (title, tags, etc.) |
 | `style_tokens` | object | ❌ | Style overrides (mode, colors, fonts) |
 | `beats` | object | ✅ | Timing markers (entrance, exit, custom) |
@@ -517,14 +529,15 @@ export const Hook1AQuestionBurst = ({ scene, styles, presets, easingMap, transit
   // ...
 };
 
-// 3. Duration calculator
+// 3. Duration calculator (derived from beats)
 export const getDuration = (scene, fps) => {
-  return Math.round(scene.duration_s * fps);
+  const tailPadding = 0.5; // Optional padding after exit
+  return toFrames(scene.beats.exit + tailPadding, fps);
 };
 
-// 4. Min/max duration (frames)
-export const DURATION_MIN = 450; // 15s @ 30fps
-export const DURATION_MAX = 540; // 18s @ 30fps
+// 4. Min/max duration (frames at 30fps baseline)
+export const DURATION_MIN_FRAMES = 450; // 15s @ 30fps
+export const DURATION_MAX_FRAMES = 540; // 18s @ 30fps
 
 // 5. Supported modes
 export const SUPPORTED_MODES = ['notebook', 'whiteboard'];
@@ -583,6 +596,11 @@ export const useSceneId = () => {
   const sceneId = useContext(SceneIdContext);
   return (key) => `s-${sceneId}-${key}`;
 };
+
+// Parent must wrap scene with provider:
+// <SceneIdContext.Provider value={uniqueId}>
+//   <TemplateComponent scene={scene} />
+// </SceneIdContext.Provider>
 ```
 
 ### Usage in Templates
@@ -653,6 +671,7 @@ const pathAnim = presets.drawOnPath(frame, {
   "id": "exitGroup",
   "type": "group",
   "targets": ["titleSeq1", "titleSeq2", "annotationSeq1"],
+  "scope": ["transform", "opacity"],
   "anim": [
     { "preset": "fadeDownOut", "start": 5.5, "dur": 0.9 }
   ]
@@ -703,7 +722,8 @@ Before considering a template production-ready:
 ### ✅ Style
 - [ ] Respects `scene.style_tokens.mode` (notebook/whiteboard)
 - [ ] Uses global STYLE constants with per-scene overrides
-- [ ] Zero wobble (roughness: 0, bowing: 0)
+- [ ] **Strict zero wobble** — ALL rough.js calls use `roughness: 0, bowing: 0`
+- [ ] Fonts preloaded in preview AND render contexts (Remotion SSR)
 
 ### ✅ Typography
 - [ ] Fonts preloaded (avoid layout shift)
@@ -737,7 +757,8 @@ Before considering a template production-ready:
 - **No state triggers** — Frame-driven only
 - **No inline easings** — Use EZ map
 - **No non-token colors** — Always reference STYLE constants or scene overrides
-- **No wobble** — Roughness/bowing must be 0
+- **No wobble** — ALL rough.js MUST use `roughness: 0, bowing: 0` (strict rule)
+- **No unpreloaded fonts** — Fonts must load before render in SSR context
 
 ---
 

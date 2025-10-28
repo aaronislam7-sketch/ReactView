@@ -13,11 +13,11 @@
 - **OLD:** Generic IDs like `"hdr"`, `"note"`
 - **Rationale:** Clearer intent, scalable (Seq2, Seq3...), template-agnostic
 
-### 2. **FPS Anchoring System**
-- **NEW:** All JSON authored at 30fps baseline, auto-scales to other frame rates
+### 2. **FPS Handling (Corrected)**
+- **NEW:** All JSON authored in seconds (always FPS-agnostic)
 - **NEW:** FPS removed from JSON, controlled globally
-- **Example:** 4s @ 30fps = 2s @ 60fps (automatic)
-- **Rationale:** Human-readable authoring, flexible playback
+- **Example:** 4s @ 30fps = 120 frames, 4s @ 60fps = 240 frames (same duration, more frames)
+- **Rationale:** Time is constant, frame count adjusts for smoothness
 
 ### 3. **Beat Structure Flexibility**
 - **NEW:** Minimum structure = `entrance` + `exit` required
@@ -92,12 +92,14 @@
 ### 10. **ID Factory Pattern (Context-Based)**
 - **NEW:** `useSceneId()` hook returns `(key) => s-${sceneId}-${key}`
 - **NEW:** Derive from context, no random/frame-based values
+- **NEW:** Parent MUST wrap scene with `<SceneIdContext.Provider value={uniqueId}>`
 - **Rationale:** Deterministic, essential for `<defs>`, multi-scene compositions
 - **OLD:** Generic `id(sceneId, key)` function signature
 
 ### 11. **GroupLayer Pattern**
 - **NEW:** `<GroupLayer>` component for coordinated animations
 - **NEW:** JSON supports `"type": "group"` with `"targets": ["id1", "id2"]`
+- **NEW:** `"scope"` field limits grouped properties (e.g., `["transform", "opacity"]`)
 - **OLD:** Manual application implied
 
 ### 12. **SVG Path Animation (Decoupled)**
@@ -111,8 +113,9 @@
 
 ### Timing Philosophy
 - **Absolute timing** — All `start` times are seconds from scene start (not relative)
-- **Author in seconds** — JSON uses human-readable time values
-- **Convert to frames** — Templates use `frames(seconds)` helper internally
+- **Author in seconds** — JSON ALWAYS uses seconds (FPS-agnostic)
+- **Convert to frames** — Templates use `toFrames(seconds, fps)` helper internally
+- **Unit consistency** — Presets accept seconds, convert to frames inside function
 
 ### Mode Switching
 - **Per-scene mode** — `scene.style_tokens.mode`
@@ -121,6 +124,7 @@
 
 ### JSON Schema Version
 - **Bumped to v5.0** — Breaking changes from v3.0
+- **Duration removed** — Derived from `beats.exit + tailPadding`
 - **No validation yet** — Schema checks deferred (manual validation for now)
 - **No migration tool** — Manual updates from v3 → v5
 
@@ -130,9 +134,9 @@
 
 ### Tier 1 (Foundation)
 1. Update `src/sdk/easing.ts` with EZ map
-2. Refactor `src/sdk/animations.js` with 10 presets
-3. Create `src/sdk/SceneIdContext.jsx`
-4. Add `frames()` helper to `src/sdk/time.ts`
+2. Refactor `src/sdk/animations.js` with 10 presets (accept seconds, convert to frames)
+3. Create `src/sdk/SceneIdContext.jsx` with provider pattern
+4. Add `toFrames(seconds, fps)` helper to `src/sdk/time.ts`
 
 ### Tier 2 (Template Refactor)
 5. Add required exports to Hook1A
@@ -165,6 +169,8 @@
 3. **Start small on presets** — 10 core presets, grow organically from real usage
 4. **Metadata as infrastructure** — Exports enable tooling, linting, wizard UX
 5. **Context for IDs** — Better than prop-drilling or global state
+6. **Strict zero wobble** — Assert `roughness: 0, bowing: 0` in all rough.js calls
+7. **Font preloading critical** — Must work in SSR (Remotion export) not just preview
 
 ---
 
