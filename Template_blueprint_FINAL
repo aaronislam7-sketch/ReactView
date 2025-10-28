@@ -1,0 +1,447 @@
+Knode Scene Blueprint (v2.1)
+
+
+
+
+Goal: Deterministic, export-safe scenes with a warm “alive notebook” look; GSAP-grade feel reproduced via Remotion (interpolate, spring, bezier easings).
+
+Outputs: MP4 parity with preview.
+
+Style: Notebook-first, with optional Whiteboard-Lite mode.
+
+
+
+
+
+1) Philosophy
+
+
+
+
+
+Start simple, enhance intentionally.
+Beats cue when, easing decides how.
+Deterministic by design: everything derives from frame.
+Notebook as signature; Whiteboard as variant.
+JSON controls the show (copy, timing, style, presets, assets).
+
+
+
+
+
+
+
+
+
+
+2) Render & Motion Determinism
+
+
+
+
+
+Remotion only for animation: interpolate, spring, Easing.bezier.
+No GSAP in exports.
+Frame math beats state: never use useState triggers.
+FPS helper:
+
+
+const { fps } = useVideoConfig();
+
+const frames = (s:number) => Math.round(s * fps);
+
+
+
+
+ID factory: id(sceneId, key) => \s-${sceneId}-${key}``
+
+
+
+
+
+
+
+
+
+
+3) Style System (Notebook + Whiteboard modes)
+
+
+
+export const STYLE = {
+
+  mode: 'notebook' | 'whiteboard',
+
+  colors: {
+
+    bgNotebook: '#FFF9F0', bgWhiteboard: '#FAFBFC',
+
+    ink: '#1A1A1A', accent:'#FF6B35', accent2:'#9B59B6',
+
+    success:'#27AE60', info:'#2E7FE4'
+
+  },
+
+  text: {
+
+    header: 'Cabin Sketch',
+
+    emphasis: 'Permanent Marker',
+
+    body: 'Inter'
+
+  },
+
+  textures: {
+
+    paperGrain: '/assets/paper-grain.png',
+
+    vignetteOpacityNotebook: 0.06,
+
+    vignetteOpacityWhiteboard: 0.02
+
+  },
+
+  strokes: { width: 5, cap: 'round', join: 'round' },
+
+  highlighter: { opacity: 0.24, radius: 8 },
+
+  micro: { breatheScale:[0.99,1.01], nudgePx:[-4,4], tiltDeg:[-1.5,1.5] }
+
+};
+
+Rules
+
+
+
+Zero wobble: sketchiness via font, reveals, texture—not roughness.
+Consistent assets: sticky notes, tape, arrows, callouts, doodles, stars.
+Fonts preloaded to avoid layout shift.
+
+
+
+
+
+
+
+
+
+
+4) Timeline & Beats
+
+
+
+
+
+
+
+4.1 Beat Map
+
+
+
+
+
+Visual timing only.
+
+Pattern: ENTRANCE → SERVE → EXIT with 20–40% overlap for flow.
+
+Breathing room: 0.8–1.5 s between major beats.
+
+type Beats = {
+
+  entrance: number;
+
+  emphasis?: number;
+
+  move?: number;
+
+  exit: number;
+
+};
+
+
+
+
+
+
+
+
+
+5) Easing Map
+
+
+
+import { Easing } from 'remotion';
+
+export const EZ = {
+
+  smooth:        Easing.bezier(0.4, 0, 0.2, 1),
+
+  power2InOut:   Easing.bezier(0.45, 0, 0.55, 1),
+
+  power3InOut:   Easing.bezier(0.65, 0, 0.35, 1),
+
+  power3In:      Easing.bezier(0.55, 0, 1, 0.45),
+
+  power2Out:     Easing.bezier(0, 0, 0.2, 1),
+
+  backOut:       Easing.bezier(0.175, 0.885, 0.32, 1.275)
+
+};
+
+
+
+
+
+
+
+
+
+6) Animation Presets (20 “grab-and-go”)
+
+
+
+
+
+(Entrances, mid-scene emphasis, exits — same list as before, all Remotion-safe.)
+
+
+
+
+
+
+
+
+
+7) JSON Scene Schema (author-driven)
+
+
+
+{
+
+  "scene_id": "hook1a",
+
+  "mode": "notebook",
+
+  "beats": { "entrance": 0.6, "emphasis": 2.0, "exit": 4.8 },
+
+  "layers": [
+
+    {
+
+      "id": "hdr",
+
+      "type": "header",
+
+      "text": "Procrastination has a system.",
+
+      "pos": { "x": 960, "y": 300 },
+
+      "style": { "color": "accent" },
+
+      "anim": [
+
+        { "preset": "fadeUpIn", "start": 0.6, "dur": 0.9, "dist": 50, "ease": "power3InOut" },
+
+        { "preset": "pulseEmphasis", "start": 2.1, "dur": 0.5 }
+
+      ]
+
+    },
+
+    {
+
+      "id": "underline",
+
+      "type": "path",
+
+      "d": "M 560 340 L 1360 340",
+
+      "style": { "stroke": "accent", "width": 6 },
+
+      "anim": [
+
+        { "preset": "drawOnPath", "start": 0.9, "dur": 0.6, "length": 800, "ease": "power3InOut" }
+
+      ]
+
+    },
+
+    {
+
+      "id": "note",
+
+      "type": "sticky",
+
+      "size": { "w": 680, "h": 260 },
+
+      "pos": { "x": 960, "y": 620 },
+
+      "text": "Deadlines = panic monster.",
+
+      "style": { "color": "accent2", "tape": true },
+
+      "anim": [
+
+        { "preset": "fadeUpIn", "start": 1.8, "dur": 0.9, "dist": 40 },
+
+        { "preset": "breathe", "loop": 3.0 }
+
+      ]
+
+    },
+
+    {
+
+      "id": "exitGroup",
+
+      "type": "group",
+
+      "targets": ["hdr","underline","note"],
+
+      "anim": [
+
+        { "preset": "fadeLeftOut", "start": 4.2, "dur": 0.9, "dist": 240, "ease": "power3In" }
+
+      ]
+
+    }
+
+  ],
+
+  "lottie": [
+
+    { "id": "spark", "src": "/lottie/spark.json", "pos": {"x": 1320, "y": 280},
+
+      "colorize": "accent", "start": 2.1, "dur": 0.4 }
+
+  ]
+
+}
+
+
+
+
+
+
+
+
+
+8) Template Contract
+
+
+
+
+
+(same as before — render layers, apply presets, support masks/Lottie/morph, use unique IDs.)
+
+
+
+
+
+
+
+
+
+9) Implementation Notes
+
+
+
+
+
+Highlighter swipe = growing mask behind text.
+Write-on = strokeDashoffset animation.
+FlipY = 3D rotate export-safe.
+Parallax = depth translate wrapper.
+Morph = precomputed Flubber-style function.
+
+
+
+
+
+
+
+
+
+
+10) Quality Checklist
+
+
+
+
+
+(same as previous version: determinism, timing, style, typography, motion, performance.)
+
+
+
+
+
+
+
+
+
+11) Anti-Patterns
+
+
+
+
+
+No text blocks >2 lines.
+No fade-only reveals unless justified.
+No GSAP timelines in export path.
+No state-based triggers.
+No non-token colors/easings.
+
+
+
+
+
+
+
+
+
+
+12) Preset API Signatures
+
+
+
+
+
+(unchanged from v2.)
+
+
+
+
+
+
+
+
+
+13) Notebook vs Whiteboard Switch
+
+
+
+const bgColor = style.mode === 'notebook' ? STYLE.colors.bgNotebook : STYLE.colors.bgWhiteboard;
+
+const vignette = style.mode === 'notebook' ? STYLE.textures.vignetteOpacityNotebook : STYLE.textures.vignetteOpacityWhiteboard;
+
+// render paper grain only if notebook
+
+
+
+
+
+
+
+
+
+14) Example Flow (6 s)
+
+
+
+
+
+0.6 s → header fadeUpIn + underline drawOnPath
+1.8 s → sticky note slides in + highlighter swipe
+2.1 s → spark Lottie + header pulse
+4.2 s → group exit; next scene overlap at 4.0 s
