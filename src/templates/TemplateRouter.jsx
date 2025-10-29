@@ -10,9 +10,13 @@ import { SceneIdContext } from '../sdk/SceneIdContext';
 
 // Blueprint v5.0 Templates
 import { Hook1AQuestionBurst } from './Hook1AQuestionBurst_V5';
-import { Reflect4AKeyTakeaways } from './Reflect4AKeyTakeaways_V5';
-import { Apply3AMicroQuiz } from './Apply3AMicroQuiz_V5';
+import { Hook1EAmbientMystery } from './Hook1EAmbientMystery_V5';
+import { Explain2AConceptBreakdown } from './Explain2AConceptBreakdown_V5';
 import { Explain2BAnalogy } from './Explain2BAnalogy_V5';
+import { Apply3AMicroQuiz } from './Apply3AMicroQuiz_V5';
+import { Apply3BScenarioChoice } from './Apply3BScenarioChoice_V5';
+import { Reflect4AKeyTakeaways } from './Reflect4AKeyTakeaways_V5';
+import { Reflect4DForwardLink } from './Reflect4DForwardLink_V5';
 
 // Legacy Templates (v3/v4)
 import { HookTemplate } from './HookTemplate';
@@ -31,9 +35,13 @@ import { ReflectMindMapTemplate } from './ReflectMindMapTemplate';
 const TEMPLATE_REGISTRY = {
   // Blueprint v5.0 templates
   'Hook1AQuestionBurst': Hook1AQuestionBurst,
-  'Reflect4AKeyTakeaways': Reflect4AKeyTakeaways,
-  'Apply3AMicroQuiz': Apply3AMicroQuiz,
+  'Hook1EAmbientMystery': Hook1EAmbientMystery,
+  'Explain2AConceptBreakdown': Explain2AConceptBreakdown,
   'Explain2BAnalogy': Explain2BAnalogy,
+  'Apply3AMicroQuiz': Apply3AMicroQuiz,
+  'Apply3BScenarioChoice': Apply3BScenarioChoice,
+  'Reflect4AKeyTakeaways': Reflect4AKeyTakeaways,
+  'Reflect4DForwardLink': Reflect4DForwardLink,
   
   // Legacy templates
   'hook': HookTemplate,
