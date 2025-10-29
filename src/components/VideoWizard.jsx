@@ -1,13 +1,6 @@
 import React, { useState } from 'react';
 import { Player } from '@remotion/player';
-import { HookTemplate } from '../templates/HookTemplate';
-import { HookStoryTemplate } from '../templates/HookStoryTemplate';
-import { ExplainTemplate } from '../templates/ExplainTemplate';
-import { ExplainTimelineTemplate } from '../templates/ExplainTimelineTemplate';
-import { ApplyTemplate } from '../templates/ApplyTemplate';
-import { ApplyCompareTemplate } from '../templates/ApplyCompareTemplate';
-import { ReflectTemplate } from '../templates/ReflectTemplate';
-import { ReflectMindMapTemplate } from '../templates/ReflectMindMapTemplate';
+import { TemplateRouter } from '../templates/TemplateRouter';
 import { MultiSceneVideo } from './MultiSceneVideo';
 
 // Import default scenes
@@ -15,23 +8,6 @@ import hookScene from '../scenes/hook_sleep_science.json';
 import explainScene from '../scenes/explain_growth_mindset.json';
 import applyScene from '../scenes/apply_growth_mindset.json';
 import reflectScene from '../scenes/reflect_growth_mindset.json';
-
-// Template mapping - supports all template variants
-const TEMPLATE_MAP = {
-  'hook': HookTemplate,
-  'hook_story': HookStoryTemplate,
-  'explain': ExplainTemplate,
-  'explain_timeline': ExplainTimelineTemplate,
-  'apply': ApplyTemplate,
-  'apply_compare': ApplyCompareTemplate,
-  'reflect': ReflectTemplate,
-  'reflect_mindmap': ReflectMindMapTemplate
-};
-
-// Helper to get template component from template_id
-const getTemplateComponent = (templateId) => {
-  return TEMPLATE_MAP[templateId] || TEMPLATE_MAP[templateId?.split('_')[0]] || HookTemplate;
-};
 
 const PILLAR_INFO = {
   hook: {
@@ -139,11 +115,7 @@ export const VideoWizard = () => {
       if (!parsed.duration_s) errors.push('Missing duration_s (or duration)');
       if (!parsed.fill) errors.push('Missing fill data');
       
-      // Validate that template_id is recognized
-      const templateComponent = getTemplateComponent(parsed.template_id);
-      if (!templateComponent) {
-        errors.push(`Unknown template_id: ${parsed.template_id}`);
-      }
+      // Note: TemplateRouter will handle template_id validation at render time
       
       if (errors.length > 0) {
         setValidationErrors(prev => ({ ...prev, [pillar]: errors }));
@@ -672,7 +644,7 @@ export const VideoWizard = () => {
                     overflow: 'hidden'
                   }}>
                   <Player
-                    component={getTemplateComponent(scenes[currentPillar].template_id)}
+                    component={TemplateRouter}
                     inputProps={{ scene: scenes[currentPillar] }}
                     durationInFrames={scenes[currentPillar].duration_s * scenes[currentPillar].fps}
                     fps={scenes[currentPillar].fps}
