@@ -168,8 +168,8 @@ const validateScene = (scene) => {
       if (!scene.beats) {
         errors.push('Missing required field: beats (v5.0 schema)');
       }
-      if (!scene.content) {
-        errors.push('Missing required field: content (v5.0 schema)');
+      if (!scene.fill) {
+        errors.push('Missing required field: fill (v5.0 schema)');
       }
     } else {
       if (!scene.duration_s) {
@@ -232,9 +232,14 @@ const validateScene = (scene) => {
     }
     
     // v5.0 content validation
-    if (isV5 && scene.content) {
-      if (scene.content.question && scene.content.question.length > 120) {
-        errors.push(`Question may be too long (${scene.content.question.length} chars). Consider shortening.`);
+    if (isV5 && scene.fill) {
+      // Check for overly long text fields in fill
+      if (scene.fill.texts) {
+        Object.entries(scene.fill.texts).forEach(([key, value]) => {
+          if (typeof value === 'string' && value.length > 150) {
+            errors.push(`Text field "${key}" may be too long (${value.length} chars). Consider shortening.`);
+          }
+        });
       }
     }
     
