@@ -100,7 +100,13 @@ const templateMap = {
   'hook_1a_v5': TemplateRouter,
   'reflect_4a_v5': TemplateRouter,
   'apply_3a_v5': TemplateRouter,
-  'explain_2b_v5': TemplateRouter
+  'explain_2b_v5': TemplateRouter,
+  
+  // Map v5.0 template_id values from JSON to TemplateRouter
+  'Hook1AQuestionBurst': TemplateRouter,
+  'Reflect4AKeyTakeaways': TemplateRouter,
+  'Apply3AMicroQuiz': TemplateRouter,
+  'Explain2BAnalogy': TemplateRouter
 };
 
 const sampleScenes = {
