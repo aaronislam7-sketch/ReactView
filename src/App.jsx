@@ -58,15 +58,23 @@ import reflect4DForwardScene from './scenes/reflect_4d_forward.json';
 
 // Blueprint v5.0 scenes
 import hook1AV5Scene from './scenes/hook_1a_knodovia_map_v5.json';
-import reflect4AV5Scene from './scenes/reflect_4a_takeaways_v5.json';
-import apply3AV5Scene from './scenes/apply_3a_quiz_v5.json';
+import hook1EV5Scene from './scenes/hook_1e_mystery_v5.json';
+import explain2AV5Scene from './scenes/explain_2a_breakdown_v5.json';
 import explain2BV5Scene from './scenes/explain_2b_analogy_v5.json';
+import apply3AV5Scene from './scenes/apply_3a_quiz_v5.json';
+import apply3BV5Scene from './scenes/apply_3b_scenario_v5.json';
+import reflect4AV5Scene from './scenes/reflect_4a_takeaways_v5.json';
+import reflect4DV5Scene from './scenes/reflect_4d_forward_v5.json';
 
 // Import Blueprint v5.0 templates
 import { Hook1AQuestionBurst as Hook1AV5 } from './templates/Hook1AQuestionBurst_V5';
-import { Reflect4AKeyTakeaways as Reflect4AV5 } from './templates/Reflect4AKeyTakeaways_V5';
-import { Apply3AMicroQuiz as Apply3AV5 } from './templates/Apply3AMicroQuiz_V5';
+import { Hook1EAmbientMystery as Hook1EV5 } from './templates/Hook1EAmbientMystery_V5';
+import { Explain2AConceptBreakdown as Explain2AV5 } from './templates/Explain2AConceptBreakdown_V5';
 import { Explain2BAnalogy as Explain2BV5 } from './templates/Explain2BAnalogy_V5';
+import { Apply3AMicroQuiz as Apply3AV5 } from './templates/Apply3AMicroQuiz_V5';
+import { Apply3BScenarioChoice as Apply3BV5 } from './templates/Apply3BScenarioChoice_V5';
+import { Reflect4AKeyTakeaways as Reflect4AV5 } from './templates/Reflect4AKeyTakeaways_V5';
+import { Reflect4DForwardLink as Reflect4DV5 } from './templates/Reflect4DForwardLink_V5';
 import { TemplateRouter } from './templates/TemplateRouter';
 
 const templateMap = {
@@ -98,15 +106,23 @@ const templateMap = {
   
   // Blueprint v5.0 templates (use TemplateRouter for context wrapping)
   'hook_1a_v5': TemplateRouter,
-  'reflect_4a_v5': TemplateRouter,
-  'apply_3a_v5': TemplateRouter,
+  'hook_1e_v5': TemplateRouter,
+  'explain_2a_v5': TemplateRouter,
   'explain_2b_v5': TemplateRouter,
+  'apply_3a_v5': TemplateRouter,
+  'apply_3b_v5': TemplateRouter,
+  'reflect_4a_v5': TemplateRouter,
+  'reflect_4d_v5': TemplateRouter,
   
   // Map v5.0 template_id values from JSON to TemplateRouter
   'Hook1AQuestionBurst': TemplateRouter,
-  'Reflect4AKeyTakeaways': TemplateRouter,
+  'Hook1EAmbientMystery': TemplateRouter,
+  'Explain2AConceptBreakdown': TemplateRouter,
+  'Explain2BAnalogy': TemplateRouter,
   'Apply3AMicroQuiz': TemplateRouter,
-  'Explain2BAnalogy': TemplateRouter
+  'Apply3BScenarioChoice': TemplateRouter,
+  'Reflect4AKeyTakeaways': TemplateRouter,
+  'Reflect4DForwardLink': TemplateRouter
 };
 
 const sampleScenes = {
@@ -144,9 +160,13 @@ const sampleScenes = {
   
   // Blueprint v5.0 scenes
   'hook_1a_v5': hook1AV5Scene,
-  'reflect_4a_v5': reflect4AV5Scene,
+  'hook_1e_v5': hook1EV5Scene,
+  'explain_2a_v5': explain2AV5Scene,
+  'explain_2b_v5': explain2BV5Scene,
   'apply_3a_v5': apply3AV5Scene,
-  'explain_2b_v5': explain2BV5Scene
+  'apply_3b_v5': apply3BV5Scene,
+  'reflect_4a_v5': reflect4AV5Scene,
+  'reflect_4d_v5': reflect4DV5Scene
 };
 
 // Validation function
@@ -443,9 +463,13 @@ export default function App() {
         >
           <optgroup label="🌟 Blueprint v5.0 Templates (NEW!)">
             <option value="hook_1a_v5">🚀 Hook 1A: Question Burst v5 (15s)</option>
-            <option value="reflect_4a_v5">🚀 Reflect 4A: Key Takeaways v5 (8s)</option>
-            <option value="apply_3a_v5">🚀 Apply 3A: Micro Quiz v5 (12s)</option>
+            <option value="hook_1e_v5">🚀 Hook 1E: Ambient Mystery v5 (12s)</option>
+            <option value="explain_2a_v5">🚀 Explain 2A: Concept Breakdown v5 (10s)</option>
             <option value="explain_2b_v5">🚀 Explain 2B: Analogy v5 (12s)</option>
+            <option value="apply_3a_v5">🚀 Apply 3A: Micro Quiz v5 (12s)</option>
+            <option value="apply_3b_v5">🚀 Apply 3B: Scenario Choice v5 (11s)</option>
+            <option value="reflect_4a_v5">🚀 Reflect 4A: Key Takeaways v5 (8s)</option>
+            <option value="reflect_4d_v5">🚀 Reflect 4D: Forward Link v5 (10s)</option>
           </optgroup>
           <optgroup label="🎨 Rough.js Templates (v4)">
             <option value="hook_1a_knodovia">🔥 Hook 1A: Question Burst (20s)</option>
