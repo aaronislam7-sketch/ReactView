@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate, Easing } from 'remotion';
 import { THEME } from '../utils/theme';
 import rough from 'roughjs/bundled/rough.esm.js';
-import gsap from 'gsap';
+// import gsap from 'gsap';
 import { Player } from '@lottiefiles/react-lottie-player';
 import {
   gracefulMove,

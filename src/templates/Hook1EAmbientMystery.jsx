@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate, Easing } from 'remotion';
 import rough from 'roughjs/bundled/rough.esm.js';
-import gsap from 'gsap';
+// import gsap from 'gsap';
 import {
   scrambleText,
   glowPulse,

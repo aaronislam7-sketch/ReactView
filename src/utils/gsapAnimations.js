@@ -1,3 +1,5 @@
+// DEPRECATED: Old GSAP animations - kept for legacy templates only
+
 /**
  * GSAP Animation Utilities for Knode Scene Builder
  * 
@@ -15,7 +17,7 @@
  * Usage: Import individual functions or use presets
  */
 
-import gsap from 'gsap';
+// import gsap from 'gsap';
 
 /**
  * ========================================
