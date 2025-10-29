@@ -43,4 +43,9 @@ export * from './typography';
 export * from './usePreloadAssets';
 export { StyleTokensProvider, useStyleTokens } from './StyleTokensProvider';
 
+// Blueprint v5.0 - Core Systems
+export * from './presets';
+export { SceneIdContext, useSceneId, generateSceneId } from './SceneIdContext';
+export { EZ, getEasing } from './easing';
+
 export default SDK;

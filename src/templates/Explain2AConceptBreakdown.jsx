@@ -2,13 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate, Easing } from 'remotion';
 import { THEME } from '../utils/theme';
 import rough from 'roughjs/bundled/rough.esm.js';
-import gsap from 'gsap';
-import {
-  staggeredBullets,
-  gracefulMove,
-  pulseEmphasis,
-  cascadeReveal,
-} from '../utils/gsapAnimations';
+// import gsap from 'gsap';
+// import {
+//   staggeredBullets,
+//   gracefulMove,
+//   pulseEmphasis,
+//   cascadeReveal,
+// } from '../utils/gsapAnimations';
 
 /**
  * EXPLAIN 2A: CONCEPT BREAKDOWN (TED-ED Style V4)

@@ -56,6 +56,19 @@ import reflectKnodoviaJourneyScene from './scenes/reflect_knodovia_journey.json'
 import reflect4ATakeawaysScene from './scenes/reflect_4a_takeaways.json';
 import reflect4DForwardScene from './scenes/reflect_4d_forward.json';
 
+// Blueprint v5.0 scenes
+import hook1AV5Scene from './scenes/hook_1a_knodovia_map_v5.json';
+import reflect4AV5Scene from './scenes/reflect_4a_takeaways_v5.json';
+import apply3AV5Scene from './scenes/apply_3a_quiz_v5.json';
+import explain2BV5Scene from './scenes/explain_2b_analogy_v5.json';
+
+// Import Blueprint v5.0 templates
+import { Hook1AQuestionBurst as Hook1AV5 } from './templates/Hook1AQuestionBurst_V5';
+import { Reflect4AKeyTakeaways as Reflect4AV5 } from './templates/Reflect4AKeyTakeaways_V5';
+import { Apply3AMicroQuiz as Apply3AV5 } from './templates/Apply3AMicroQuiz_V5';
+import { Explain2BAnalogy as Explain2BV5 } from './templates/Explain2BAnalogy_V5';
+import { TemplateRouter } from './templates/TemplateRouter';
+
 const templateMap = {
   // Legacy templates
   'whiteboard_ted_v2': WhiteboardTEDv2,
@@ -81,7 +94,19 @@ const templateMap = {
   'reflect': ReflectTemplate,
   'reflect_mindmap': ReflectMindMapTemplate,
   'reflect_4a': Reflect4AKeyTakeaways,
-  'reflect_4d': Reflect4DForwardLink
+  'reflect_4d': Reflect4DForwardLink,
+  
+  // Blueprint v5.0 templates (use TemplateRouter for context wrapping)
+  'hook_1a_v5': TemplateRouter,
+  'reflect_4a_v5': TemplateRouter,
+  'apply_3a_v5': TemplateRouter,
+  'explain_2b_v5': TemplateRouter,
+  
+  // Map v5.0 template_id values from JSON to TemplateRouter
+  'Hook1AQuestionBurst': TemplateRouter,
+  'Reflect4AKeyTakeaways': TemplateRouter,
+  'Apply3AMicroQuiz': TemplateRouter,
+  'Explain2BAnalogy': TemplateRouter
 };
 
 const sampleScenes = {
@@ -115,7 +140,13 @@ const sampleScenes = {
   'apply_3b_scenario': apply3BScenarioScene,
   'reflect_knodovia': reflectKnodoviaJourneyScene,
   'reflect_4a_takeaways': reflect4ATakeawaysScene,
-  'reflect_4d_forward': reflect4DForwardScene
+  'reflect_4d_forward': reflect4DForwardScene,
+  
+  // Blueprint v5.0 scenes
+  'hook_1a_v5': hook1AV5Scene,
+  'reflect_4a_v5': reflect4AV5Scene,
+  'apply_3a_v5': apply3AV5Scene,
+  'explain_2b_v5': explain2BV5Scene
 };
 
 // Validation function
@@ -123,25 +154,36 @@ const validateScene = (scene) => {
   const errors = [];
   
   try {
+    // Check schema version
+    const schemaVersion = scene.schema_version || '4.0';
+    const isV5 = schemaVersion.startsWith('5.');
+    
     // Check required fields
     if (!scene.template_id) {
       errors.push('Missing required field: template_id');
     }
     
-    if (!scene.duration_s) {
-      errors.push('Missing required field: duration_s');
-    }
-    
-    if (!scene.fps) {
-      errors.push('Missing required field: fps');
-    }
-    
-    if (!scene.fill) {
-      errors.push('Missing required field: fill');
-    }
-    
-    if (!scene.timeline || !Array.isArray(scene.timeline)) {
-      errors.push('Missing or invalid timeline array');
+    // v5.0 uses beats, v4 uses duration_s/fps/timeline
+    if (isV5) {
+      if (!scene.beats) {
+        errors.push('Missing required field: beats (v5.0 schema)');
+      }
+      if (!scene.fill) {
+        errors.push('Missing required field: fill (v5.0 schema)');
+      }
+    } else {
+      if (!scene.duration_s) {
+        errors.push('Missing required field: duration_s (v4.0 schema)');
+      }
+      if (!scene.fps) {
+        errors.push('Missing required field: fps (v4.0 schema)');
+      }
+      if (!scene.fill) {
+        errors.push('Missing required field: fill (v4.0 schema)');
+      }
+      if (!scene.timeline || !Array.isArray(scene.timeline)) {
+        errors.push('Missing or invalid timeline array (v4.0 schema)');
+      }
     }
     
     // Check if template exists
@@ -149,8 +191,8 @@ const validateScene = (scene) => {
       errors.push(`Unknown template_id: ${scene.template_id}. Valid options: ${Object.keys(templateMap).join(', ')}`);
     }
     
-    // Validate timeline actions reference existing targets
-    if (scene.timeline && scene.fill) {
+    // Validate timeline actions reference existing targets (v4 only)
+    if (!isV5 && scene.timeline && scene.fill) {
       const allTexts = Object.keys(scene.fill.texts || {});
       const allImages = Object.keys(scene.fill.images || {});
       const allTargets = [...allTexts, ...allImages];
@@ -189,6 +231,18 @@ const validateScene = (scene) => {
       });
     }
     
+    // v5.0 content validation
+    if (isV5 && scene.fill) {
+      // Check for overly long text fields in fill
+      if (scene.fill.texts) {
+        Object.entries(scene.fill.texts).forEach(([key, value]) => {
+          if (typeof value === 'string' && value.length > 150) {
+            errors.push(`Text field "${key}" may be too long (${value.length} chars). Consider shortening.`);
+          }
+        });
+      }
+    }
+    
   } catch (e) {
     errors.push(`Validation error: ${e.message}`);
   }
@@ -219,22 +273,34 @@ export default function App() {
     try {
       const parsed = JSON.parse(sceneJSON);
       
-      // Add default values for new template format if missing
-      if (!parsed.duration_s) parsed.duration_s = parsed.duration || 30;
-      if (!parsed.fps) parsed.fps = 30;
-      if (!parsed.layout) {
-        parsed.layout = {
-          canvas: { w: 1920, h: 1080 }
-        };
-      }
-      if (!parsed.meta) {
-        parsed.meta = {
-          title: parsed.fill?.texts?.title || 'Untitled Scene',
-          tags: []
-        };
-      }
-      if (!parsed.timeline) {
-        parsed.timeline = [];
+      // Check if v5.0 schema
+      const isV5 = parsed.schema_version?.startsWith('5.');
+      
+      // Add default values for v4 template format if missing
+      if (!isV5) {
+        if (!parsed.duration_s) parsed.duration_s = parsed.duration || 30;
+        if (!parsed.fps) parsed.fps = 30;
+        if (!parsed.layout) {
+          parsed.layout = {
+            canvas: { w: 1920, h: 1080 }
+          };
+        }
+        if (!parsed.meta) {
+          parsed.meta = {
+            title: parsed.fill?.texts?.title || 'Untitled Scene',
+            tags: []
+          };
+        }
+        if (!parsed.timeline) {
+          parsed.timeline = [];
+        }
+      } else {
+        // v5.0 defaults
+        if (!parsed.layout) {
+          parsed.layout = {
+            canvas: { w: 1920, h: 1080 }
+          };
+        }
       }
       
       const errors = validateScene(parsed);
@@ -253,9 +319,27 @@ export default function App() {
   
   const Component = templateMap[currentScene.template_id] || WhiteboardTEDEnhanced;
 
+  // Calculate duration and FPS for v5.0 scenes
+  const isV5 = currentScene.schema_version?.startsWith('5.');
+  const fps = isV5 ? 30 : (currentScene.fps || 30);
+  
+  // For v5, calculate duration from beats or use template defaults
+  let durationInFrames;
+  if (isV5) {
+    if (currentScene.beats && currentScene.beats.exit !== undefined) {
+      const totalSeconds = currentScene.beats.exit + 0.5; // Add tail padding
+      durationInFrames = Math.round(totalSeconds * fps);
+    } else {
+      durationInFrames = 15 * fps; // Default 15s for v5
+    }
+  } else {
+    durationInFrames = Math.round((currentScene.duration_s || 30) * fps);
+  }
+
   // Debug helpers
   console.log('Remotion debug — currentScene:', currentScene);
   console.log('Remotion debug — Component:', Component);
+  console.log('Remotion debug — isV5:', isV5, 'fps:', fps, 'duration:', durationInFrames);
   
   const [debugRender, setDebugRender] = useState(false);
   const [playerKey, setPlayerKey] = useState(0); // For forcing player re-render
@@ -357,7 +441,13 @@ export default function App() {
             outline: 'none'
           }}
         >
-          <optgroup label="🎨 NEW: Rough.js Templates (9+/10)">
+          <optgroup label="🌟 Blueprint v5.0 Templates (NEW!)">
+            <option value="hook_1a_v5">🚀 Hook 1A: Question Burst v5 (15s)</option>
+            <option value="reflect_4a_v5">🚀 Reflect 4A: Key Takeaways v5 (8s)</option>
+            <option value="apply_3a_v5">🚀 Apply 3A: Micro Quiz v5 (12s)</option>
+            <option value="explain_2b_v5">🚀 Explain 2B: Analogy v5 (12s)</option>
+          </optgroup>
+          <optgroup label="🎨 Rough.js Templates (v4)">
             <option value="hook_1a_knodovia">🔥 Hook 1A: Question Burst (20s)</option>
             <option value="hook_1e_mystery">🌫️ Hook 1E: Ambient Mystery (15s)</option>
             <option value="explain_2a_breakdown">📊 Explain 2A: Concept Breakdown (30s)</option>
@@ -421,7 +511,7 @@ export default function App() {
           fontSize: 12,
           color: '#666'
         }}>
-          {currentScene.duration_s}s • {currentScene.fps} fps • {currentScene.layout.canvas.w}×{currentScene.layout.canvas.h}
+          {isV5 ? `${(durationInFrames / fps).toFixed(1)}s (v5)` : `${currentScene.duration_s}s`} • {fps} fps • {currentScene.layout?.canvas?.w || 1920}×{currentScene.layout?.canvas?.h || 1080}
         </div>
       </div>
       
@@ -598,10 +688,10 @@ export default function App() {
               key={playerKey}
               component={Component}
               inputProps={{ scene: currentScene }}
-              durationInFrames={currentScene.duration_s * currentScene.fps}
-              fps={currentScene.fps}
-              compositionWidth={currentScene.layout.canvas.w}
-              compositionHeight={currentScene.layout.canvas.h}
+              durationInFrames={durationInFrames}
+              fps={fps}
+              compositionWidth={currentScene.layout?.canvas?.w || 1920}
+              compositionHeight={currentScene.layout?.canvas?.h || 1080}
               controls
               style={{
                 width: '100%',
