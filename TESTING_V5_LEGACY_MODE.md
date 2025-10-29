@@ -79,8 +79,12 @@ Switch between old and new versions to see the difference:
 | Apply 3A | `apply_3a_quiz` | `apply_3a_v5` |
 | Explain 2B | `explain_2b_analogy` | `explain_2b_v5` |
 
-## Known Issues
-- None! Build passes, validation passes, all templates render properly ✨
+## Fixed Issues ✅
+- ✅ Template mapping: v5.0 `template_id` values now correctly route to TemplateRouter
+- ✅ Validation: v5.0 schemas check for `fill` (not `content`)
+- ✅ Duration calculation: Properly derives from `beats.exit` for v5.0
+- ✅ Build errors: All GSAP imports commented out in legacy templates
+- ✅ No runtime errors when switching between v4 and v5 templates!
 
 ## Next Steps
 1. Test each v5.0 template in Legacy Mode
