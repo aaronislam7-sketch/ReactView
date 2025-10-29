@@ -10,6 +10,7 @@
  * Pattern C: Hooks (only when JSX/refs required)
  */
 
+import React from 'react';
 import { interpolate, spring, useVideoConfig } from 'remotion';
 import { useId } from 'react';
 import { toFrames } from './time';
